@@ -1,0 +1,18 @@
+packages/abc.sh
+  h_492b42777c8bc9 1-24
+.github/workflows/abc-vscode-extension.yml
+  h_492b42777c8bc9 1-62
+packages/.gitignore
+  h_492b42777c8bc9 1-2
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "86e33cdf09b2df6c716efbde7ee664230a6edae1",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
