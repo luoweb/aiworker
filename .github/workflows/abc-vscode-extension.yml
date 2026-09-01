@@ -29,11 +29,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          bash -x ./packages/abc.sh
           bun install --frozen-lockfile
 
       - name: Build VS Code extension
-        run: bun run --cwd packages/vscode build
+        run: |
+          bash -x ./packages/abc.sh
+          bun run --cwd packages/vscode build
 
       - name: Package extension
         run: cd packages/vscode && bunx vsce package --no-dependencies
