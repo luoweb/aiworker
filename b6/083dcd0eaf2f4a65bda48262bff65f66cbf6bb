@@ -1,0 +1,15 @@
+.github/workflows/abc-vscode-extension.yml
+  h_492b42777c8bc9 35-36
+  h_492b42777c8bc9 37
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "b6083dcd0eaf2f4a65bda48262bff65f66cbf6bb",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
