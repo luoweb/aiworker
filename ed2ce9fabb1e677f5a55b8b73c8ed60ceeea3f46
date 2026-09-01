@@ -1,0 +1,14 @@
+.github/workflows/vscode-extension.yml
+  h_492b42777c8bc9 60
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.24",
+  "base_commit_sha": "ed2ce9fabb1e677f5a55b8b73c8ed60ceeea3f46",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
