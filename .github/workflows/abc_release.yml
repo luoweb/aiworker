@@ -21,6 +21,7 @@ env:
   RUST_BACKTRACE: short
 
 permissions:
+  id-token: write  # Required for OIDC
   contents: write
 
 jobs:
@@ -95,6 +96,7 @@ jobs:
         with:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false  # never use caching in release builds
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
