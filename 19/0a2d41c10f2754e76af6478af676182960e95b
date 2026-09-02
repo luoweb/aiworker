@@ -1,0 +1,32 @@
+packages/ui/src/types/request-duplex.d.ts
+  s_c0be52c18d608a::t_4aa57203be998a 1-8
+packages/ui/src/lib/runtime-fetch.ts
+  s_c0be52c18d608a::t_c940cbeeb79f19 220-224,252
+  s_c0be52c18d608a::t_f1969aa14f364a 424-425
+  s_c0be52c18d608a::t_73dbfc958b52e2 225-251,253-255,266
+  s_c0be52c18d608a::t_dbae72806a6dd4 326
+  s_c0be52c18d608a::t_f72bfb2a55e202 414
+packages/ui/src/lib/runtime-fetch.test.ts
+  s_c0be52c18d608a::t_66b4e15ad386c3 175,187-191,217
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "190a2d41c10f2754e76af6478af676182960e95b",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  },
+  "sessions": {
+    "s_c0be52c18d608a": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f9ef6a0a4ffeeXvFa83kpBZ2iE",
+        "model": "big-pickle"
+      },
+      "human_author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
