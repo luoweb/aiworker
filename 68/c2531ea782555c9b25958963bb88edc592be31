@@ -1,0 +1,14 @@
+packages/abc.sh
+  h_492b42777c8bc9 32-33,40
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.0",
+  "base_commit_sha": "68c2531ea782555c9b25958963bb88edc592be31",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
