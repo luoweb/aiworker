@@ -217,6 +217,42 @@ const tryRelayFetch = async (
   return relay.fetch(path, { ...requestInit, headers });
 };
 
+// Reconstruct a Request with an explicit body instead of passing it as `init`:
+// in Chromium, `new Request(url, request)` reads the source body via its
+// prototype getter (always a ReadableStream) and throws "The 'duplex' member
+// must be specified for a request with a streaming body". `duplex` is added by
+// `src/types/request-duplex.d.ts`.
+const rebuildRequest = (url: string, request: Request, init: RequestInit = {}): Request => {
+  const mergedBody = init.body !== undefined ? init.body : request.body;
+  const hasBody = mergedBody !== null && mergedBody !== undefined && request.method !== 'GET' && request.method !== 'HEAD';
+  if (!hasBody) {
+    return new Request(url, {
+      method: init.method ?? request.method,
+      headers: init.headers ?? request.headers,
+      signal: init.signal ?? request.signal,
+      credentials: request.credentials,
+      mode: request.mode,
+      cache: request.cache,
+      redirect: request.redirect,
+      integrity: request.integrity,
+      keepalive: request.keepalive,
+    });
+  }
+  return new Request(url, {
+    method: init.method ?? request.method,
+    headers: init.headers ?? request.headers,
+    signal: init.signal ?? request.signal,
+    credentials: request.credentials,
+    mode: request.mode,
+    cache: request.cache,
+    redirect: request.redirect,
+    integrity: request.integrity,
+    keepalive: request.keepalive,
+    body: mergedBody,
+    duplex: 'half',
+  });
+};
+
 const resolveRuntimeFetchInput = (input: string | URL | Request, query?: RuntimeUrlQuery): string | URL | Request => {
   if (typeof input === 'string') {
     return buildRuntimeFetchUrl(input, query);
@@ -227,7 +263,7 @@ const resolveRuntimeFetchInput = (input: string | URL | Request, query?: Runtime
   }
 
   const target = buildRuntimeFetchUrl(input.url, query);
-  return target === input.url ? input : new Request(target, input);
+  return target === input.url ? input : rebuildRequest(target, input);
 };
 
 // ---------------------------------------------------------------------------
@@ -287,7 +323,7 @@ export const runtimeFetch = async (input: string | URL | Request, init: RuntimeF
       : String(resolvedInput);
     addRuntimeProxyHeaders(resolvedUrl, headers);
     doFetch = resolvedInput instanceof Request
-      ? () => fetch(new Request(resolvedInput, { ...requestInit, headers }))
+      ? () => fetch(rebuildRequest(resolvedInput.url, resolvedInput, { ...requestInit, headers }))
       : () => fetch(resolvedInput, { ...requestInit, headers });
     url = resolvedUrl;
     method = String(
@@ -375,7 +411,7 @@ export const installRuntimeFetchBridge = (): void => {
           if (isActiveRuntimeServiceUrl(url)) {
             const headers = await mergeHeaders(input.headers, init?.headers);
             addRuntimeProxyHeaders(url.toString(), headers);
-            return nativeFetch(new Request(input, { ...init, headers }));
+            return nativeFetch(rebuildRequest(url.toString(), input, { ...(init ?? {}), headers }));
           }
         } catch {
           // Non-URL request inputs should fall through unchanged.
@@ -385,8 +421,8 @@ export const installRuntimeFetchBridge = (): void => {
       const headers = await mergeHeaders(input.headers, init?.headers);
       const target = buildRuntimeFetchUrl(input.url);
       addRuntimeProxyHeaders(target, headers);
-      const request = target === input.url ? input : new Request(target, input);
-      return nativeFetch(new Request(request, { ...init, headers }));
+      const request = target === input.url ? input : rebuildRequest(target, input);
+      return nativeFetch(rebuildRequest(request.url, request, { ...(init ?? {}), headers }));
     }
 
     return nativeFetch(input, init);

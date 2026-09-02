@@ -172,7 +172,7 @@ describe('runtimeFetch transport contract', () => {
     const previous = getRuntimeUrlResolver();
     const originalWindow = globalThis.window;
     const controller = new AbortController();
-    const calls: Array<{ input: Request; body: string }> = [];
+    const calls: Array<{ input: Request; body: string; duplex: string | undefined }> = [];
 
     try {
       configureRuntimeUrlResolver({ apiBaseUrl: 'https://runtime.example/base' });
@@ -184,7 +184,11 @@ describe('runtimeFetch transport contract', () => {
 
       globalThis.fetch = (async (input: RequestInfo | URL) => {
         const request = input instanceof Request ? input : new Request(input);
-        calls.push({ input: request, body: await request.clone().text() });
+        calls.push({
+          input: request,
+          body: await request.clone().text(),
+          duplex: (request as Request & { duplex?: string }).duplex,
+        });
         return new Response(JSON.stringify({ ok: true }), { status: 200 });
       }) as typeof fetch;
 
@@ -210,6 +214,7 @@ describe('runtimeFetch transport contract', () => {
       expect(captured.headers.get('x-init-header')).toBe('merged');
       expect(captured.headers.get('authorization')).toBe('Bearer runtime-token');
       expect(calls[0].body).toBe(JSON.stringify({ parts: [{ type: 'text', text: 'hello' }] }));
+      expect(calls[0].duplex).toBe('half');
     } finally {
       setRuntimeUrlResolver(previous);
       Object.defineProperty(globalThis, 'window', { configurable: true, value: originalWindow });
