@@ -65,7 +65,7 @@ jobs:
           if (!section) {
             throw new Error('Changelog section [' + version + '] not found. Add a section like "## [' + version + '] - YYYY-MM-DD".');
           }
-          const content = ('## ' + section).trim();
+          const content = ('## ' + section).trim().replace("openchamber","aiworker").replace("OpenChamber","AiWorker");
           fs.mkdirSync('artifacts', { recursive: true });
           fs.writeFileSync('artifacts/release-notes.md', content + '\n');
           NODE
