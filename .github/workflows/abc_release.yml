@@ -94,7 +94,10 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
-          node-version: '22'
+          # Trusted publishing requires Node >= 22.14.0 and npm >= 11.5.1.
+          # Node 22.x may resolve to an older minor that lacks OIDC support.
+          node-version: '24'
+          registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false  # never use caching in release builds
 
       - name: Install dependencies
@@ -102,6 +105,7 @@ jobs:
 
       - name: Build packages
         run: |
+          node -v
           bash -x ./packages/abc.sh
           bun run build
 
@@ -121,7 +125,11 @@ jobs:
       - name: Publish to npm
         if: ${{ github.event.inputs.dry_run != 'true' }}
         working-directory: packages/web
-        run: npm publish --provenance --access public
+        run: npm publish --access public
+        # Authentication uses npm Trusted Publisher (OIDC).
+        # - setup-node sets registry-url so npm targets the right registry
+        # - workflow-level permissions.id-token=write allows OIDC token exchange
+        # - Node 24 ships npm >= 11.5.1, which auto-detects OIDC and skips token auth
 
   build-desktop-electron-macos:
     needs: create-release
