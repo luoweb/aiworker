@@ -16,14 +16,10 @@ else
   xsed='sed -i'
 fi  
 
-# file set definitions (DRY)
-FIND_EXTS='-type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.mdx" -o -name "*.md" \) -not -path "*/node_modules/*"'
-FIND_SPECIAL='-type f \( -name "index.html" -o -name "cli-args.js" \) -not -path "*/node_modules/*"'
-
 echo "########## custom vscode extension ########## "
 # Batch 1 - brand rename on ext files. Specific patterns BEFORE generic ones
 # so github.com/openchamber/* isn't clobbered before it can match.
-find ${baseDir}/ ${FIND_EXTS} -exec sed -i.bak \
+find ${baseDir}/ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.mdx" -o -name "*.md" \) -not -path "*/node_modules/*" -exec sed -i.bak \
   -e 's#github.com/openchamber/openchamber#roweb.cn/roweb/aiworker#g' \
   -e 's#OPENCHAMBER#AIWORKER#g' \
   -e 's#openchamber#aiworker#g' \
@@ -32,14 +28,14 @@ find ${baseDir}/ ${FIND_EXTS} -exec sed -i.bak \
   {} +
 
 # Batch 2 - index.html and cli-args.js (path undo comes after lowercase→aiworker)
-find ${baseDir}/ ${FIND_SPECIAL} -exec sed -i.bak \
+find ${baseDir}/ -type f \( -name "index.html" -o -name "cli-args.js" \) -not -path "*/node_modules/*" -exec sed -i.bak \
   -e 's#OPENCHAMBER#AIWORKER#g' \
   -e 's#OpenChamber#AiWorker#g' \
   -e 's#/aiworker#/openchamber#g' \
   {} +
 
 # filter - undo over-renamed identifiers that should stay openchamber-*
-find ${baseDir}/ ${FIND_EXTS} -exec sed -i.bak \
+find ${baseDir}/ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.json" -o -name "*.mdx" -o -name "*.md" \) -not -path "*/node_modules/*" -exec sed -i.bak \
   -e 's#aiworkerConfig#openchamberConfig#g' \
   -e 's#aiworkerEvents#openchamberEvents#g' \
   -e 's#aiworker-route#openchamber-route#g' \

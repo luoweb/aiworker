@@ -122,10 +122,10 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Publish to npm
-        if: ${{ github.event.inputs.dry_run != 'true' }}
-        working-directory: packages/web
-        run: npm publish --access public
+      # - name: Publish to npm
+      #   if: ${{ github.event.inputs.dry_run != 'true' }}
+      #   working-directory: packages/web
+      #   run: npm publish --access public
         # Authentication uses npm Trusted Publisher (OIDC).
         # - setup-node sets registry-url so npm targets the right registry
         # - workflow-level permissions.id-token=write allows OIDC token exchange
