@@ -72,7 +72,7 @@ The webview build emits each worker as one self-contained file. VS Code webviews
   - Includes session activity snapshot bridge handler used by webview parity routes (`/api/session-activity`).
   - Includes Zen utility model parity handler used by shared notification settings (`/api/zen/models`).
   - Owns managed OpenCode upgrade status and mutation handlers, including capability reporting, upgrade serialization, and process restart after a successful upgrade.
-  - Provider handlers cover source lookup, disconnect (`DELETE /api/provider/:id/auth`), and custom provider upsert (`PUT /api/provider`; create/update OpenAI-compatible config with explicit `scope` for user/project/custom layers; requires `env` or stored auth; secrets via OpenCode auth API).
+  - Provider handlers cover source lookup, disconnect (`DELETE /api/provider/:id/auth`), and custom provider upsert (`PUT /api/provider`; create/update OpenAI Chat Completions, OpenAI Responses, or Anthropic Messages config with explicit `scope` for user/project/custom layers; requires `env` or stored auth; secrets via OpenCode auth API). Updates preserve existing provider, option, and retained-model fields that the form does not manage while honoring explicit model, header, and env removal. Legacy `providers` entries migrate to the canonical `provider` key when edited.
   - Quota handlers keep managed exe.dev, Ollama Cloud, and Cursor credentials in the extension data directory with the same private-file contract as the web runtime. exe.dev uses one command-scoped usage token for the aggregate billing shared by every `exe-*` model provider.
 
 - `opencode-upgrade-runtime.ts`
@@ -172,3 +172,14 @@ Reachable filesystem routes: `api:fs:read` (attachments, config), `api:fs:search
 
 Maintenance: reviews, changelog entries, and parity claims consult this map;
 whoever mounts or unmounts a surface updates it in the same change.
+
+## Global OpenCode paths
+
+`opencodeConfigPaths.ts` owns the global config directory for config CRUD,
+skill discovery/install, global AGENTS.md, and quota config-file lookup. It
+resolves `$XDG_CONFIG_HOME/opencode` at extension startup, falling back to
+`~/.config/opencode` when unset or blank. Project paths, the explicit
+`OPENCODE_CONFIG` file layer, and the auth data directory stay separate.
+No files are migrated. The behavior GET bridge response includes the effective
+`path` for both existing and missing AGENTS.md files; shared Settings uses it
+in the warning.
