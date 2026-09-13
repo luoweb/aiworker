@@ -1,0 +1,20 @@
+packages/abc.sh
+  s_fc553760feca33::t_ad39798033eb91 53-63
+  s_fc553760feca33::t_7596403c7f28be 64-130
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "1fb36d0bac424052a6ed40e6c205c88e2b72c906",
+  "prompts": {},
+  "sessions": {
+    "s_fc553760feca33": {
+      "agent_id": {
+        "tool": "opencode",
+        "id": "ses_f66c05367ffe0050rK71qD8AZ3",
+        "model": "big-pickle"
+      },
+      "human_author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
