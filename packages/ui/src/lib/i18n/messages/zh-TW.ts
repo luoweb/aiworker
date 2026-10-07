@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -132,6 +133,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n['zh-TW'],
   ...webSearchI18n['zh-TW'],
   ...isolatedSpacesI18n['zh-TW'],
+  ...sourceBoardI18n['zh-TW'],
   ...environmentI18n['zh-TW'],
   ...providersI18n['zh-TW'],
   ...mcpGridI18n['zh-TW'],
@@ -1232,6 +1234,9 @@ export const dict: Record<I18nKey, string> = {
   'gitView.pr.checks.statusLabel': '狀態',
   'gitView.pr.checks.stepLabel': '步驟',
   'gitView.pr.checks.steps': '步驟',
+  'gitView.pr.checks.openRun': '開啟',
+  'gitView.pr.checks.failedAnnotations': '失敗的註解',
+  'gitView.pr.checks.failedAnnotationsShown': '失敗的註解（顯示 {total} 則中的 {shown} 則）',
   'gitView.pr.comments.empty': '找不到留言',
   'gitView.pr.comments.generalContext': '普通留言',
   'gitView.pr.comments.reviewContext': '審查留言',
@@ -2622,6 +2627,8 @@ export const dict: Record<I18nKey, string> = {
   'chat.statusRow.background.action': '移至背景 — 代理程式不再等待並繼續工作',
   'chat.statusRow.background.failed': '無法將工作移至背景',
   'chat.toolPart.background.label': '背景執行',
+  'chat.toolPart.subagent.stop': '停止子代理',
+  'chat.toolPart.subagent.stopFailed': '無法停止子代理',
   'chat.toolPart.background.stop': '停止指令',
   'chat.toolPart.background.stopLabel': '停止',
   'chat.toolPart.background.stopFailed': '無法停止指令',
@@ -3774,4 +3781,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': '顯示 {count} 個已隱藏連接埠',
   'contextPanel.browser.devServers.showHiddenPlural': '顯示 {count} 個已隱藏連接埠',
   'sidebarFilesTree.menu.openInDefaultApp': '以預設應用程式開啟',
+  'sessions.sidebar.header.displayMode.showChats': '顯示聊天區段',
+  'sessions.scheduledTasks.editor.useDefaults.label': '使用工作階段預設值',
+  'sessions.scheduledTasks.editor.useDefaults.hint': '每次執行在開始時都會使用「設定 → 工作階段」（或專案自身預設值）中的預設模型、思考等級與代理。',
+  'sessions.scheduledTasks.dialog.usesDefaults': '工作階段預設值',
+  'sessions.moveChatToProject.menu': '移動到專案…',
+  'sessions.moveChatToProject.hint': '在專案中繼續此對話',
+  'sessions.moveChatToProject.title': '將聊天移動到專案',
+  'sessions.moveChatToProject.description': '對話會在專案資料夾中繼續。聊天建立的檔案保留在原處。',
+  'sessions.moveChatToProject.success': '已將聊天移動到專案',
+  'sessions.moveChatToProject.failed': '無法移動聊天',
+  'chat.worktreeSetup.running': '正在設定 worktree：正在執行專案的設定命令…',
+  'desktopHostSwitcher.startup.fellBackToLocal': '未能建立連線，因此 OpenChamber 以 Local 啟動。待其可連線後，請在實例切換器中連線。',
+  'chat.chatInput.contextPreview.saveEdit': '儲存評論',
+  'chat.chatInput.contextPreview.cancelEdit': '取消編輯',
+  'sessions.scheduledTasks.dialog.actions.openSession': '開啟工作階段',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': '開啟 {taskName} 上次執行的工作階段',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': '此任務已有一次執行正在進行，開始於 {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': '此任務已有一次執行正在進行',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': '此任務已在佇列中等待，有空位時就會執行',
+  'chat.modelControls.agentFavoriteAdd': '加入最愛。有最愛時，Tab 只在最愛之間切換',
 };

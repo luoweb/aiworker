@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -142,6 +143,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n['pt-BR'],
   ...webSearchI18n['pt-BR'],
   ...isolatedSpacesI18n['pt-BR'],
+  ...sourceBoardI18n['pt-BR'],
   ...environmentI18n['pt-BR'],
   ...providersI18n['pt-BR'],
   ...mcpGridI18n['pt-BR'],
@@ -1211,6 +1213,9 @@ export const dict: Record<I18nKey, string> = {
   "gitView.pr.checks.statusLabel": "Status",
   "gitView.pr.checks.stepLabel": "Paso",
   "gitView.pr.checks.steps": "Pasos",
+  "gitView.pr.checks.openRun": "Abrir",
+  "gitView.pr.checks.failedAnnotations": "Anotações com falha",
+  "gitView.pr.checks.failedAnnotationsShown": "Anotações com falha (mostrando {shown} de {total})",
   "gitView.pr.comments.empty": "Nenhum comentários",
   "gitView.pr.comments.generalContext": "Comentário general",
   "gitView.pr.comments.reviewContext": "Comentário de revisão",
@@ -2608,6 +2613,8 @@ export const dict: Record<I18nKey, string> = {
   "chat.statusRow.background.action": "Mover para segundo plano — o agente para de esperar e continua",
   "chat.statusRow.background.failed": "Não foi possível mover o trabalho para segundo plano",
   "chat.toolPart.background.label": "em segundo plano",
+  "chat.toolPart.subagent.stop": "Parar subagente",
+  "chat.toolPart.subagent.stopFailed": "Não foi possível parar o subagente",
   "chat.toolPart.background.stop": "Parar comando",
   "chat.toolPart.background.stopLabel": "Parar",
   "chat.toolPart.background.stopFailed": "Não foi possível parar o comando",
@@ -3775,4 +3782,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': 'Mostrar {count} porta oculta',
   'contextPanel.browser.devServers.showHiddenPlural': 'Mostrar {count} portas ocultas',
   'sidebarFilesTree.menu.openInDefaultApp': 'Abrir no app padrão',
+  'sessions.sidebar.header.displayMode.showChats': 'Mostrar seção de chats',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Usar os padrões de sessão',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Cada execução usa, ao começar, o modelo, o nível de raciocínio e o agente padrão de Configurações → Sessões (ou os padrões do projeto).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Padrões de sessão',
+  'sessions.moveChatToProject.menu': 'Mover para um projeto…',
+  'sessions.moveChatToProject.hint': 'Continuar esta conversa dentro de um projeto',
+  'sessions.moveChatToProject.title': 'Mover o chat para um projeto',
+  'sessions.moveChatToProject.description': 'A conversa continua na pasta do projeto. Os arquivos que o chat criou ficam onde estão.',
+  'sessions.moveChatToProject.success': 'Chat movido para o projeto',
+  'sessions.moveChatToProject.failed': 'Não foi possível mover o chat',
+  'chat.worktreeSetup.running': 'Preparando o worktree: executando os comandos de configuração do projeto…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'A conexão não abriu, então o OpenChamber iniciou no Local. Conecte-a pelo seletor de instâncias quando estiver acessível.',
+  'chat.chatInput.contextPreview.saveEdit': 'Salvar comentário',
+  'chat.chatInput.contextPreview.cancelEdit': 'Cancelar edição',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Abrir sessão',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Abrir a sessão da última execução de {taskName}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Esta tarefa já tem uma execução em andamento, iniciada às {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Esta tarefa já tem uma execução em andamento',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Esta tarefa já está na fila e será executada quando houver uma vaga',
+  'chat.modelControls.agentFavoriteAdd': 'Adicionar aos favoritos. Com favoritos, o Tab alterna só entre eles',
 };

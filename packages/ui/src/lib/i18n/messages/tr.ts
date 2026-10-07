@@ -10,6 +10,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -71,6 +72,7 @@ export const dict = {
   ...usageStatsI18n.tr,
   ...webSearchI18n.tr,
   ...isolatedSpacesI18n.tr,
+  ...sourceBoardI18n.tr,
   ...environmentI18n.tr,
   ...providersI18n.tr,
   ...mcpGridI18n.tr,
@@ -1112,6 +1114,9 @@ export const dict = {
   'gitView.pr.checks.statusLabel': 'Durum',
   'gitView.pr.checks.stepLabel': 'Adım',
   'gitView.pr.checks.steps': 'Adımlar',
+  'gitView.pr.checks.openRun': 'Aç',
+  'gitView.pr.checks.failedAnnotations': 'Başarısız ek açıklamalar',
+  'gitView.pr.checks.failedAnnotationsShown': 'Başarısız ek açıklamalar ({total} içinden {shown} gösteriliyor)',
   'gitView.pr.comments.empty': 'Yorum bulunamadı',
   'gitView.pr.comments.generalContext': 'Genel yorum',
   'gitView.pr.comments.reviewContext': 'İnceleme yorumu',
@@ -2489,6 +2494,8 @@ export const dict = {
   'chat.statusRow.background.action': 'Arka plana taşı — ajan beklemeyi bırakıp devam eder',
   'chat.statusRow.background.failed': 'İş arka plana taşınamadı',
   'chat.toolPart.background.label': 'arka planda',
+  'chat.toolPart.subagent.stop': 'Alt ajanı durdur',
+  'chat.toolPart.subagent.stopFailed': 'Alt ajan durdurulamadı',
   'chat.toolPart.background.stop': 'Komutu durdur',
   'chat.toolPart.background.stopLabel': 'Durdur',
   'chat.toolPart.background.stopFailed': 'Komut durdurulamadı',
@@ -3772,4 +3779,24 @@ export const dict = {
   'contextPanel.browser.devServers.showHiddenSingle': '{count} gizli bağlantı noktasını göster',
   'contextPanel.browser.devServers.showHiddenPlural': '{count} gizli bağlantı noktasını göster',
   'sidebarFilesTree.menu.openInDefaultApp': 'Varsayılan uygulamada aç',
+  'sessions.sidebar.header.displayMode.showChats': 'Sohbetler bölümünü göster',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Oturum varsayılanlarını kullan',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Her çalıştırma başlarken varsayılan modeli, düşünme düzeyini ve ajanı Ayarlar → Oturumlar\'dan (ya da projenin kendi varsayılanlarından) alır.',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Oturum varsayılanları',
+  'sessions.moveChatToProject.menu': 'Projeye taşı…',
+  'sessions.moveChatToProject.hint': 'Bu konuşmaya bir proje içinde devam et',
+  'sessions.moveChatToProject.title': 'Sohbeti bir projeye taşı',
+  'sessions.moveChatToProject.description': 'Konuşma projenin klasöründe devam eder. Sohbetin oluşturduğu dosyalar olduğu yerde kalır.',
+  'sessions.moveChatToProject.success': 'Sohbet projeye taşındı',
+  'sessions.moveChatToProject.failed': 'Sohbet taşınamadı',
+  'chat.worktreeSetup.running': 'Worktree hazırlanıyor: projenin kurulum komutları çalışıyor…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'Bağlantısı açılamadı, bu yüzden OpenChamber Local ile başladı. Erişilebilir olduğunda örnek değiştiriciden bağlanın.',
+  'chat.chatInput.contextPreview.saveEdit': 'Yorumu kaydet',
+  'chat.chatInput.contextPreview.cancelEdit': 'Düzenlemeyi iptal et',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Oturumu aç',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': '{taskName} görevinin son çalıştırmasındaki oturumu aç',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Bu görevin {time} saatinde başlayan bir çalıştırması zaten sürüyor',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Bu görevin bir çalıştırması zaten sürüyor',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Bu görev zaten kuyrukta bekliyor; yer açılınca çalışacak',
+  'chat.modelControls.agentFavoriteAdd': 'Favorilere ekle. Favori varsa Tab yalnızca onlar arasında geçiş yapar',
 };

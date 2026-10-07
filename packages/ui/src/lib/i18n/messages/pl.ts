@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -132,6 +133,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.pl,
   ...webSearchI18n.pl,
   ...isolatedSpacesI18n.pl,
+  ...sourceBoardI18n.pl,
   ...environmentI18n.pl,
   ...providersI18n.pl,
   ...mcpGridI18n.pl,
@@ -1549,6 +1551,8 @@ export const dict: Record<I18nKey, string> = {
   'chat.statusRow.background.action': 'Przenieś do tła — agent przestaje czekać i działa dalej',
   'chat.statusRow.background.failed': 'Nie udało się przenieść pracy do tła',
   'chat.toolPart.background.label': 'w tle',
+  'chat.toolPart.subagent.stop': 'Zatrzymaj subagenta',
+  'chat.toolPart.subagent.stopFailed': 'Nie udało się zatrzymać subagenta',
   'chat.toolPart.background.stop': 'Zatrzymaj polecenie',
   'chat.toolPart.background.stopLabel': 'Zatrzymaj',
   'chat.toolPart.background.stopFailed': 'Nie udało się zatrzymać polecenia',
@@ -2571,6 +2575,9 @@ export const dict: Record<I18nKey, string> = {
   'gitView.pr.checks.statusLabel': 'Status',
   'gitView.pr.checks.stepLabel': 'Krok',
   'gitView.pr.checks.steps': 'Kroki',
+  'gitView.pr.checks.openRun': 'Otwórz',
+  'gitView.pr.checks.failedAnnotations': 'Adnotacje z błędami',
+  'gitView.pr.checks.failedAnnotationsShown': 'Adnotacje z błędami (pokazano {shown} z {total})',
   'gitView.pr.comments.empty': 'Brak komentarzy',
   'gitView.pr.comments.generalContext': 'Komentarz ogólny',
   'gitView.pr.comments.reviewContext': 'Komentarz do recenzji',
@@ -3779,4 +3786,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': 'Pokaż ukryte porty: {count}',
   'contextPanel.browser.devServers.showHiddenPlural': 'Pokaż ukryte porty: {count}',
   'sidebarFilesTree.menu.openInDefaultApp': 'Otwórz w domyślnej aplikacji',
+  'sessions.sidebar.header.displayMode.showChats': 'Pokaż sekcję czatów',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Używaj domyślnych ustawień sesji',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Każde uruchomienie bierze w chwili startu domyślny model, poziom myślenia i agenta z Ustawienia → Sesje (lub z ustawień projektu).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Domyślne ustawienia sesji',
+  'sessions.moveChatToProject.menu': 'Przenieś do projektu…',
+  'sessions.moveChatToProject.hint': 'Kontynuuj tę rozmowę w projekcie',
+  'sessions.moveChatToProject.title': 'Przenieś czat do projektu',
+  'sessions.moveChatToProject.description': 'Rozmowa toczy się dalej w folderze projektu. Pliki utworzone przez czat zostają na miejscu.',
+  'sessions.moveChatToProject.success': 'Czat przeniesiono do projektu',
+  'sessions.moveChatToProject.failed': 'Nie udało się przenieść czatu',
+  'chat.worktreeSetup.running': 'Przygotowywanie worktree: uruchamianie poleceń konfiguracyjnych projektu…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'Nie udało się nawiązać połączenia, więc OpenChamber uruchomił się na Local. Połącz się z przełącznika instancji, gdy będzie dostępna.',
+  'chat.chatInput.contextPreview.saveEdit': 'Zapisz komentarz',
+  'chat.chatInput.contextPreview.cancelEdit': 'Anuluj edycję',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Otwórz sesję',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Otwórz sesję z ostatniego uruchomienia {taskName}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'To zadanie już trwa, uruchomione o {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'To zadanie już trwa',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'To zadanie już czeka w kolejce i uruchomi się, gdy zwolni się miejsce',
+  'chat.modelControls.agentFavoriteAdd': 'Dodaj do ulubionych. Gdy są ulubione, Tab przełącza tylko między nimi',
 } as const;

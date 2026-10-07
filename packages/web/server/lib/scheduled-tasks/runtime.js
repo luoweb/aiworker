@@ -262,6 +262,9 @@ export const createScheduledTasksRuntime = (deps) => {
     // Chats scope (see chats-scope.js): scheduled like a project, but each run
     // opens a new chat directory and loop files are not discovered for it.
     chatsScope = null,
+    // The session defaults a task with `useDefaults` runs on:
+    // `(projectID) => { providerID, modelID, variant, agent }`, any of them null.
+    readSessionDefaults = null,
     logger = console,
     maxGlobalConcurrency = DEFAULT_GLOBAL_CONCURRENCY,
     maxProjectConcurrency = DEFAULT_PROJECT_CONCURRENCY,
@@ -283,6 +286,32 @@ export const createScheduledTasksRuntime = (deps) => {
       return response;
     },
   });
+
+  // A pinned task runs on what it stores; one that follows the session
+  // defaults reads them now, so changing a default reaches it on its next run.
+  const resolveRunSelection = async (projectID, task) => {
+    const execution = task.execution;
+    if (!execution.useDefaults) {
+      return {
+        providerID: execution.providerID ?? null,
+        modelID: execution.modelID ?? null,
+        variant: execution.variant ?? null,
+        agent: execution.agent ?? null,
+      };
+    }
+    try {
+      const defaults = typeof readSessionDefaults === 'function' ? await readSessionDefaults(projectID) : null;
+      return {
+        providerID: defaults?.providerID ?? null,
+        modelID: defaults?.modelID ?? null,
+        variant: defaults?.variant ?? null,
+        agent: defaults?.agent ?? null,
+      };
+    } catch (error) {
+      logger.warn?.('[scheduled-tasks] session defaults unavailable, using OpenCode defaults:', error?.message ?? error);
+      return { providerID: null, modelID: null, variant: null, agent: null };
+    }
+  };
 
   let started = false;
   const tasksByProject = new Map();
@@ -574,7 +603,7 @@ export const createScheduledTasksRuntime = (deps) => {
     await recordKnowledge(sessionID, projectPath, knowledge);
   };
 
-  const runTaskWithWatchdog = async (projectID, task, reason) => {
+  const runTaskWithWatchdog = async (projectID, task, reason, onSessionCreated) => {
     const startedAt = Date.now();
     const title = formatScheduledSessionTitle(task, startedAt);
     const projectPath = projectPathByID.get(projectID);
@@ -595,6 +624,7 @@ export const createScheduledTasksRuntime = (deps) => {
     const baseUrl = openCodeOrigin();
     const authHeaders = getOpenCodeAuthHeaders();
     const client = createScopedClient(directory);
+    const selection = await resolveRunSelection(projectID, task);
 
     // Agent, model and variant belong to the session in v2: a scheduled run
     // fixes them here instead of repeating them on every prompt.
@@ -603,12 +633,15 @@ export const createScheduledTasksRuntime = (deps) => {
       const session = await client.session.create({
         title,
         location: { directory },
-        model: {
-          providerID: task.execution.providerID,
-          id: task.execution.modelID,
-          ...(task.execution.variant ? { variant: task.execution.variant } : {}),
-        },
-        ...(task.execution.agent ? { agent: task.execution.agent } : {}),
+        // No model or agent at all: OpenCode picks its own default.
+        ...(selection.providerID && selection.modelID ? {
+          model: {
+            providerID: selection.providerID,
+            id: selection.modelID,
+            ...(selection.variant ? { variant: selection.variant } : {}),
+          },
+        } : {}),
+        ...(selection.agent ? { agent: selection.agent } : {}),
       });
       sessionID = session?.id;
       if (!sessionID) {
@@ -620,6 +653,9 @@ export const createScheduledTasksRuntime = (deps) => {
       }
       throw error;
     }
+
+    // Before the event, so a UI refreshing on it already sees the session.
+    await onSessionCreated?.(sessionID);
 
     try {
       emitTaskRunEvent?.({
@@ -657,8 +693,8 @@ export const createScheduledTasksRuntime = (deps) => {
         directory,
         objective: commandObjective ?? expandSnippets(task.execution.prompt, directory),
         tokenBudget: task.execution.goalTokenBudget,
-        providerID: task.execution.providerID,
-        modelID: task.execution.modelID,
+        providerID: selection.providerID ?? undefined,
+        modelID: selection.modelID ?? undefined,
         onWarning: (message, error) => console.warn(`[scheduled-tasks] ${message}:`, error?.message || error),
       });
     }
@@ -761,6 +797,8 @@ export const createScheduledTasksRuntime = (deps) => {
           lastRunAt: runStartedAt,
           lastStatus: 'running',
           lastError: undefined,
+          // Set again once this run creates its session.
+          lastSessionId: undefined,
           updatedAt: runStartedAt,
           // Always set nextRunAt so a past once-slot is cleared when there is
           // no following occurrence (omitting the key would leave the past value).
@@ -881,6 +919,7 @@ export const createScheduledTasksRuntime = (deps) => {
             lastRunAt: runStartedAt,
             lastStatus: 'running',
             lastError: undefined,
+            lastSessionId: undefined,
             updatedAt: runStartedAt,
           });
           if (startResult.task) {
@@ -902,9 +941,27 @@ export const createScheduledTasksRuntime = (deps) => {
       let sessionDirectory;
       let durationMs = 0;
       let errorMessage;
+      // Known as soon as the run creates its session, so a run that fails or
+      // times out afterwards still points at the session it left behind.
+      let createdSessionID;
+      const recordCreatedSession = async (id) => {
+        createdSessionID = id;
+        try {
+          const recorded = await projectConfigRuntime.updateScheduledTaskState(projectID, taskID, { lastSessionId: id });
+          if (recorded.task) {
+            updateInMemoryTask(projectID, recorded.task);
+          }
+        } catch (error) {
+          logger.warn?.('[ScheduledTasks] failed to record the run session', {
+            projectID,
+            taskID,
+            error: safeErrorMessage(error),
+          });
+        }
+      };
 
       try {
-        const runPromise = runTaskWithWatchdog(projectID, task, reason);
+        const runPromise = runTaskWithWatchdog(projectID, task, reason, recordCreatedSession);
         let timeoutID;
         const timeoutPromise = new Promise((_, reject) => {
           timeoutID = setTimeout(() => {
@@ -966,7 +1023,7 @@ export const createScheduledTasksRuntime = (deps) => {
         lastStatus: status,
         lastDurationMs: durationMs,
         lastError: status === 'error' ? errorMessage : undefined,
-        lastSessionId: status === 'success' ? sessionID : undefined,
+        lastSessionId: sessionID ?? createdSessionID,
         nextRunAt: Number.isFinite(nextRunAt) ? nextRunAt : undefined,
         updatedAt: finishedAt,
       };
@@ -1003,7 +1060,7 @@ export const createScheduledTasksRuntime = (deps) => {
             lastStatus: status,
             lastDurationMs: durationMs,
             lastError: status === 'error' ? errorMessage : undefined,
-            lastSessionId: status === 'success' ? sessionID : undefined,
+            lastSessionId: sessionID ?? createdSessionID,
             nextRunAt: Number.isFinite(nextRunAt) ? nextRunAt : undefined,
             updatedAt: finishedAt,
           },

@@ -1,6 +1,7 @@
 import { createRealpathCache } from '../path-realpath-cache.js';
 import { redactGitText } from '../git/redaction.js';
 import { resolveByteRange } from './byte-range.js';
+import { createWorkspaceFileNameIndex } from './workspace-file-names.js';
 import nodeFsPromises from 'node:fs/promises';
 import nodePath from 'node:path';
 
@@ -970,6 +971,22 @@ export const registerFsRoutes = (app, dependencies) => {
       }
       return res.status(500).json({ error: 'Failed to stat directory' });
     }
+  });
+
+  // A bare file name an agent wrote without its folder (`Foo.tsx:12`): the
+  // workspace files with that name. One cached git listing per workspace
+  // answers every name (see workspace-file-names.js).
+  const workspaceFileNames = createWorkspaceFileNameIndex({ spawn, resolveGitBinary: resolveGitBinaryForSpawn });
+  app.get('/api/fs/find-by-name', async (req, res) => {
+    const name = typeof req.query.name === 'string' ? req.query.name.trim() : '';
+    if (!name || name.length > 255 || name === '.' || name === '..' || /[/\\*?[\]:]/.test(name)) {
+      return res.status(400).json({ error: 'A plain file name is required' });
+    }
+    const project = await resolveProjectDirectory(req);
+    if (!project.directory) {
+      return res.status(400).json({ error: project.error || 'Active workspace is required' });
+    }
+    return res.json({ paths: await workspaceFileNames.find(project.directory, name) });
   });
 
   app.get('/api/fs/stat', async (req, res) => {

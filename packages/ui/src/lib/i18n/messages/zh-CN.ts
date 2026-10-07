@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -132,6 +133,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n['zh-CN'],
   ...webSearchI18n['zh-CN'],
   ...isolatedSpacesI18n['zh-CN'],
+  ...sourceBoardI18n['zh-CN'],
   ...environmentI18n['zh-CN'],
   ...providersI18n['zh-CN'],
   ...mcpGridI18n['zh-CN'],
@@ -1220,6 +1222,9 @@ export const dict: Record<I18nKey, string> = {
   'gitView.pr.checks.statusLabel': '状态',
   'gitView.pr.checks.stepLabel': '步骤',
   'gitView.pr.checks.steps': '步骤',
+  'gitView.pr.checks.openRun': '打开',
+  'gitView.pr.checks.failedAnnotations': '失败的注释',
+  'gitView.pr.checks.failedAnnotationsShown': '失败的注释（显示 {total} 条中的 {shown} 条）',
   'gitView.pr.comments.empty': '未找到评论',
   'gitView.pr.comments.generalContext': '普通评论',
   'gitView.pr.comments.reviewContext': '审查评论',
@@ -2620,6 +2625,8 @@ export const dict: Record<I18nKey, string> = {
   'chat.statusRow.background.action': '移到后台 — 智能体不再等待并继续工作',
   'chat.statusRow.background.failed': '无法将工作移到后台',
   'chat.toolPart.background.label': '后台运行',
+  'chat.toolPart.subagent.stop': '停止子代理',
+  'chat.toolPart.subagent.stopFailed': '无法停止子代理',
   'chat.toolPart.background.stop': '停止命令',
   'chat.toolPart.background.stopLabel': '停止',
   'chat.toolPart.background.stopFailed': '无法停止命令',
@@ -3775,4 +3782,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': '显示 {count} 个已隐藏端口',
   'contextPanel.browser.devServers.showHiddenPlural': '显示 {count} 个已隐藏端口',
   'sidebarFilesTree.menu.openInDefaultApp': '用默认应用打开',
+  'sessions.sidebar.header.displayMode.showChats': '显示聊天分区',
+  'sessions.scheduledTasks.editor.useDefaults.label': '使用会话默认设置',
+  'sessions.scheduledTasks.editor.useDefaults.hint': '每次运行在开始时都会使用“设置 → 会话”（或项目自身默认设置）中的默认模型、思考级别和代理。',
+  'sessions.scheduledTasks.dialog.usesDefaults': '会话默认设置',
+  'sessions.moveChatToProject.menu': '移动到项目…',
+  'sessions.moveChatToProject.hint': '在项目中继续此对话',
+  'sessions.moveChatToProject.title': '将聊天移动到项目',
+  'sessions.moveChatToProject.description': '对话会在项目文件夹中继续。聊天创建的文件保留在原处。',
+  'sessions.moveChatToProject.success': '已将聊天移动到项目',
+  'sessions.moveChatToProject.failed': '无法移动聊天',
+  'chat.worktreeSetup.running': '正在设置 worktree：正在运行项目的设置命令…',
+  'desktopHostSwitcher.startup.fellBackToLocal': '未能建立连接，因此 OpenChamber 以 Local 启动。待其可访问后，请在实例切换器中连接。',
+  'chat.chatInput.contextPreview.saveEdit': '保存评论',
+  'chat.chatInput.contextPreview.cancelEdit': '取消编辑',
+  'sessions.scheduledTasks.dialog.actions.openSession': '打开会话',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': '打开 {taskName} 上次运行的会话',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': '此任务已有一次运行在进行中，开始于 {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': '此任务已有一次运行在进行中',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': '此任务已在队列中等待，有空位时就会运行',
+  'chat.modelControls.agentFavoriteAdd': '加入收藏。有收藏时，Tab 只在收藏之间切换',
 };

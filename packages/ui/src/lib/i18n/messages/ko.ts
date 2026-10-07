@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -132,6 +133,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.ko,
   ...webSearchI18n.ko,
   ...isolatedSpacesI18n.ko,
+  ...sourceBoardI18n.ko,
   ...environmentI18n.ko,
   ...providersI18n.ko,
   ...mcpGridI18n.ko,
@@ -1220,6 +1222,9 @@ export const dict: Record<I18nKey, string> = {
   'gitView.pr.checks.statusLabel': '상태',
   'gitView.pr.checks.stepLabel': '단계',
   'gitView.pr.checks.steps': '단계',
+  'gitView.pr.checks.openRun': '열기',
+  'gitView.pr.checks.failedAnnotations': '실패한 주석',
+  'gitView.pr.checks.failedAnnotationsShown': '실패한 주석 ({total}개 중 {shown}개 표시)',
   'gitView.pr.comments.empty': '댓글 없음',
   'gitView.pr.comments.generalContext': '일반 댓글',
   'gitView.pr.comments.reviewContext': '리뷰 댓글',
@@ -2654,6 +2659,8 @@ export const dict: Record<I18nKey, string> = {
   'chat.statusRow.background.action': '백그라운드로 이동 — 에이전트가 기다리지 않고 계속합니다',
   'chat.statusRow.background.failed': '작업을 백그라운드로 이동하지 못했습니다',
   'chat.toolPart.background.label': '백그라운드',
+  'chat.toolPart.subagent.stop': '하위 에이전트 중지',
+  'chat.toolPart.subagent.stopFailed': '하위 에이전트를 중지하지 못했습니다',
   'chat.toolPart.background.stop': '명령 중지',
   'chat.toolPart.background.stopLabel': '중지',
   'chat.toolPart.background.stopFailed': '명령을 중지하지 못했습니다',
@@ -3774,4 +3781,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': '숨긴 포트 {count}개 표시',
   'contextPanel.browser.devServers.showHiddenPlural': '숨긴 포트 {count}개 표시',
   'sidebarFilesTree.menu.openInDefaultApp': '기본 앱에서 열기',
+  'sessions.sidebar.header.displayMode.showChats': '채팅 섹션 표시',
+  'sessions.scheduledTasks.editor.useDefaults.label': '세션 기본값 사용',
+  'sessions.scheduledTasks.editor.useDefaults.hint': '각 실행은 시작할 때 설정 → 세션(또는 프로젝트 자체 기본값)의 기본 모델, 사고 수준, 에이전트를 사용합니다.',
+  'sessions.scheduledTasks.dialog.usesDefaults': '세션 기본값',
+  'sessions.moveChatToProject.menu': '프로젝트로 이동…',
+  'sessions.moveChatToProject.hint': '이 대화를 프로젝트 안에서 이어가기',
+  'sessions.moveChatToProject.title': '채팅을 프로젝트로 이동',
+  'sessions.moveChatToProject.description': '대화는 프로젝트 폴더에서 이어집니다. 채팅이 만든 파일은 그대로 남습니다.',
+  'sessions.moveChatToProject.success': '채팅을 프로젝트로 옮겼습니다',
+  'sessions.moveChatToProject.failed': '채팅을 옮길 수 없습니다',
+  'chat.worktreeSetup.running': 'worktree 준비 중: 프로젝트 설정 명령을 실행하고 있습니다…',
+  'desktopHostSwitcher.startup.fellBackToLocal': '연결을 열지 못해 OpenChamber가 Local로 시작했습니다. 접속할 수 있게 되면 인스턴스 전환기에서 연결하세요.',
+  'chat.chatInput.contextPreview.saveEdit': '댓글 저장',
+  'chat.chatInput.contextPreview.cancelEdit': '편집 취소',
+  'sessions.scheduledTasks.dialog.actions.openSession': '세션 열기',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': '{taskName}의 마지막 실행 세션 열기',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': '이 작업은 이미 실행 중입니다({time}에 시작)',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': '이 작업은 이미 실행 중입니다',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': '이 작업은 이미 대기열에 있으며 자리가 나면 실행됩니다',
+  'chat.modelControls.agentFavoriteAdd': '즐겨찾기에 추가. 즐겨찾기가 있으면 Tab은 그 안에서만 전환합니다',
 };

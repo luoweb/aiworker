@@ -354,6 +354,9 @@ export const createSettingsHelpers = (dependencies) => {
     if (typeof candidate.sidebarShowRecentSection === 'boolean') {
       result.sidebarShowRecentSection = candidate.sidebarShowRecentSection;
     }
+    if (typeof candidate.sidebarShowChatsSection === 'boolean') {
+      result.sidebarShowChatsSection = candidate.sidebarShowChatsSection;
+    }
 
     if (Array.isArray(candidate.securityScopedBookmarks)) {
       result.securityScopedBookmarks = normalizeStringArray(candidate.securityScopedBookmarks);
@@ -469,6 +472,9 @@ export const createSettingsHelpers = (dependencies) => {
       if (mode === 'default' || mode === 'vim') {
         result.fileEditorKeymap = mode;
       }
+    }
+    if (typeof candidate.fileEditorVimMappings === 'string') {
+      result.fileEditorVimMappings = candidate.fileEditorVimMappings.slice(0, 10_000);
     }
     if (Array.isArray(candidate.providerOrder)) {
       result.providerOrder = normalizeStringArray(candidate.providerOrder);
@@ -846,6 +852,9 @@ export const createSettingsHelpers = (dependencies) => {
 
     if (Array.isArray(candidate.recentAgents)) {
       result.recentAgents = normalizeStringArray(candidate.recentAgents);
+    }
+    if (Array.isArray(candidate.favoriteAgents)) {
+      result.favoriteAgents = normalizeStringArray(candidate.favoriteAgents);
     }
 
     const recentEfforts = sanitizeRecentEfforts(candidate.recentEfforts);

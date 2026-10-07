@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -142,6 +143,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.uk,
   ...webSearchI18n.uk,
   ...isolatedSpacesI18n.uk,
+  ...sourceBoardI18n.uk,
   ...environmentI18n.uk,
   ...providersI18n.uk,
   ...mcpGridI18n.uk,
@@ -1211,6 +1213,9 @@ export const dict: Record<I18nKey, string> = {
   "gitView.pr.checks.statusLabel": "Статус",
   "gitView.pr.checks.stepLabel": "Крок",
   "gitView.pr.checks.steps": "Кроки",
+  "gitView.pr.checks.openRun": "Відкрити",
+  "gitView.pr.checks.failedAnnotations": "Анотації з помилками",
+  "gitView.pr.checks.failedAnnotationsShown": "Анотації з помилками (показано {shown} з {total})",
   "gitView.pr.comments.empty": "Коментарів не знайдено",
   "gitView.pr.comments.generalContext": "Загальний коментар",
   "gitView.pr.comments.reviewContext": "Коментар рев’ю",
@@ -2608,6 +2613,8 @@ export const dict: Record<I18nKey, string> = {
   "chat.statusRow.background.action": "Перенести у фон — агент перестане чекати й продовжить",
   "chat.statusRow.background.failed": "Не вдалося перенести роботу у фон",
   "chat.toolPart.background.label": "у фоні",
+  "chat.toolPart.subagent.stop": "Зупинити сабагента",
+  "chat.toolPart.subagent.stopFailed": "Не вдалося зупинити сабагента",
   "chat.toolPart.background.stop": "Зупинити команду",
   "chat.toolPart.background.stopLabel": "Зупинити",
   "chat.toolPart.background.stopFailed": "Не вдалося зупинити команду",
@@ -3775,4 +3782,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': 'Показати приховані порти: {count}',
   'contextPanel.browser.devServers.showHiddenPlural': 'Показати приховані порти: {count}',
   'sidebarFilesTree.menu.openInDefaultApp': 'Відкрити в програмі за замовчуванням',
+  'sessions.sidebar.header.displayMode.showChats': 'Показувати розділ чатів',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Використовувати типові налаштування сесії',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Кожен запуск бере на момент старту типові модель, рівень мислення й агента з Налаштування → Сесії (або власні налаштування проєкту).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Типові налаштування сесії',
+  'sessions.moveChatToProject.menu': 'Перенести в проєкт…',
+  'sessions.moveChatToProject.hint': 'Продовжити цю розмову в проєкті',
+  'sessions.moveChatToProject.title': 'Перенести чат у проєкт',
+  'sessions.moveChatToProject.description': 'Розмова продовжиться в теці проєкту. Файли, які створив чат, лишаться там, де є.',
+  'sessions.moveChatToProject.success': 'Чат перенесено в проєкт',
+  'sessions.moveChatToProject.failed': 'Не вдалося перенести чат',
+  'chat.worktreeSetup.running': 'Налаштовуємо worktree: виконуються команди налаштування проєкту…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'З\'єднання не відкрилося, тож OpenChamber запустився на Local. Підключіть інстанс через перемикач, щойно він стане доступним.',
+  'chat.chatInput.contextPreview.saveEdit': 'Зберегти коментар',
+  'chat.chatInput.contextPreview.cancelEdit': 'Скасувати редагування',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Відкрити сесію',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Відкрити сесію останнього запуску {taskName}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Ця задача вже виконується, запуск о {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Ця задача вже виконується',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Ця задача вже чекає в черзі й запуститься, щойно звільниться місце',
+  'chat.modelControls.agentFavoriteAdd': 'Додати в обрані. Коли є обрані, Tab перемикає лише між ними',
 };

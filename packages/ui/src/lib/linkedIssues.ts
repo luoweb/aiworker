@@ -18,7 +18,7 @@ import { getSessionMetadata, type SessionMetadataRecord } from './sessionReviewM
  * free.
  */
 
-export type LinkedRepositoryIssue = {
+type LinkedRepositoryIssue = {
   /**
    * `owner/repo#number` on github.com, `host:owner/repo#number` on any other
    * instance, unique per session and stable across renames. Entries stored
@@ -34,7 +34,7 @@ export type LinkedRepositoryIssue = {
   linkedAt: number;
 };
 
-export type LinkedLinearIssue = {
+type LinkedLinearIssue = {
   /** `linear:{identifier}`, unique per session. */
   id: string;
   identifier: string;
@@ -74,7 +74,7 @@ const isGuestPull = (entry: { thread?: 'issue' | 'pull' }): boolean => (
  * a Jira ticket. Shown by identifier and opened by URL; a GitLab one gets live
  * state from its instance (`getGitLabThreadRef`), others have none.
  */
-export type LinkedExternalItem = {
+type LinkedExternalItem = {
   /** `link:{url}`, unique per session. */
   id: string;
   kind: 'external';
@@ -275,17 +275,13 @@ export const buildLinkedLinearIssue = (input: {
   linkedAt: input.linkedAt,
 });
 
-export const canOpenLinearIssueInContextPanel = (options: {
+/** Whether a linked Linear issue opens on the issues and PRs board, or falls back to Linear in the browser. */
+export const canOpenLinearIssueOnBoard = (options: {
   linearAvailable: boolean;
   linearConnected: boolean;
-  inDedicatedMobileShell: boolean;
-  directory: string | null | undefined;
-}): boolean => (
-  options.linearAvailable
-  && options.linearConnected
-  && !options.inDedicatedMobileShell
-  && Boolean(options.directory?.trim())
-);
+  /** The phone shell and VS Code have no board. */
+  boardAvailable: boolean;
+}): boolean => options.linearAvailable && options.linearConnected && options.boardAvailable;
 
 export const getLinkedIssues = (session: Session | null | undefined): LinkedIssue[] => {
   const openchamber = getSessionMetadata(session).openchamber;
@@ -307,7 +303,7 @@ const LINKED_ISSUE_ID_PATTERN = /^([^/\s]+)\/([^/#\s]+)#(\d+)$/;
 const GITHUB_THREAD_URL_PATTERN = /^https?:\/\/(?:www\.)?github\.com\/([^/\s]+)\/([^/\s]+)\/(pull|issues)\/(\d+)(?:[/?#]|$)/i;
 
 /** A linked thread that lives on github.com, wherever the link came from. */
-export type GitHubThreadRef = { key: string; owner: string; repo: string; number: number; thread: 'pull' | 'issue' };
+type GitHubThreadRef = { key: string; owner: string; repo: string; number: number; thread: 'pull' | 'issue' };
 
 /**
  * The GitHub thread behind a link, or null. A GitHub entry carries it in its

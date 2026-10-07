@@ -29,6 +29,8 @@ type Props = {
   handleOpenDirectoryDialog: () => void;
   onOpenScheduled: () => void;
   onOpenArchive: () => void;
+  /** The issues and pull requests board; absent where it is not offered. */
+  onOpenSourceBoard?: () => void;
   headerActionIconClass: string;
   headerActionButtonClass: string;
   isSessionSearchOpen: boolean;
@@ -52,6 +54,7 @@ export function SidebarHeader(props: Props): React.ReactNode {
     handleOpenDirectoryDialog,
     onOpenScheduled,
     onOpenArchive,
+    onOpenSourceBoard,
     headerActionIconClass,
     headerActionButtonClass,
     isSessionSearchOpen,
@@ -70,6 +73,8 @@ export function SidebarHeader(props: Props): React.ReactNode {
 
   const showRecentSection = useSessionDisplayStore((state) => state.showRecentSection);
   const toggleRecentSection = useSessionDisplayStore((state) => state.toggleRecentSection);
+  const showChatsSection = useSessionDisplayStore((state) => state.showChatsSection);
+  const setShowChatsSection = useSessionDisplayStore((state) => state.setShowChatsSection);
   const projectSortOrder = useSessionDisplayStore((state) => state.projectSortOrder);
   const setProjectSortOrder = useSessionDisplayStore((state) => state.setProjectSortOrder);
   const worktreeSortOrder = useSessionDisplayStore((state) => state.worktreeSortOrder);
@@ -146,6 +151,22 @@ export function SidebarHeader(props: Props): React.ReactNode {
               </TooltipTrigger>
               <TooltipContent side="bottom" sideOffset={4}><p>{t('sessions.sidebar.header.actions.scheduledTasks')}</p></TooltipContent>
             </Tooltip>
+
+            {onOpenSourceBoard ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={onOpenSourceBoard}
+                    className={cn(headerActionButtonClass, 'text-muted-foreground hover:text-foreground hover:bg-transparent')}
+                    aria-label={t('sourceBoard.title')}
+                  >
+                    <Icon name="git-pull-request" className={headerActionIconClass} />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={4}><p>{t('sourceBoard.title')}</p></TooltipContent>
+              </Tooltip>
+            ) : null}
 
             <Tooltip>
               <TooltipTrigger asChild>
@@ -318,6 +339,18 @@ export function SidebarHeader(props: Props): React.ReactNode {
                   </>
                 ) : null}
                 </>}
+                {showRecentControls ? (
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setShowChatsSection(!showChatsSection);
+                      void updateDesktopSettings({ sidebarShowChatsSection: !showChatsSection });
+                    }}
+                    className="flex items-center justify-between"
+                  >
+                    <span>{t('sessions.sidebar.header.displayMode.showChats')}</span>
+                    {showChatsSection ? <Icon name="check" className="h-4 w-4 text-primary" /> : null}
+                  </DropdownMenuItem>
+                ) : null}
                 {!timelineView && showRecentControls && !isSingleProjectMode ? (
                   <DropdownMenuItem
                     onClick={() => {

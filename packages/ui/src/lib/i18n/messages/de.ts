@@ -10,6 +10,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -131,6 +132,7 @@ export const dict = {
   ...usageStatsI18n.de,
   ...webSearchI18n.de,
   ...isolatedSpacesI18n.de,
+  ...sourceBoardI18n.de,
   ...environmentI18n.de,
   ...providersI18n.de,
   ...mcpGridI18n.de,
@@ -1120,6 +1122,9 @@ export const dict = {
   'gitView.pr.checks.statusLabel': 'Status',
   'gitView.pr.checks.stepLabel': 'Schritt',
   'gitView.pr.checks.steps': 'Schritte',
+  'gitView.pr.checks.openRun': 'Öffnen',
+  'gitView.pr.checks.failedAnnotations': 'Fehlgeschlagene Annotationen',
+  'gitView.pr.checks.failedAnnotationsShown': 'Fehlgeschlagene Annotationen ({shown} von {total} angezeigt)',
   'gitView.pr.comments.empty': 'Keine Kommentare gefunden',
   'gitView.pr.comments.generalContext': 'Allgemeiner Kommentar',
   'gitView.pr.comments.reviewContext': 'Kommentar überprüfen',
@@ -2389,6 +2394,8 @@ export const dict = {
   'chat.toolPart.background.stopFailed': 'Befehl konnte nicht gestoppt werden',
   'chat.toolPart.background.stoppedLabel': 'gestoppt',
   'chat.toolPart.background.stoppedNotice': 'Von dir gestoppt. Der Agent weiß, dass du abgebrochen hast und kein Fehler vorlag.',
+  'chat.toolPart.subagent.stop': 'Subagent stoppen',
+  'chat.toolPart.subagent.stopFailed': 'Der Subagent konnte nicht gestoppt werden',
   'chat.toolPart.lspErrors': 'LSP-Fehler',
   'chat.toolPart.moreErrors': '+{count} weitere Fehler',
   'chat.toolPart.moreRows': '+{count} weitere Zeilen',
@@ -3772,4 +3779,24 @@ export const dict = {
   'contextPanel.browser.devServers.showHiddenSingle': '{count} ausgeblendeten Port anzeigen',
   'contextPanel.browser.devServers.showHiddenPlural': '{count} ausgeblendete Ports anzeigen',
   'sidebarFilesTree.menu.openInDefaultApp': 'In Standard-App öffnen',
+  'sessions.sidebar.header.displayMode.showChats': 'Chat-Bereich anzeigen',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Sitzungsstandards verwenden',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Jeder Lauf übernimmt beim Start Standardmodell, Denkstufe und Agent aus Einstellungen → Sitzungen (oder die Standards des Projekts).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Sitzungsstandards',
+  'sessions.moveChatToProject.menu': 'In Projekt verschieben…',
+  'sessions.moveChatToProject.hint': 'Dieses Gespräch in einem Projekt fortsetzen',
+  'sessions.moveChatToProject.title': 'Chat in ein Projekt verschieben',
+  'sessions.moveChatToProject.description': 'Das Gespräch geht im Ordner des Projekts weiter. Dateien, die der Chat erstellt hat, bleiben, wo sie sind.',
+  'sessions.moveChatToProject.success': 'Chat ins Projekt verschoben',
+  'sessions.moveChatToProject.failed': 'Chat konnte nicht verschoben werden',
+  'chat.worktreeSetup.running': 'Worktree wird eingerichtet: Setup-Befehle des Projekts laufen…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'Die Verbindung kam nicht zustande, daher wurde OpenChamber mit Local gestartet. Verbinde sie über den Instanzwechsler, sobald sie erreichbar ist.',
+  'chat.chatInput.contextPreview.saveEdit': 'Kommentar speichern',
+  'chat.chatInput.contextPreview.cancelEdit': 'Bearbeitung abbrechen',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Sitzung öffnen',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Sitzung des letzten Laufs von {taskName} öffnen',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Diese Aufgabe läuft bereits, gestartet um {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Diese Aufgabe läuft bereits',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Diese Aufgabe wartet bereits in der Warteschlange und läuft, sobald ein Platz frei wird',
+  'chat.modelControls.agentFavoriteAdd': 'Zu Favoriten hinzufügen. Mit Favoriten wechselt Tab nur zwischen diesen',
 };

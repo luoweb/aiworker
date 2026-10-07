@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -142,6 +143,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.es,
   ...webSearchI18n.es,
   ...isolatedSpacesI18n.es,
+  ...sourceBoardI18n.es,
   ...environmentI18n.es,
   ...providersI18n.es,
   ...mcpGridI18n.es,
@@ -1211,6 +1213,9 @@ export const dict: Record<I18nKey, string> = {
   "gitView.pr.checks.statusLabel": "Estado",
   "gitView.pr.checks.stepLabel": "Paso",
   "gitView.pr.checks.steps": "Pasos",
+  "gitView.pr.checks.openRun": "Abrir",
+  "gitView.pr.checks.failedAnnotations": "Anotaciones fallidas",
+  "gitView.pr.checks.failedAnnotationsShown": "Anotaciones fallidas (se muestran {shown} de {total})",
   "gitView.pr.comments.empty": "No se encontraron comentarios",
   "gitView.pr.comments.generalContext": "Comentario general",
   "gitView.pr.comments.reviewContext": "Comentario de revisión",
@@ -2608,6 +2613,8 @@ export const dict: Record<I18nKey, string> = {
   "chat.statusRow.background.action": "Mover a segundo plano: el agente deja de esperar y continúa",
   "chat.statusRow.background.failed": "No se pudo mover el trabajo a segundo plano",
   "chat.toolPart.background.label": "en segundo plano",
+  "chat.toolPart.subagent.stop": "Detener subagente",
+  "chat.toolPart.subagent.stopFailed": "No se pudo detener el subagente",
   "chat.toolPart.background.stop": "Detener comando",
   "chat.toolPart.background.stopLabel": "Detener",
   "chat.toolPart.background.stopFailed": "No se pudo detener el comando",
@@ -3775,4 +3782,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': 'Mostrar {count} puerto oculto',
   'contextPanel.browser.devServers.showHiddenPlural': 'Mostrar {count} puertos ocultos',
   'sidebarFilesTree.menu.openInDefaultApp': 'Abrir con la app predeterminada',
+  'sessions.sidebar.header.displayMode.showChats': 'Mostrar sección de chats',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Usar los valores predeterminados de sesión',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Cada ejecución toma, al empezar, el modelo, el nivel de razonamiento y el agente predeterminados de Ajustes → Sesiones (o los del proyecto).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Valores predeterminados de sesión',
+  'sessions.moveChatToProject.menu': 'Mover a un proyecto…',
+  'sessions.moveChatToProject.hint': 'Continuar esta conversación dentro de un proyecto',
+  'sessions.moveChatToProject.title': 'Mover el chat a un proyecto',
+  'sessions.moveChatToProject.description': 'La conversación continúa en la carpeta del proyecto. Los archivos que creó el chat se quedan donde están.',
+  'sessions.moveChatToProject.success': 'Chat movido al proyecto',
+  'sessions.moveChatToProject.failed': 'No se pudo mover el chat',
+  'chat.worktreeSetup.running': 'Preparando el worktree: ejecutando los comandos de configuración del proyecto…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'No se pudo abrir su conexión, así que OpenChamber se inició en Local. Conéctala desde el selector de instancias cuando esté disponible.',
+  'chat.chatInput.contextPreview.saveEdit': 'Guardar comentario',
+  'chat.chatInput.contextPreview.cancelEdit': 'Cancelar edición',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Abrir sesión',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Abrir la sesión de la última ejecución de {taskName}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Esta tarea ya tiene una ejecución en curso, iniciada a las {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Esta tarea ya tiene una ejecución en curso',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Esta tarea ya está en la cola y se ejecutará cuando haya un hueco libre',
+  'chat.modelControls.agentFavoriteAdd': 'Añadir a favoritos. Con favoritos, Tab alterna solo entre ellos',
 };

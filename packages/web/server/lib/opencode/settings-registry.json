@@ -280,6 +280,10 @@
       "scope": "profile",
       "perSurface": true
     },
+    "sidebarShowChatsSection": {
+      "scope": "profile",
+      "perSurface": true
+    },
     "workStatusSectionOrder": {
       "scope": "profile"
     },
@@ -393,6 +397,9 @@
       "scope": "profile"
     },
     "fileEditorKeymap": {
+      "scope": "profile"
+    },
+    "fileEditorVimMappings": {
       "scope": "profile"
     },
     "autoSaveEnabled": {
@@ -526,6 +533,9 @@
       "scope": "profile"
     },
     "recentAgents": {
+      "scope": "profile"
+    },
+    "favoriteAgents": {
       "scope": "profile"
     },
     "recentEfforts": {
@@ -782,22 +792,6 @@
       "local": true
     },
     "diffFileTreeWidth": {
-      "scope": "device",
-      "local": true
-    },
-    "linearIssueListStatus": {
-      "scope": "device",
-      "local": true
-    },
-    "linearIssueListAssignee": {
-      "scope": "device",
-      "local": true
-    },
-    "linearIssueListTeamIdByRuntime": {
-      "scope": "device",
-      "local": true
-    },
-    "linearIssueListPriority": {
       "scope": "device",
       "local": true
     },

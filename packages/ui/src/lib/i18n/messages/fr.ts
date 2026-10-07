@@ -10,6 +10,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -131,6 +132,7 @@ export const dict = {
   ...usageStatsI18n.fr,
   ...webSearchI18n.fr,
   ...isolatedSpacesI18n.fr,
+  ...sourceBoardI18n.fr,
   ...environmentI18n.fr,
   ...providersI18n.fr,
   ...mcpGridI18n.fr,
@@ -1027,6 +1029,9 @@ export const dict = {
   'gitView.pr.checks.statusLabel': 'Statut',
   'gitView.pr.checks.stepLabel': 'Étape',
   'gitView.pr.checks.steps': 'Étapes',
+  'gitView.pr.checks.openRun': 'Ouvrir',
+  'gitView.pr.checks.failedAnnotations': 'Annotations en échec',
+  'gitView.pr.checks.failedAnnotationsShown': 'Annotations en échec ({shown} sur {total} affichées)',
   'gitView.pr.comments.empty': 'Aucun commentaire trouvé',
   'gitView.pr.comments.generalContext': 'Commentaire général',
   'gitView.pr.comments.reviewContext': 'Commentaire de revue',
@@ -2343,6 +2348,8 @@ export const dict = {
   'chat.statusRow.background.action': 'Passer en arrière-plan : l\'agent cesse d\'attendre et continue',
   'chat.statusRow.background.failed': 'Impossible de passer le travail en arrière-plan',
   'chat.toolPart.background.label': 'en arrière-plan',
+  'chat.toolPart.subagent.stop': 'Arrêter le sous-agent',
+  'chat.toolPart.subagent.stopFailed': 'Impossible d\'arrêter le sous-agent',
   'chat.toolPart.background.stop': 'Arrêter la commande',
   'chat.toolPart.background.stopLabel': 'Arrêter',
   'chat.toolPart.background.stopFailed': 'Impossible d\'arrêter la commande',
@@ -3773,4 +3780,24 @@ export const dict = {
   'contextPanel.browser.devServers.showHiddenSingle': 'Afficher {count} port masqué',
   'contextPanel.browser.devServers.showHiddenPlural': 'Afficher {count} ports masqués',
   'sidebarFilesTree.menu.openInDefaultApp': 'Ouvrir avec l’app par défaut',
+  'sessions.sidebar.header.displayMode.showChats': 'Afficher la section des chats',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Utiliser les valeurs par défaut des sessions',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Chaque exécution prend, au démarrage, le modèle, le niveau de réflexion et l’agent par défaut de Réglages → Sessions (ou ceux du projet).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Valeurs par défaut des sessions',
+  'sessions.moveChatToProject.menu': 'Déplacer vers un projet…',
+  'sessions.moveChatToProject.hint': 'Poursuivre cette conversation dans un projet',
+  'sessions.moveChatToProject.title': 'Déplacer le chat vers un projet',
+  'sessions.moveChatToProject.description': 'La conversation se poursuit dans le dossier du projet. Les fichiers créés par le chat restent où ils sont.',
+  'sessions.moveChatToProject.success': 'Chat déplacé vers le projet',
+  'sessions.moveChatToProject.failed': 'Impossible de déplacer le chat',
+  'chat.worktreeSetup.running': 'Préparation du worktree : exécution des commandes de configuration du projet…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'Sa connexion ne s’est pas ouverte, OpenChamber a donc démarré sur Local. Connectez-la depuis le sélecteur d’instances dès qu’elle est joignable.',
+  'chat.chatInput.contextPreview.saveEdit': 'Enregistrer le commentaire',
+  'chat.chatInput.contextPreview.cancelEdit': 'Annuler la modification',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Ouvrir la session',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Ouvrir la session de la dernière exécution de {taskName}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Cette tâche a déjà une exécution en cours, lancée à {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Cette tâche a déjà une exécution en cours',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Cette tâche attend déjà dans la file et s’exécutera dès qu’une place se libère',
+  'chat.modelControls.agentFavoriteAdd': 'Ajouter aux favoris. Avec des favoris, Tab ne passe que par eux',
 } as const;

@@ -39,7 +39,6 @@ import { useGitStatus } from '@/stores/useGitStore';
 import { useSourceControlAuthEntry, useSourceControlAuthStore } from '@/stores/useSourceControlAuthStore';
 import { GITHUB_SOURCE_CONTROL_IDENTITY } from '@/lib/source-control/identity';
 import { useRepositoryReferenceProvider } from '@/components/references/referenceSources';
-import { useLinearAuthStore } from '@/stores/useLinearAuthStore';
 import { normalizeContextPanelDirectoryKey, useUIStore } from '@/stores/useUIStore';
 import { useGuestSurfaces } from '@/hooks/useGuestSurfaces';
 import { useGuestBadgeStore } from '@/lib/guests/badge-store';
@@ -180,9 +179,8 @@ export const ContextPanelRail: React.FC = () => {
   const openContextSurface = useUIStore((state) => state.openContextSurface);
   const closeContextPanel = useUIStore((state) => state.closeContextPanel);
   const shortcutOverrides = useUIStore((state) => state.shortcutOverrides);
+  const isSourceBoardOpen = useUIStore((state) => state.isSourceBoardOpen);
   const planModeEnabled = useFeatureFlagsStore((state) => state.planModeEnabled);
-  const linearAuthChecked = useLinearAuthStore((state) => state.hasChecked);
-  const linearConnected = useLinearAuthStore((state) => state.status?.connected === true);
   const githubAuthChecked = (useSourceControlAuthEntry(GITHUB_SOURCE_CONTROL_IDENTITY)?.hasChecked ?? false);
   // Change requests come from GitHub or GitLab, whichever the project lives on,
   // so the surface is there when either kind of account is connected.
@@ -288,21 +286,13 @@ export const ContextPanelRail: React.FC = () => {
       isVSCode: isVSCodeRuntime(),
       screenWidth,
       tabs,
-      linearConnected,
       sourceControlConnected,
       extras: guestSurfaces,
     }).map((surface) => (surface.id === 'pr' && repositoryProvider === 'gitlab' ? { ...surface, icon: 'gitlab' as const } : surface));
-  }, [contextRailHiddenSurfaces, contextRailOrder, guestSurfaces, linearConnected, planModeEnabled, repositoryProvider, screenWidth, sourceControlConnected, tabs]);
+  }, [contextRailHiddenSurfaces, contextRailOrder, guestSurfaces, planModeEnabled, repositoryProvider, screenWidth, sourceControlConnected, tabs]);
 
   // A surface whose integration disconnected closes rather than lingering as
   // an active panel with no rail icon.
-  React.useEffect(() => {
-    if (!directoryKey || !linearAuthChecked || linearConnected || activeMode !== 'linear') {
-      return;
-    }
-    closeContextPanel(directoryKey);
-  }, [activeMode, closeContextPanel, directoryKey, linearAuthChecked, linearConnected]);
-
   React.useEffect(() => {
     if (!directoryKey || !githubAuthChecked || sourceControlConnected || activeMode !== 'pr') {
       return;
@@ -328,7 +318,9 @@ export const ContextPanelRail: React.FC = () => {
     setContextRailOrder(arrayMove(orderedIds, fromIndex, toIndex));
   }, [guestSurfaces, setContextRailOrder]);
 
-  if (!directoryKey) {
+  // The board is a page of its own: switching panels from beside it would
+  // only hide them again (see ContextPanel).
+  if (!directoryKey || isSourceBoardOpen) {
     return null;
   }
 

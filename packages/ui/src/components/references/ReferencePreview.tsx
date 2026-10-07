@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import { SimpleMarkdownRenderer } from '@/components/chat/MarkdownRenderer';
 import { Icon } from '@/components/icon/Icon';
+import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollableOverlay } from '@/components/ui/ScrollableOverlay';
 import type { GitHubChecksSummary, GitHubPullStatus, GitHubReference, GitHubReferenceComment, GitHubReferenceDetail, LinearIssue, LinearIssueSummary } from '@/lib/api/types';
@@ -10,7 +11,8 @@ import { cn } from '@/lib/utils';
 
 import type { CachedValue } from './referenceCache';
 import { getSourceControlProviderLabel } from '@/lib/source-control/identity';
-import { ReferenceComments, type ReferenceCommentItem } from './ReferenceComments';
+import { ReferenceComments } from './ReferenceComments';
+import { buildReferenceTimeline, type ReferenceCommentItem, type ReferenceTimelineEntry } from './referenceTimeline';
 import { ChecksGlyph, ReferenceLabelChips } from './ReferencePickerRow';
 import {
     githubStateLook,
@@ -58,13 +60,20 @@ const MetaRow: React.FC<{ label: string; children: React.ReactNode }> = ({ label
     </>
 );
 
-const StatePill: React.FC<{ icon: React.ComponentProps<typeof Icon>['name']; color: string; label: string }> = ({ icon, color, label }) => (
+/** An item's state as a tinted pill; `trailing` adds a chevron when the pill opens a menu. */
+export const StatePill: React.FC<{
+    icon: React.ComponentProps<typeof Icon>['name'];
+    color: string;
+    label: string;
+    trailing?: React.ReactNode;
+}> = ({ icon, color, label, trailing }) => (
     <span
         className="inline-flex h-6 shrink-0 items-center gap-1 rounded-full px-2 typography-meta font-medium"
         style={{ color, backgroundColor: `color-mix(in srgb, ${color} 14%, transparent)` }}
     >
         <Icon name={icon} className="size-3.5" />
         {label}
+        {trailing}
     </span>
 );
 
@@ -85,6 +94,14 @@ const ChecksSummaryText: React.FC<{ checks: GitHubChecksSummary }> = ({ checks }
     return null;
 };
 
+/** A checks total as the preview and the board's checks dialog show it. */
+export const ChecksSummaryLine: React.FC<{ checks: GitHubChecksSummary }> = ({ checks }) => (
+    <>
+        <ChecksGlyph checks={checks} />
+        <ChecksSummaryText checks={checks} />
+    </>
+);
+
 const REVIEW_KEYS = {
     approved: 'references.picker.preview.review.approved',
     changes_requested: 'references.picker.preview.review.changesRequested',
@@ -100,16 +117,19 @@ const ReferenceBody: React.FC<{ content: string }> = ({ content }) => (
 
 /** The thread section under the body: loading, failure, empty, or the comments. */
 const CommentsSection: React.FC<{
-    state: CachedValue<ReferenceCommentItem[]>;
+    state: CachedValue<ReferenceTimelineEntry[]>;
+    /** How many comments there are in all, to say when only the newest show. */
     total: number | null;
+    /** A PR's thread carries its commits too. */
+    activity?: boolean;
     now: number;
-}> = ({ state, total, now }) => {
+}> = ({ state, total, activity = false, now }) => {
     const { t } = useI18n();
-    const shown = state.status === 'ready' ? state.value.length : 0;
+    const shown = state.status === 'ready' ? state.value.filter((entry) => entry.kind === 'comment').length : 0;
     return (
         <section className="flex flex-col gap-3 border-t border-border/60 pt-4">
             <h4 className="flex items-center gap-2 typography-ui-label font-semibold text-foreground">
-                {t('references.picker.preview.comments')}
+                {t(activity ? 'references.picker.preview.activity' : 'references.picker.preview.comments')}
                 {state.status === 'ready' && total !== null && total > shown ? (
                     <span className={cn('typography-meta font-normal', REFERENCE_META_TEXT)}>
                         {t('references.picker.preview.commentsLatest', { shown, total })}
@@ -123,7 +143,7 @@ const CommentsSection: React.FC<{
             ) : state.value.length === 0 ? (
                 <p className="typography-meta text-muted-foreground">{t('references.picker.preview.commentsEmpty')}</p>
             ) : (
-                <ReferenceComments comments={state.value} now={now} />
+                <ReferenceComments entries={state.value} now={now} />
             )}
         </section>
     );
@@ -151,30 +171,47 @@ const LoadError: React.FC<{ error: string }> = ({ error }) => {
 const PullDetailRows: React.FC<{
     detail: CachedValue<GitHubReferenceDetail>;
     checks: CachedValue<GitHubChecksSummary | null>;
-}> = ({ detail, checks }) => {
+    links?: React.ReactNode;
+    /** Opens the PR's check runs; the totals become a button. */
+    onOpenChecks?: () => void;
+}> = ({ detail, checks, links, onOpenChecks }) => {
     const { t } = useI18n();
     const pull = detail.status === 'ready' ? detail.value.pull : null;
     return (
         <>
             <MetaRow label={t('references.picker.preview.changes')}>
-                {detail.status === 'error' ? <LoadError error={detail.error} /> : pull ? (
-                    <span className="inline-flex items-center gap-2">
-                        <span className="text-[var(--status-success)]">+{pull.additions}</span>
-                        <span className="text-[var(--status-error)]">−{pull.deletions}</span>
-                        <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-                            <Icon name="file-list-2" className="size-3.5" />
-                            {pull.changedFiles}
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                    {detail.status === 'error' ? <LoadError error={detail.error} /> : pull ? (
+                        <span className="inline-flex items-center gap-2">
+                            <span className="text-[var(--status-success)]">+{pull.additions}</span>
+                            <span className="text-[var(--status-error)]">−{pull.deletions}</span>
+                            <span className="inline-flex items-center gap-0.5 text-muted-foreground">
+                                <Icon name="file-list-2" className="size-3.5" />
+                                {pull.changedFiles}
+                            </span>
                         </span>
-                    </span>
-                ) : <Pending />}
+                    ) : <Pending />}
+                    {links}
+                </span>
             </MetaRow>
             {checks.status === 'ready' ? (
                 checks.value && checks.value.total > 0 ? (
                     <MetaRow label={t('references.picker.preview.checks')}>
-                        <span className="inline-flex items-center gap-1.5">
-                            <ChecksGlyph checks={checks.value} />
-                            <ChecksSummaryText checks={checks.value} />
-                        </span>
+                        {onOpenChecks ? (
+                            <Button
+                                variant="ghost"
+                                size="xs"
+                                onClick={onOpenChecks}
+                                className="-ml-1.5 gap-1.5 px-1.5 typography-meta font-normal normal-case text-muted-foreground"
+                            >
+                                <ChecksSummaryLine checks={checks.value} />
+                                <Icon name="arrow-right-s" className="size-3.5 opacity-60" />
+                            </Button>
+                        ) : (
+                            <span className="inline-flex items-center gap-1.5">
+                                <ChecksSummaryLine checks={checks.value} />
+                            </span>
+                        )}
                     </MetaRow>
                 ) : null
             ) : (
@@ -190,19 +227,18 @@ const PullDetailRows: React.FC<{
 };
 
 const NO_CHECKS: CachedValue<GitHubChecksSummary | null> = { status: 'ready', value: null };
-const CHECKS_PENDING: CachedValue<GitHubChecksSummary | null> = { status: 'loading' };
 
-/** Where the previewed PR's checks come from; closed and merged PRs have none to show. */
+/**
+ * The previewed PR's checks come with its own detail (GitHub's head commit,
+ * GitLab's pipeline), one PR at a time, so the preview never waits for the
+ * statuses a whole list asks for. Closed and merged PRs have none to show.
+ */
 const previewChecks = (
     reference: GitHubReference,
-    pullStatus: CachedValue<GitHubPullStatus | null>,
     detail: CachedValue<GitHubReferenceDetail>,
 ): CachedValue<GitHubChecksSummary | null> => {
-    if (reference.provider === 'gitlab') return mapDetail(detail, (value) => value.pull?.checks ?? null);
     if (reference.kind !== 'pull' || reference.state !== 'open') return NO_CHECKS;
-    // Idle: listed, but its status has not been asked for yet.
-    if (pullStatus.status === 'idle') return CHECKS_PENDING;
-    return mapDetail(pullStatus, (status) => status?.checks ?? null);
+    return mapDetail(detail, (value) => value.pull?.checks ?? null);
 };
 
 const GitHubPreview: React.FC<{
@@ -214,10 +250,17 @@ const GitHubPreview: React.FC<{
     includeDiff: boolean;
     onIncludeDiffChange: (include: boolean) => void;
     now: number;
-}> = ({ reference, pullStatus, detail, purpose, pinned, includeDiff, onIncludeDiffChange, now }) => {
+    footer?: React.ReactNode;
+    pullLinks?: React.ReactNode;
+    reply?: React.ReactNode;
+    labelsControl?: React.ReactNode;
+    reviewersControl?: React.ReactNode;
+    onOpenChecks?: () => void;
+}> = ({ reference, pullStatus, detail, purpose, pinned, includeDiff, onIncludeDiffChange, now, footer: footerOverride, pullLinks, reply, labelsControl, reviewersControl, onOpenChecks }) => {
     const { t } = useI18n();
     const comments = React.useMemo(
-        () => mapDetail(detail, (value) => value.comments.map((comment: GitHubReferenceComment, index): ReferenceCommentItem => ({
+        () => mapDetail(detail, (value) => buildReferenceTimeline(value.comments.map((comment: GitHubReferenceComment, index): ReferenceCommentItem => ({
+            kind: 'comment',
             key: `${comment.url}#${index}`,
             author: comment.author?.login ?? null,
             avatarUrl: comment.author?.avatarUrl ?? null,
@@ -226,7 +269,7 @@ const GitHubPreview: React.FC<{
             context: comment.path
                 ? `${comment.path}${comment.line ? `:${comment.line}` : ''}`
                 : comment.review && comment.review !== 'commented' ? t(REVIEW_VERDICT_KEYS[comment.review]) : null,
-        }))),
+        })), value.pull?.commits ?? [])),
         [detail, t],
     );
     const relative = useRelative(now);
@@ -235,7 +278,7 @@ const GitHubPreview: React.FC<{
     const updated = relative(reference.updatedAt);
     const body = reference.body.trim() ? reference.body : '';
 
-    const footer = (
+    const footer = footerOverride ?? (
         <div className="flex flex-col gap-2">
             <p className="typography-meta text-muted-foreground">
                 {purpose === 'worktree'
@@ -293,10 +336,16 @@ const GitHubPreview: React.FC<{
                                 <span className="truncate">{reference.base}</span>
                             </span>
                         </MetaRow>
-                        <PullDetailRows detail={detail} checks={previewChecks(reference, pullStatus, detail)} />
+                        <PullDetailRows detail={detail} checks={previewChecks(reference, detail)} links={pullLinks} onOpenChecks={onOpenChecks} />
                     </>
                 ) : null}
-                {labels.length > 0 ? (
+                {reviewersControl && reference.kind === 'pull' ? (
+                    <MetaRow label={t('references.picker.preview.reviewers')}>{reviewersControl}</MetaRow>
+                ) : null}
+                {labelsControl ? (
+                    // Shown with no labels too, so some can be added.
+                    <MetaRow label={t('references.picker.preview.labels')}>{labelsControl}</MetaRow>
+                ) : labels.length > 0 ? (
                     <MetaRow label={t('references.picker.preview.labels')}><ReferenceLabelChips labels={labels} /></MetaRow>
                 ) : null}
             </dl>
@@ -312,7 +361,8 @@ const GitHubPreview: React.FC<{
                 ) : null}
             </div>
 
-            <CommentsSection state={comments} total={detail.status === 'ready' ? detail.value.commentTotal : null} now={now} />
+            <CommentsSection state={comments} total={detail.status === 'ready' ? detail.value.commentTotal : null} activity={reference.kind === 'pull'} now={now} />
+            {reply}
         </PreviewFrame>
     );
 };
@@ -323,7 +373,9 @@ const LinearPreview: React.FC<{
     purpose: ReferencePreviewPurpose;
     pinned: boolean;
     now: number;
-}> = ({ issue, detail, purpose, pinned, now }) => {
+    footer?: React.ReactNode;
+    stateControl?: React.ReactNode;
+}> = ({ issue, detail, purpose, pinned, now, footer: footerOverride, stateControl }) => {
     const { t } = useI18n();
     const relative = useRelative(now);
     const look = linearStateLook(issue);
@@ -332,7 +384,8 @@ const LinearPreview: React.FC<{
     const assignee = issue.assignee?.displayName || issue.assignee?.name;
     const full = detail.status === 'ready' ? detail.value : null;
     const comments = React.useMemo(
-        () => mapDetail(detail, (value) => (value.comments ?? []).map((comment): ReferenceCommentItem => ({
+        () => mapDetail(detail, (value) => (value.comments ?? []).map((comment): ReferenceTimelineEntry => ({
+            kind: 'comment',
             key: comment.id,
             author: comment.user?.displayName || comment.user?.name || null,
             avatarUrl: comment.user?.avatarUrl ?? null,
@@ -343,7 +396,7 @@ const LinearPreview: React.FC<{
         [detail],
     );
 
-    const footer = (
+    const footer = footerOverride ?? (
         <p className="typography-meta text-muted-foreground">
             {purpose === 'worktree' ? t('references.picker.preview.worktree.issue') : t('references.picker.preview.sends.linear')}
         </p>
@@ -353,7 +406,7 @@ const LinearPreview: React.FC<{
         <PreviewFrame pinned={pinned} footer={footer}>
             <header className="flex flex-col gap-2">
                 <div className="flex items-center gap-2">
-                    {issue.state?.name ? <StatePill icon={look.icon} color={look.color} label={issue.state.name} /> : null}
+                    {stateControl ?? (issue.state?.name ? <StatePill icon={look.icon} color={look.color} label={issue.state.name} /> : null)}
                     <span className={cn('truncate typography-meta', REFERENCE_META_TEXT)}>{issue.identifier}</span>
                     <a
                         href={issue.url}
@@ -412,7 +465,20 @@ export const ReferencePreview: React.FC<{
     includeDiff: boolean;
     onIncludeDiffChange: (include: boolean) => void;
     now: number;
-}> = ({ item, pullStatus, linearDetail, githubDetail, purpose, pinned, includeDiff, onIncludeDiffChange, now }) => {
+    /** Replaces what the agent gets with what the surface does with the item. */
+    footer?: React.ReactNode;
+    /** Beside a PR's size: where to look at its changes. */
+    pullLinks?: React.ReactNode;
+    /** Replaces a Linear issue's state pill, such as with one that changes the state. */
+    linearStateControl?: React.ReactNode;
+    /** After an issue's or PR's activity: a way to answer it. */
+    reply?: React.ReactNode;
+    /** Replace an issue's or PR's labels, and a PR's reviewers, with ones that change them. */
+    labelsControl?: React.ReactNode;
+    reviewersControl?: React.ReactNode;
+    /** Opens the previewed PR's check runs from its checks totals. */
+    onOpenChecks?: () => void;
+}> = ({ item, pullStatus, linearDetail, githubDetail, purpose, pinned, includeDiff, onIncludeDiffChange, now, footer, pullLinks, linearStateControl, reply, labelsControl, reviewersControl, onOpenChecks }) => {
     const { t } = useI18n();
     if (!item) {
         return (
@@ -422,7 +488,7 @@ export const ReferencePreview: React.FC<{
         );
     }
     if (item.source === 'linear') {
-        return <LinearPreview issue={item.issue} detail={linearDetail} purpose={purpose} pinned={pinned} now={now} />;
+        return <LinearPreview issue={item.issue} detail={linearDetail} purpose={purpose} pinned={pinned} now={now} footer={footer} stateControl={linearStateControl} />;
     }
     return (
         <GitHubPreview
@@ -434,6 +500,12 @@ export const ReferencePreview: React.FC<{
             includeDiff={includeDiff}
             onIncludeDiffChange={onIncludeDiffChange}
             now={now}
+            footer={footer}
+            pullLinks={pullLinks}
+            reply={reply}
+            labelsControl={labelsControl}
+            reviewersControl={reviewersControl}
+            onOpenChecks={onOpenChecks}
         />
     );
 };

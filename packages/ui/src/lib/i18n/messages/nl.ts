@@ -10,6 +10,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -131,6 +132,7 @@ export const dict = {
   ...usageStatsI18n.nl,
   ...webSearchI18n.nl,
   ...isolatedSpacesI18n.nl,
+  ...sourceBoardI18n.nl,
   ...environmentI18n.nl,
   ...providersI18n.nl,
   ...mcpGridI18n.nl,
@@ -1211,6 +1213,9 @@ export const dict = {
   'gitView.pr.checks.statusLabel': 'Status',
   'gitView.pr.checks.stepLabel': 'Stap',
   'gitView.pr.checks.steps': 'Stappen',
+  'gitView.pr.checks.openRun': 'Openen',
+  'gitView.pr.checks.failedAnnotations': 'Mislukte annotaties',
+  'gitView.pr.checks.failedAnnotationsShown': 'Mislukte annotaties ({shown} van {total} getoond)',
   'gitView.pr.comments.empty': 'Geen reacties gevonden',
   'gitView.pr.comments.generalContext': 'Algemene reactie',
   'gitView.pr.comments.reviewContext': 'Reviewreactie',
@@ -2654,6 +2659,8 @@ export const dict = {
   'chat.statusRow.background.action': 'Naar de achtergrond — de agent wacht niet meer en gaat verder',
   'chat.statusRow.background.failed': 'Kon het werk niet naar de achtergrond verplaatsen',
   'chat.toolPart.background.label': 'op de achtergrond',
+  'chat.toolPart.subagent.stop': 'Subagent stoppen',
+  'chat.toolPart.subagent.stopFailed': 'Kon de subagent niet stoppen',
   'chat.toolPart.background.stop': 'Opdracht stoppen',
   'chat.toolPart.background.stopLabel': 'Stoppen',
   'chat.toolPart.background.stopFailed': 'Kon de opdracht niet stoppen',
@@ -3774,4 +3781,24 @@ export const dict = {
   'contextPanel.browser.devServers.showHiddenSingle': '{count} verborgen poort tonen',
   'contextPanel.browser.devServers.showHiddenPlural': '{count} verborgen poorten tonen',
   'sidebarFilesTree.menu.openInDefaultApp': 'Openen in standaardapp',
+  'sessions.sidebar.header.displayMode.showChats': 'Chatsectie tonen',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Standaardinstellingen voor sessies gebruiken',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Elke run neemt bij de start het standaardmodel, denkniveau en de agent uit Instellingen → Sessies (of de eigen standaarden van het project).',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Standaarden voor sessies',
+  'sessions.moveChatToProject.menu': 'Naar project verplaatsen…',
+  'sessions.moveChatToProject.hint': 'Dit gesprek binnen een project voortzetten',
+  'sessions.moveChatToProject.title': 'Chat naar een project verplaatsen',
+  'sessions.moveChatToProject.description': 'Het gesprek gaat verder in de map van het project. Bestanden die de chat maakte blijven waar ze zijn.',
+  'sessions.moveChatToProject.success': 'Chat naar het project verplaatst',
+  'sessions.moveChatToProject.failed': 'Chat kon niet worden verplaatst',
+  'chat.worktreeSetup.running': 'Worktree wordt ingericht: de setupopdrachten van het project lopen…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'De verbinding kwam niet tot stand, dus OpenChamber is op Local gestart. Verbind haar via de instantiekiezer zodra ze bereikbaar is.',
+  'chat.chatInput.contextPreview.saveEdit': 'Opmerking opslaan',
+  'chat.chatInput.contextPreview.cancelEdit': 'Bewerken annuleren',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Sessie openen',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Sessie van de laatste run van {taskName} openen',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'Deze taak heeft al een run bezig, gestart om {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'Deze taak heeft al een run bezig',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'Deze taak staat al in de wachtrij en draait zodra er plek vrijkomt',
+  'chat.modelControls.agentFavoriteAdd': 'Toevoegen aan favorieten. Met favorieten wisselt Tab alleen daartussen',
 } as const;

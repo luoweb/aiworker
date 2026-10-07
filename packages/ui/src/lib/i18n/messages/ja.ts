@@ -11,6 +11,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -132,6 +133,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.ja,
   ...webSearchI18n.ja,
   ...isolatedSpacesI18n.ja,
+  ...sourceBoardI18n.ja,
   ...environmentI18n.ja,
   ...providersI18n.ja,
   ...mcpGridI18n.ja,
@@ -1216,6 +1218,9 @@ export const dict: Record<I18nKey, string> = {
   'gitView.pr.checks.statusLabel': 'ステータス',
   'gitView.pr.checks.stepLabel': 'ステップ',
   'gitView.pr.checks.steps': 'ステップ',
+  'gitView.pr.checks.openRun': '開く',
+  'gitView.pr.checks.failedAnnotations': '失敗したアノテーション',
+  'gitView.pr.checks.failedAnnotationsShown': '失敗したアノテーション（{total} 件中 {shown} 件を表示）',
   'gitView.pr.comments.empty': 'コメントが見つかりません',
   'gitView.pr.comments.generalContext': '一般コメント',
   'gitView.pr.comments.reviewContext': 'レビューコメント',
@@ -2653,6 +2658,8 @@ export const dict: Record<I18nKey, string> = {
   'chat.statusRow.background.action': 'バックグラウンドに移動 — エージェントは待たずに続行します',
   'chat.statusRow.background.failed': '作業をバックグラウンドに移動できませんでした',
   'chat.toolPart.background.label': 'バックグラウンド',
+  'chat.toolPart.subagent.stop': 'サブエージェントを停止',
+  'chat.toolPart.subagent.stopFailed': 'サブエージェントを停止できませんでした',
   'chat.toolPart.background.stop': 'コマンドを停止',
   'chat.toolPart.background.stopLabel': '停止',
   'chat.toolPart.background.stopFailed': 'コマンドを停止できませんでした',
@@ -3774,4 +3781,24 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.devServers.showHiddenSingle': '隠したポート {count} 件を表示',
   'contextPanel.browser.devServers.showHiddenPlural': '隠したポート {count} 件を表示',
   'sidebarFilesTree.menu.openInDefaultApp': '既定のアプリで開く',
+  'sessions.sidebar.header.displayMode.showChats': 'チャットセクションを表示',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'セッションの既定値を使う',
+  'sessions.scheduledTasks.editor.useDefaults.hint': '各実行は開始時点で、設定 → セッション（またはプロジェクト独自の既定値）の既定モデル、思考レベル、エージェントを使います。',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'セッションの既定値',
+  'sessions.moveChatToProject.menu': 'プロジェクトへ移動…',
+  'sessions.moveChatToProject.hint': 'この会話をプロジェクト内で続ける',
+  'sessions.moveChatToProject.title': 'チャットをプロジェクトへ移動',
+  'sessions.moveChatToProject.description': '会話はプロジェクトのフォルダーで続きます。チャットが作成したファイルはそのまま残ります。',
+  'sessions.moveChatToProject.success': 'チャットをプロジェクトへ移動しました',
+  'sessions.moveChatToProject.failed': 'チャットを移動できませんでした',
+  'chat.worktreeSetup.running': 'worktree を準備中: プロジェクトのセットアップコマンドを実行しています…',
+  'desktopHostSwitcher.startup.fellBackToLocal': '接続を開けなかったため、OpenChamber は Local で起動しました。到達できるようになったら、インスタンス切り替えから接続してください。',
+  'chat.chatInput.contextPreview.saveEdit': 'コメントを保存',
+  'chat.chatInput.contextPreview.cancelEdit': '編集をキャンセル',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'セッションを開く',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': '{taskName} の前回の実行のセッションを開く',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'このタスクはすでに実行中です（{time} に開始）',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'このタスクはすでに実行中です',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'このタスクはすでにキューで待機中です。空きができ次第実行されます',
+  'chat.modelControls.agentFavoriteAdd': 'お気に入りに追加。お気に入りがあると、Tab はその中だけを切り替えます',
 };

@@ -10,6 +10,7 @@ import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
+import { sourceBoardI18n } from './source-board.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -131,6 +132,7 @@ export const dict = {
   ...usageStatsI18n.en,
   ...webSearchI18n.en,
   ...isolatedSpacesI18n.en,
+  ...sourceBoardI18n.en,
   ...environmentI18n.en,
   ...providersI18n.en,
   ...mcpGridI18n.en,
@@ -1219,6 +1221,9 @@ export const dict = {
   'gitView.pr.checks.statusLabel': 'Status',
   'gitView.pr.checks.stepLabel': 'Step',
   'gitView.pr.checks.steps': 'Steps',
+  'gitView.pr.checks.openRun': 'Open',
+  'gitView.pr.checks.failedAnnotations': 'Failed annotations',
+  'gitView.pr.checks.failedAnnotationsShown': 'Failed annotations (showing {shown} of {total})',
   'gitView.pr.comments.empty': 'No comments found',
   'gitView.pr.comments.generalContext': 'General comment',
   'gitView.pr.comments.reviewContext': 'Review comment',
@@ -2659,6 +2664,8 @@ export const dict = {
   'chat.toolPart.background.stopFailed': 'Couldn\'t stop the command',
   'chat.toolPart.background.stoppedLabel': 'stopped',
   'chat.toolPart.background.stoppedNotice': 'Stopped by you. The agent was told this was your stop, not a failure.',
+  'chat.toolPart.subagent.stop': 'Stop subagent',
+  'chat.toolPart.subagent.stopFailed': 'Couldn\'t stop the subagent',
   'chat.toolPart.lspErrors': 'LSP errors',
   'chat.toolPart.moreErrors': '+{count} more errors',
   'chat.toolPart.moreRows': '+{count} more rows',
@@ -3774,6 +3781,26 @@ export const dict = {
   'contextPanel.browser.devServers.showHiddenSingle': 'Show {count} hidden port',
   'contextPanel.browser.devServers.showHiddenPlural': 'Show {count} hidden ports',
   'sidebarFilesTree.menu.openInDefaultApp': 'Open in default app',
+  'sessions.sidebar.header.displayMode.showChats': 'Show chats section',
+  'sessions.scheduledTasks.editor.useDefaults.label': 'Use session defaults',
+  'sessions.scheduledTasks.editor.useDefaults.hint': 'Each run takes the default model, thinking level and agent from Settings → Sessions (or the project\'s own defaults) at the time it starts.',
+  'sessions.scheduledTasks.dialog.usesDefaults': 'Session defaults',
+  'sessions.moveChatToProject.menu': 'Move to project…',
+  'sessions.moveChatToProject.hint': 'Continue this conversation inside a project',
+  'sessions.moveChatToProject.title': 'Move chat to a project',
+  'sessions.moveChatToProject.description': 'The conversation continues in the project\'s folder. Files the chat created stay where they are.',
+  'sessions.moveChatToProject.success': 'Chat moved to the project',
+  'sessions.moveChatToProject.failed': 'Could not move the chat',
+  'chat.worktreeSetup.running': 'Setting up the worktree: running the project\'s setup commands…',
+  'desktopHostSwitcher.startup.fellBackToLocal': 'Its connection didn\'t open, so OpenChamber started on Local. Connect it from the instance switcher once it\'s reachable.',
+  'chat.chatInput.contextPreview.saveEdit': 'Save comment',
+  'chat.chatInput.contextPreview.cancelEdit': 'Cancel editing',
+  'sessions.scheduledTasks.dialog.actions.openSession': 'Open session',
+  'sessions.scheduledTasks.dialog.actions.openSessionAria': 'Open the session from the last run of {taskName}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunningSince': 'This task already has a run in progress, started at {time}',
+  'sessions.scheduledTasks.dialog.toast.alreadyRunning': 'This task already has a run in progress',
+  'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'This task is already waiting in the queue and will run when a slot frees up',
+  'chat.modelControls.agentFavoriteAdd': 'Add to favorites. With favorites, Tab cycles through them only',
 } as const;
 
 export type I18nKey = keyof typeof dict;
