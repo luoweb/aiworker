@@ -1809,10 +1809,12 @@ export function ScheduledTaskEditorDialog(props: {
 
         <ScrollShadow
           className="flex-1 min-h-0 overflow-auto [scrollbar-gutter:stable_both-edges]"
-          size={64}
+          size={32}
           hideTopShadow
         >
-          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 pb-5">{formBody}</div>
+          {/* Bottom padding exceeds the 32px scroll fade, so at rest the fade
+              band covers only empty space instead of dimming the last inputs. */}
+          <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 pb-10">{formBody}</div>
         </ScrollShadow>
 
         <div className="shrink-0 px-4 sm:px-6 py-3">
