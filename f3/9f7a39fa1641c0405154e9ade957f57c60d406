@@ -1,0 +1,36 @@
+packages/web/abc
+  h_492b42777c8bc9 1-5
+package.json
+  h_492b42777c8bc9 33-34,46
+packages/extensions/DOCUMENTATION.md
+  h_492b42777c8bc9 8-9
+packages/extensions/jev-decisions/package.json
+  h_492b42777c8bc9 1-30
+packages/extensions/jev-decisions/panel/i18n.ts
+  h_492b42777c8bc9 1-595
+packages/extensions/jev-decisions/panel/index.html
+  h_492b42777c8bc9 1-12
+packages/extensions/jev-decisions/panel/jev.ts
+  h_492b42777c8bc9 1-305
+packages/extensions/jev-decisions/panel/main.ts
+  h_492b42777c8bc9 1-541
+packages/extensions/jev-decisions/test/i18n.test.ts
+  h_492b42777c8bc9 1-38
+packages/extensions/jev-decisions/test/jev.test.ts
+  h_492b42777c8bc9 1-281
+packages/extensions/registry.json
+  h_492b42777c8bc9 3-19
+packages/extensions/tsconfig.json
+  h_492b42777c8bc9 1-21
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "f39f7a39fa1641c0405154e9ade957f57c60d406",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
