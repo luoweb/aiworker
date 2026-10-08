@@ -1,0 +1,30 @@
+{
+  "name": "@openchamber/builtin-jev-decisions",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Ask Jev, the TypeSafe decision model, a state and some typed questions, and read the answers with their probabilities.",
+  "openchamber": {
+    "apiVersion": 1,
+    "contributes": {
+      "panel": {
+        "id": "openchamber-builtin-jev-decisions",
+        "name": "Decisions",
+        "icon": "scales-3",
+        "entry": "panel/index.html"
+      },
+      "page": true,
+      "origins": [
+        "https://opencode.ai"
+      ],
+      "integration": {
+        "name": "OpenCode Zen",
+        "description": "Answers Jev questions with your Zen API key. The key stays on the OpenChamber server and is never handed to this panel.",
+        "token": {
+          "apiOrigin": "https://opencode.ai",
+          "scheme": "bearer"
+        }
+      }
+    }
+  }
+}
