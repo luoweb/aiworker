@@ -1,0 +1,14 @@
+packages/ui/src/components/session/ScheduledTaskEditorDialog.tsx
+  h_492b42777c8bc9 1812,1815-1817
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "ba119f982b9b0d99755be811f9475b6d7d041453",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
