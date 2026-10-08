@@ -229,6 +229,13 @@ const normalizeContextTargetDirectory = (value: string | null | undefined): stri
   return normalizeContextPanelDirectoryKey(normalizedPath) || null;
 };
 
+// A terminal may run in another directory than the panel it lives in, and a
+// chat tab may show a session from another project (or Chat) next to the
+// main chat; every other mode works in the panel's own directory.
+const contextPanelModeKeepsTargetDirectory = (mode: ContextPanelMode): boolean => {
+  return mode === 'terminal' || mode === 'chat';
+};
+
 const normalizeContextTabLabel = (value: string | null | undefined): string | null => {
   if (typeof value !== 'string') {
     return null;
@@ -297,7 +304,7 @@ const buildContextPanelTabID = (mode: ContextPanelMode, dedupeKey: string): stri
 
 const createContextPanelTab = (descriptor: ContextPanelTabDescriptor): ContextPanelTab => {
   const normalizedTargetPath = normalizeContextTargetPath(descriptor.targetPath);
-  const normalizedTargetDirectory = descriptor.mode === 'terminal'
+  const normalizedTargetDirectory = contextPanelModeKeepsTargetDirectory(descriptor.mode)
     ? normalizeContextTargetDirectory(descriptor.targetDirectory)
     : null;
   const dedupeKey = normalizeContextPanelTabDedupeKey(
@@ -401,7 +408,7 @@ const sanitizeContextPanelTabs = (tabs: unknown): ContextPanelTab[] => {
     }
 
     const targetPath = normalizeContextTargetPath(typeof candidate.targetPath === 'string' ? candidate.targetPath : null);
-    const targetDirectory = candidate.mode === 'terminal'
+    const targetDirectory = contextPanelModeKeepsTargetDirectory(candidate.mode)
       ? normalizeContextTargetDirectory(candidate.targetDirectory)
       : null;
     const projectPlanId = typeof candidate.projectPlanId === 'string' && candidate.projectPlanId.trim()
@@ -878,6 +885,10 @@ interface UIStore {
   sessionWorkEnabled: boolean;
   /** Let Jev move a session into work when real work starts in it. */
   sessionWorkAutoOpen: boolean;
+  /** Let Jev offer an AI review or a walkthrough after a turn that changed the project. */
+  sessionReviewOfferEnabled: boolean;
+  /** Keep a session in work listed under its project group and folders too. */
+  sessionWorkKeepInGroup: boolean;
   sessionGoalEnabled: boolean;
   /** Who checks goal progress; the small model checks when no classification provider can. */
   sessionGoalChecker: SessionGoalChecker;
@@ -935,6 +946,7 @@ interface UIStore {
   diffLayoutPreference: 'dynamic' | 'inline' | 'side-by-side';
   diffFileLayout: Record<string, 'inline' | 'side-by-side'>;
   diffWrapLines: boolean;
+  diffHideWhitespace: boolean;
   diffFileListMode: 'flat' | 'tree';
   /** Width of the diff view's file tree column, in pixels. */
   diffFileTreeWidth: number;
@@ -1130,6 +1142,8 @@ interface UIStore {
   setSessionSuggestionEnabled: (value: boolean) => void;
   setSessionWorkEnabled: (value: boolean) => void;
   setSessionWorkAutoOpen: (value: boolean) => void;
+  setSessionReviewOfferEnabled: (value: boolean) => void;
+  setSessionWorkKeepInGroup: (value: boolean) => void;
   setSessionGoalEnabled: (value: boolean) => void;
   setSessionGoalChecker: (value: SessionGoalChecker) => void;
   setSessionGoalMaxAutoTurns: (value: number) => void;
@@ -1189,6 +1203,7 @@ interface UIStore {
   setDiffLayoutPreference: (mode: 'dynamic' | 'inline' | 'side-by-side') => void;
   setDiffFileLayout: (filePath: string, mode: 'inline' | 'side-by-side') => void;
   setDiffWrapLines: (wrap: boolean) => void;
+  setDiffHideWhitespace: (hide: boolean) => void;
   setDiffFileListMode: (mode: 'flat' | 'tree') => void;
   setDiffFileTreeWidth: (width: number) => void;
   setWalkthroughTocWidth: (width: number) => void;
@@ -1340,6 +1355,8 @@ export const useUIStore = create<UIStore>()(
         sessionSuggestionEnabled: true,
         sessionWorkEnabled: true,
         sessionWorkAutoOpen: true,
+        sessionReviewOfferEnabled: false,
+        sessionWorkKeepInGroup: false,
         sessionGoalEnabled: true,
         sessionGoalChecker: 'small-model',
         sessionGoalMaxAutoTurns: DEFAULT_SESSION_GOAL_MAX_AUTO_TURNS,
@@ -1385,6 +1402,7 @@ export const useUIStore = create<UIStore>()(
         diffLayoutPreference: 'inline',
         diffFileLayout: {},
         diffWrapLines: false,
+        diffHideWhitespace: false,
         diffFileListMode: 'flat',
         diffFileTreeWidth: 240,
         walkthroughTocWidth: 224,
@@ -2270,6 +2288,14 @@ export const useUIStore = create<UIStore>()(
           set({ sessionWorkAutoOpen: value });
         },
 
+        setSessionReviewOfferEnabled: (value) => {
+          set({ sessionReviewOfferEnabled: value });
+        },
+
+        setSessionWorkKeepInGroup: (value) => {
+          set({ sessionWorkKeepInGroup: value });
+        },
+
         setSessionGoalEnabled: (value) => {
           set({ sessionGoalEnabled: value });
         },
@@ -2489,6 +2515,10 @@ export const useUIStore = create<UIStore>()(
 
         setDiffWrapLines: (wrap) => {
           set({ diffWrapLines: wrap });
+        },
+
+        setDiffHideWhitespace: (hide) => {
+          set({ diffHideWhitespace: hide });
         },
 
         setWalkthroughTocWidth: (width) => {
@@ -3288,6 +3318,8 @@ export const useUIStore = create<UIStore>()(
           sessionSuggestionEnabled: state.sessionSuggestionEnabled,
           sessionWorkEnabled: state.sessionWorkEnabled,
           sessionWorkAutoOpen: state.sessionWorkAutoOpen,
+          sessionReviewOfferEnabled: state.sessionReviewOfferEnabled,
+          sessionWorkKeepInGroup: state.sessionWorkKeepInGroup,
           sessionGoalEnabled: state.sessionGoalEnabled,
           sessionGoalChecker: state.sessionGoalChecker,
           sessionGoalMaxAutoTurns: state.sessionGoalMaxAutoTurns,
@@ -3330,6 +3362,7 @@ export const useUIStore = create<UIStore>()(
           recentEfforts: state.recentEfforts,
           diffLayoutPreference: state.diffLayoutPreference,
           diffWrapLines: state.diffWrapLines,
+          diffHideWhitespace: state.diffHideWhitespace,
           diffFileListMode: state.diffFileListMode,
           diffFileTreeWidth: state.diffFileTreeWidth,
           walkthroughTocWidth: state.walkthroughTocWidth,

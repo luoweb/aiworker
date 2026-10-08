@@ -381,6 +381,9 @@
     "diffWrapLines": {
       "scope": "profile"
     },
+    "diffHideWhitespace": {
+      "scope": "profile"
+    },
     "gitChangesViewMode": {
       "scope": "profile"
     },
@@ -560,6 +563,17 @@
         "desktop",
         "mobile"
       ]
+    },
+    "sessionReviewOfferEnabled": {
+      "scope": "profile",
+      "surfaces": [
+        "web",
+        "desktop",
+        "mobile"
+      ]
+    },
+    "sessionWorkKeepInGroup": {
+      "scope": "profile"
     },
     "sessionGoalEnabled": {
       "scope": "profile"

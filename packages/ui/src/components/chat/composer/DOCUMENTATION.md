@@ -89,6 +89,12 @@ creation state, and pending draft, hides the other three. Composer content
 also hides suggestion; new-session drafts hide form, queue and suggestion.
 Hiding the queue does not pause its delivery.
 
+`selectComposerQueue` in the submission builder excludes server-scheduled items
+before the composer counts manual content or reads captured send configuration.
+Mixed queues use only ordinary items for manual send; a scheduled-only queue
+cannot trigger an empty composer send. Scheduled items stay visible in the
+queue chips with reorder and remove, but no edit or send action.
+
 `BackgroundShellsStrip` shares that top-row slot, above the "looks done" hint
 and the suggestion: the commands that went to the background (not the ones
 a turn is waiting for, see `background` in `sync/background-shells.ts`) of
@@ -102,6 +108,17 @@ switch. It shows whether the session runs or idles, and hides in BTW and
 new-session drafts. The elapsed text is a leaf on the shared one-second
 ticker, and the tree is compared as a string, so neither the tick nor
 session-list updates re-render the composer.
+
+The "looks done" hint (`SessionDoneHintRow`) and the review offer
+(`SessionReviewHintRow`, "Changes are ready to look over") take the same
+slot, below the background commands. Both show only while the session idles
+and Jev's hint is current (`lib/sessionWorkMetadata.ts`); the server writes
+one or the other per turn, and a current done hint wins. The done hint
+follows the In work setting, the review offer its own
+(`sessionReviewOfferEnabled`), and needs no session in work. The review offer
+opens the composer's review dialog (the one `/handoff-review` opens) or a
+walkthrough of the whole working tree, and is not shown on a mobile layout,
+where neither action is offered elsewhere either.
 
 The queue header toggles an `aria-expanded` disclosure with the current count.
 Its open/closed state is one persisted preference in `useUIStore`
@@ -192,6 +209,18 @@ share `attachFilesWithCitation`: every file attaches and is cited in the draft
 as `[name]`; images get a generated unique name first, other files keep their
 own name and are cited only after they attached. A copied file's filename text
 is suppressed so only the citation lands in the draft.
+An Android image paste arrives from the input method rather than from a paste event, because
+a WebView declares no content types on its `EditorInfo` and the IME refuses the paste before
+the page can hear about it. The Capacitor Android shell declares image content on the editor
+it exposes and sends what the IME commits to `lib/nativeImagePaste.ts`, which hands the
+composer the same file a pasted image would be, and the composer runs it through
+`attachFilesWithCitation` like any other. The declaration belongs to the composer alone: the
+WebView is one input connection for every editable element in the app, so the composer
+reports its focus to the shell and drops the declaration on blur, and the shell asks the IME
+to read the declaration again when the composer takes focus, since the IME reads it when an
+element takes focus and that can be before the report arrives. The paste handler re-checks
+focus as a backstop for that window. Every other runtime pastes images through `handlePaste` unchanged, and an IME
+without content insertion keeps refusing.
 Large pastes (about 2,000 characters or 25 lines) follow the composer setting
 `largeTextPasteBehavior` (`ask` / `attach` / `inline` / `inline-double-paste`). Attaching creates an
 in-memory `text/plain` file named `pasted-context-N.txt`, inserts a bracket
@@ -232,12 +261,16 @@ copy.
   itself and is what gets highlighted; in `see @a/b.ts,` the comma is sentence
   punctuation, not part of the file being referenced. Mentions are plain
   editable text: deleting a character edits the token and reopens the mention
-  picker, the same way `/skill` tokens behave — not an atomic delete.
-- `prefixTokens.ts` — `/command`, `/skill`, `#snippet`. Scanning is deliberately
+  picker, the same way `$skill` tokens behave — not an atomic delete.
+- `prefixTokens.ts` — `/command`, `$skill`, `#snippet`. Scanning is deliberately
   generous; **membership in the command, skill or snippet registry is the
-  authority**, not the pattern. An unknown `/token` stays plain prose.
+  authority**, not the pattern. An unknown `/token` or `$token` stays plain
+  prose, so `$5` is just money.
 - `triggers.ts` — which picker a caret position asks for. Exactly one can be
-  active, with precedence `command > skill > snippet > mention`.
+  active, with precedence `command > skill > snippet > mention`. Commands open
+  only on a `/` in the first column; skills open on `$` at any word boundary,
+  the start of the text included. The two never share a list: the `/` palette
+  holds commands only.
 - `tokenize.ts` — one pass producing every highlight range. Adding a construct
   to the language means adding it here, once.
 
@@ -262,7 +295,7 @@ DOM-only tests cannot verify these.
 exactly what gets sent, so nothing downstream serializes a rich document model
 back into a prompt.
 
-Attachment citations (`[name.png]`) and finished skill tokens (`/name` followed
+Attachment citations (`[name.png]`) and finished skill tokens (`$name` followed
 by whitespace) render in the editor as atomic replace widgets shaped like the
 sent message's chips (`composerLanguage.ts`). The document keeps the source
 text, so sending, copying and undo are unchanged; the caret steps over a chip
@@ -385,7 +418,7 @@ and the send path reading the same grammar.
   mention, file mentions, and skill instruction were resolved when it was
   queued, never at delivery — and its context follows it before the next
   queued message.
-- **Skills named inline (`/name`) are attached to the prompt, not hinted at.**
+- **Skills named with `$name` are attached to the prompt, not hinted at.**
   `buildOutgoingMessage` reports the composer text's skill names (deduped, in
   order) as `skillNames`; `ChatInput` hands them to the send as
   `SkillMentions`, and `opencodeClient.sendMessage` maps each name to its
@@ -405,13 +438,15 @@ and the send path reading the same grammar.
   `Skill not found` (resent once with the same message id, since preparation
   fails before admission). Queued messages keep the instruction captured at
   queue time, because the server and the VS Code auto-send deliver them
-  without the composer's registry. A leading `/skill` that routes to
-  `session.command` keeps the instruction too: that route takes no skill
-  attachments.
+  without the composer's registry. A `$skill` in a message that routes to
+  `session.command` (a leading `/command`) keeps the instruction too: that
+  route takes no skill attachments. A hand-typed leading `/name` that matches
+  a skill and no command still attaches the skill (`session-ui-store`), so the
+  old form keeps working; the composer just no longer offers or chips it.
 - Extension slash commands are routed first (`submit/guestCommands.ts`,
   entries from `useGuestCommands` minus every name the composer already
-  knows, so an extension can never shadow a built-in, an OpenCode command, or
-  a skill). The command text is cleared and `runGuestCommand`
+  knows, so an extension can never shadow a built-in or an OpenCode command;
+  skills live under `$` and cannot collide). The command text is cleared and `runGuestCommand`
   (`lib/guests/run-command.ts`) asks the extension: the rail pane if it is
   mounted, otherwise a hidden headless `PluginPane` that `GuestHosts` mounts
   for the call. A returned chip lands through

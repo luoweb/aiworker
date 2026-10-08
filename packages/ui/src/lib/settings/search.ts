@@ -242,6 +242,15 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     keywords: ['suggestion', 'assist', 'small model', 'follow up'],
   },
   {
+    id: 'chat.session-review-offer',
+    page: 'chat',
+    titleKey: 'settings.openchamber.visual.field.sessionReviewOffer',
+    descriptionKey: 'settings.openchamber.visual.field.sessionReviewOfferInfo',
+    keywords: ['review', 'walkthrough', 'changes', 'diff', 'jev', 'classification'],
+    // Jev runs on the OpenChamber server; VS Code has no such offer.
+    isAvailable: (ctx) => !ctx.isVSCode,
+  },
+  {
     id: 'chat.session-goal',
     page: 'chat',
     titleKey: 'settings.openchamber.visual.field.sessionGoal',
@@ -532,6 +541,13 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     keywords: ['in work', 'automatic', 'jev', 'classification', 'track'],
     // Jev runs on the OpenChamber server; VS Code has only the manual part.
     isAvailable: (ctx) => !ctx.isVSCode,
+  },
+  {
+    id: 'sessions.work-keep-in-group',
+    page: 'sessions',
+    titleKey: 'settings.openchamber.sessionWork.field.keepInGroup',
+    descriptionKey: 'settings.openchamber.sessionWork.field.keepInGroupInfo',
+    keywords: ['in work', 'track', 'project group', 'folder', 'sidebar', 'keep'],
   },
   {
     id: 'sessions.small-model',
