@@ -412,9 +412,6 @@ const VirtualProviderRows: React.FC<{
 };
 
 const STICKY_HEADER_OFFSET = 32;
-const STICKY_FADE_MAX_SIZE = 52;
-const STICKY_FADE_MIN_SIZE = 36;
-const STICKY_FADE_CLEAR_MAX_SIZE = 28;
 
 const scrollIntoView = (container: HTMLElement | null, node: HTMLElement | null) => {
   if (!node) return;
@@ -565,7 +562,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   const scrollRef = React.useRef<HTMLElement | null>(null);
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const virtualSectionsRef = React.useRef<Map<string, VirtualSectionHandle>>(new Map());
-  const stickyFadeSizeRef = React.useRef(0);
   const sectionHeaderSentinelRefs = React.useRef<Map<string, HTMLDivElement | null>>(new Map());
   const [stuckSectionHeaders, setStuckSectionHeaders] = React.useState<Set<string>>(new Set());
   const keyboardOwnsSelectionRef = React.useRef(false);
@@ -682,37 +678,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
     });
     return () => observer.disconnect();
   }, [stickyHeaders, visibleSectionKeys]);
-
-  const syncStickyFade = React.useCallback((scroller: HTMLElement) => {
-    const hasTopScroll = scroller.scrollTop > 1;
-    const fadeSize = hasTopScroll
-      ? Math.min(STICKY_FADE_MIN_SIZE + scroller.scrollTop, STICKY_FADE_MAX_SIZE)
-      : 0;
-    stickyFadeSizeRef.current = fadeSize;
-    const fadeRoot = scroller.closest<HTMLElement>('.oc-sticky-fade-root');
-    fadeRoot?.style.setProperty('--scroll-shadow-top-size', `${fadeSize}px`);
-    fadeRoot?.style.setProperty(
-      '--scroll-shadow-top-clear-size',
-      `${Math.min(Math.max(fadeSize - 8, 0), STICKY_FADE_CLEAR_MAX_SIZE)}px`,
-    );
-  }, []);
-
-  const blockStickyFadeInteraction = React.useCallback((
-    event: React.MouseEvent<HTMLDivElement> | React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if ((event.target as Element).closest('[data-overlay-scrollbar-thumb], [data-model-picker-sticky-header]')) return;
-    // Enter or Space on a focused button clicks with no pointer position (detail 0,
-    // coordinates 0), which would otherwise read as a click on the fade.
-    if (event.type === 'click' && event.detail === 0) return;
-    const eventY = event.clientY - event.currentTarget.getBoundingClientRect().top;
-    if (eventY >= stickyFadeSizeRef.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-  }, []);
-
-  React.useLayoutEffect(() => {
-    if (stickyHeaders && scrollRef.current) syncStickyFade(scrollRef.current);
-  }, [stickyHeaders, syncStickyFade, visibleSectionKeys]);
 
   const visibleLeadingEntry = React.useMemo(() => {
     if (!leadingEntry) return null;
@@ -1126,23 +1091,21 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
         </div>
       </div>
 
-      <div
-        className="oc-sticky-fade-root relative flex min-h-0 flex-1"
-        // SAFETY: these custom properties configure the viewport-owned edge fade.
-        style={stickyHeaders ? { '--scroll-shadow-top-size': '0px' } as React.CSSProperties : undefined}
-        onPointerDownCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-        onClickCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-        onContextMenuCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-      >
+      <div className="relative flex min-h-0 flex-1">
+        {/* Both scroll fades are suppressed here: mask-image rasterizes as a
+            solid black block in software-rendered environments (remote
+            desktop, older GPUs). The real section headers keep their sticky
+            position, so nothing is lost — the crisp-identity fade overlay
+            below stays dormant with the mask. */}
         <ScrollableOverlay
           ref={scrollRef}
           useScrollShadow={stickyHeaders}
+          hideTopScrollShadow
           hideBottomScrollShadow
           scrollShadowSize={12}
           outerClassName={maxHeightClassName}
-          className="oc-sticky-fade-scroller overlay-scrollbar-target--no-gutter"
+          className="overlay-scrollbar-target--no-gutter"
           style={maxHeightStyle}
-          onScroll={stickyHeaders ? (event) => syncStickyFade(event.currentTarget) : undefined}
         >
           <div className="px-1">
           {includeNotSelected ? (
