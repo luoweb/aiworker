@@ -86,6 +86,8 @@ IPC results if its endpoint changes while the read is pending.
 | `electron-host-probe.mjs` | Chromium direct-host probes, identity checks, attempt deadlines, and response cleanup |
 | `host-probe-policy.mjs` | Selector fast attempt and unreachable-only retry policy |
 | `startup-url-selection.mjs` | Pure bundled/HMR startup probe and loopback connection-limit policy |
+| `app-cache.mjs` | Help > Clear Cache: drops the HTTP cache only, keeps site storage (device settings, pinned sessions, login cookies), reloads windows |
+| `pairing-deep-link.mjs` | Validates an `openchamber://connect` pairing link for the confirmation prompt. After the user confirms, the main window's renderer redeems it (`desktop_take_pending_host_actions`) with the same code as Import Link, so relay-only links pair over the E2EE tunnel. `openchamber://host/<id>` for a host with a relay leg goes through the same queue |
 | `remote-page-policy.mjs` | What remote-safe IPC accepts from and returns to another server's page: splash colour parsing, host list without credentials |
 | `shell-environment.mjs` | Asynchronous login-shell environment discovery and shared one-shot probe |
 | `preload.mjs` | Safe bridge from the rendered UI to Electron IPC |
@@ -120,6 +122,21 @@ neither the client token nor custom headers;
 version and session requests use sanitized custom headers and the client bearer
 token. Older servers without identity metadata remain supported. HTTP 401 and
 403 mean authentication is required, not that the instance is offline.
+
+`/api/version` must advertise `api.runtime-url.v1` and report an
+`openchamberVersion` of 2 or later, or the host is Incompatible and the app asks
+to update OpenChamber on the server. A server before 2.0 runs OpenCode 1.x with
+the same API version and capabilities, so its own version is the only thing that
+tells it apart. A version that does not parse does not block.
+
+The Incompatible recovery screen can ask the host to update itself
+(`desktop_host_update_server`, local pages only, `remote-host-update.mjs`). The
+command takes only a saved host id and reads the address, client token, and
+request headers from the hosts file, so a page cannot aim the token at another
+address. It posts to the host's `/api/openchamber/update-install`, the route
+every server since 1.9 serves to its own web UI, and reports `started`, `auth`,
+or `failed` with the host's reason. The renderer then probes the host until it
+answers compatible and restarts the app to boot against it again.
 
 Every exit aborts the attempt's requests and cancels unused response bodies before
 clearing the deadline timer. This includes early HTTP classifications and a
@@ -193,6 +210,8 @@ Running a packaged Linux AppImage requires FUSE (`libfuse.so.2`, typically `libf
 
 Desktop clears AppImage `ARGV0` from `process.env` before probing the login shell and starting the in-process server. Leaving it set makes zsh rewrite argv[0] for integrated-terminal and managed-OpenCode child commands to the AppImage path.
 
+The variables Desktop sets for the in-process server (`OPENCHAMBER_RUNTIME`, `OPENCHAMBER_HOST`, the UI password, and the rest in `main.mjs`) go through `assignInjectedEnv` (`packages/web/server/lib/injected-env.js`), which records their names in `OPENCHAMBER_INJECTED_ENV`. The integrated terminal and agent shells inherit the record, so `openchamber startup enable` run from them keeps Desktop's configuration out of the startup service (#4604). Add a new variable the same way; a bare `process.env.X = ...` would leak into the service again.
+
 The AppImage launcher also prepends its own directories to `PATH`, `LD_LIBRARY_PATH`, `GSETTINGS_SCHEMA_DIR` and `XDG_DATA_DIRS`, leaving a trailing `:` when a variable was unset. Desktop keeps them in its own process and removes them only from the integrated terminal, the managed OpenCode server, and the git environment the server builds (`stripAppImageLauncherEnv` in `packages/web/server/lib/inherited-env.js`), so user tools, agent commands and git hooks started from those paths see the user's values (#4177). `XDG_DATA_DIRS` keeps the standard system directories the launcher adds around the user's value.
 
 Linux updates are supported only when the packaged app is running from a writable AppImage. Update checks, downloads, and installation report an actionable error when `APPIMAGE` is missing, invalid, or read-only; a missing release feed (`latest-linux.yml` 404 before the first Linux publish) is treated as “no update available”. Authenticated Web clients connected to the embedded Desktop Host use this same `electron-updater` check, download, and restart flow rather than a package-manager command. macOS and Windows updater behavior is unchanged. Release builds keep `latest-linux.yml` (x64) and `latest-linux-arm64.yml` separate and validate each manifest against its AppImage before upload. Linux AppImages download full updates (no `.blockmap` differential channel yet).
@@ -246,6 +265,22 @@ Use an explicit override when testing a different OpenCode CLI build or when a u
 ## Native Features Owned Here
 
 - Floating Mini Chat windows.
+- Quake Mode (Windows Terminal-style): one configurable global hotkey
+  (``Ctrl+` `` by default, deliberately without the Win key) toggles the existing
+  main window between hidden and a top-attached dropdown on the display holding
+  the cursor. Startup always opens a normal window; Quake geometry (fullscreen
+  by default, adjustable down to 30%) applies only when the hotkey is pressed
+  while Quake Mode is enabled. The window stays an ordinary window otherwise
+  (taskbar, Alt+Tab, minimize/maximize all behave normally). Hiding never
+  destroys the renderer or its sessions; showing never reloads it. The hotkey
+  hides the window only when it is visible and focused; a window behind
+  another app is brought forward instead. Closing the window hides it while
+  Quake Mode is enabled and its hotkey is registered; without a registered
+  hotkey close behaves as usual, since nothing could bring the window back.
+  A shortcut given to another action is stored as `__unassigned__` and never
+  falls back to the default. See `quake-mode.mjs` (pure
+  settings/geometry/toggle helpers) and the `desktop_get/set_quake_mode*` IPC
+  commands in `main.mjs`.
 - Mini Chat loads from the resolved local UI origin in HMR development, not the
   API server origin. Bundled mode keeps `openchamber-ui://` assets. Native zoom
   targets the focused window directly; composer focus adjusts interface scale,

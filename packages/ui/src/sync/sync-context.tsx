@@ -77,7 +77,7 @@ import { refreshStoresForCatalogKind } from "@/stores/catalogRefresh"
 import { useMcpStore } from "@/stores/useMcpStore"
 import { resolveGlobalSessionDirectory, useGlobalSessionsStore } from "@/stores/useGlobalSessionsStore"
 import { spaceIdOfDirectory } from "@/lib/spaces/space-route"
-import { refreshSpacesJourney, useSpacesStore } from "@/lib/spaces/spaces-store"
+import { isSpaceDirectoryStopped, isSpaceStopped, refreshSpacesJourney, useSpacesStore } from "@/lib/spaces/spaces-store"
 import { cleanupPersistedSessionState } from "./session-deletion-cleanup"
 import { toast } from "@/components/ui"
 import { appendNotification } from "./notification-store"
@@ -110,6 +110,7 @@ import {
   type SessionMaterializationRequest,
 } from "./materialization"
 import { openSessionFromToast } from "./session-navigation"
+import { revealRequest } from "./request-reveal"
 import { getPermissionToastKey, showPermissionNeededToast } from "./permission-toast"
 import { getRuntimeLiveStatusSeed, LIVE_STATUS_TTL_MS } from "./runtime-live-memory"
 import { getRuntimeKey } from "@/lib/runtime-switch"
@@ -556,11 +557,17 @@ const getFormToastKey = (sessionID?: string, requestID?: string) => {
 /** A pending form has no question text on the wire — only the form's title. */
 const FORM_TOAST_DESCRIPTION = "Agent is waiting for your input"
 
+/** "Open session" on a question or permission toast also brings that request into view. */
+const openRequestFromToast = (sessionID: string, directory: string, requestID: string) => {
+  openSessionFromToast(sessionID, directory)
+  revealRequest(requestID)
+}
+
 /** A location-scoped form names no session to open; the toast then only announces it. */
-const formToastAction = (sessionID: string, directory: string) => (
+const formToastAction = (sessionID: string, directory: string, formID: string) => (
   sessionID === LOCATION_SCOPED_FORM_SESSION_ID
     ? undefined
-    : { label: "Open session", onClick: () => openSessionFromToast(sessionID, directory) }
+    : { label: "Open session", onClick: () => openRequestFromToast(sessionID, directory, formID) }
 )
 
 /** Blank server strings mean "absent" here, not "empty title". */
@@ -1366,7 +1373,7 @@ export async function resyncBlockingRequestsForDirectory(
         toast.info(form.title, {
           id: `form-${toastKey}`,
           description: FORM_TOAST_DESCRIPTION,
-          action: formToastAction(sessionId, directory),
+          action: formToastAction(sessionId, directory, form.id),
         })
       }
     }
@@ -1441,7 +1448,7 @@ export async function resyncBlockingRequestsForDirectory(
           isViewed,
           pendingIds: pendingPermissionToastIds,
           show: (title, options) => toast.info(title, options),
-          openSession: openSessionFromToast,
+          openSession: openRequestFromToast,
         })
       }
     }
@@ -1673,7 +1680,7 @@ const notifyPermissionAsked = (permission: PermissionRequest, directory: string)
     isViewed: isViewedInCurrentSession(directory, permission.sessionID),
     pendingIds: pendingPermissionToastIds,
     show: (title, options) => toast.info(title, options),
-    openSession: openSessionFromToast,
+    openSession: openRequestFromToast,
   })
 }
 
@@ -1751,7 +1758,7 @@ const notifyFormCreated = (form: FormRequest, directory: string): void => {
   toast.info(form.title, {
     id: `form-${toastKey}`,
     description: FORM_TOAST_DESCRIPTION,
-    action: formToastAction(sessionID, directory),
+    action: formToastAction(sessionID, directory, form.id),
   })
 }
 
@@ -2839,6 +2846,11 @@ export function SyncProvider(props: {
         // that one space, the directories the global list knows for it, so a session made or
         // finished during the gap shows up without a full global reload.
         useSpacesStore.getState().noteStream(spaceId, status)
+        // A stream that is back on a space this window lists as stopped means the space was started
+        // elsewhere: the list is read again, so the group and the paused polls follow.
+        if (status === "connected" && isSpaceStopped(spaceId)) {
+          void refreshSpacesJourney().catch(() => undefined)
+        }
         if (status !== "connected") {
           // A space that stopped itself for the idle stop ends its stream on its way out. While the
           // host's list still says it runs, read the list again at each failed reconnect, which the
@@ -3005,6 +3017,9 @@ export function SyncProvider(props: {
           if (stopped) return
           const now = Date.now()
           for (const [directory, store] of childStores.children.entries()) {
+            // A stopped space answers nothing: the journey list is the authority, so its
+            // directories wait, status as they last reported, until the list says it runs.
+            if (isSpaceDirectoryStopped(directory)) continue
             const state = store.getState()
             const candidateSessionIds = getActiveSessionCandidateIds(directory, state)
             if (candidateSessionIds.length === 0) {

@@ -40,6 +40,7 @@ import {
     type ChatDraftIdentity,
     type ChatDraftSnapshot,
 } from '@/lib/chatDraftPersistence';
+import { CHAT_DRAFT_PROJECT_ID } from '@/lib/chatDirectories';
 import { ReviewFlowDialog, type ReviewFlowExecution } from '@/components/session/ReviewFlowDialog';
 import { BtwPanel } from './btw/BtwPanel';
 import { useBtwPanelState } from './btw/useBtwPanelState';
@@ -76,6 +77,7 @@ import { isCapacitorApp } from '@/lib/platform';
 import { isIMECompositionEvent } from '@/lib/ime';
 import { setNativeImagePasteEnabled, subscribeToNativeImagePastes } from '@/lib/nativeImagePaste';
 import { getCycledPrimaryAgentName, type MobileControlsPanel } from './mobileControlsUtils';
+import { isAutoModel } from '@/lib/routing/autoModel';
 import { MobileOverlayPanel } from '@/components/ui/MobileOverlayPanel';
 import { useThemeSystem } from '@/contexts/useThemeSystem';
 import { ReferencePickerDialog } from '@/components/references/ReferencePickerDialog';
@@ -155,11 +157,11 @@ import {
     type ComposerEditorHandle,
 } from './composer/editor/ComposerEditor';
 import { useComposerHeightLimit } from './composer/editor/useComposerHeightLimit';
+import { usePendingComposerText } from './composer/state/usePendingComposerText';
 import { createComposerEditorViewStore } from './composer/editor/viewStore';
 import { composerAutoCorrect } from './composer/editor/autocorrect';
 import {
     appendInlineText,
-    appendWithLineBreaks,
     buildImagePasteInsertion,
     getMarkdownAutoPairEdit,
     shouldWrapSelectionAsLink,
@@ -206,7 +208,8 @@ import {
 import { NewSpaceDialog } from '@/components/session/spaces/NewSpaceDialog';
 import { NewWorktreeDialog } from '@/components/session/NewWorktreeDialog';
 import { isSpaceCreationRequest } from '@/lib/spaces/space-creation';
-import { spaceModelRefusal } from '@/lib/spaces/space-model-access';
+import { spaceModelRefusal, stoppedSpaceOfTarget } from '@/lib/spaces/space-model-access';
+import { runSpaceAction } from '@/lib/spaces/space-repair';
 import { useSpacesStore } from '@/lib/spaces/spaces-store';
 import { isDraftSendWaiting, subscribeDraftSendWaiting } from '@/lib/worktrees/pendingDraftWorktree';
 import { ComposerAutocompletePopups } from './composer/ui/ComposerAutocompletePopups';
@@ -332,11 +335,18 @@ interface ChatInputProps {
     draftPresentationExiting?: boolean;
 }
 
+// A new Chat's working directory moves from the Chats root to a prepared
+// folder on the first keystroke. Its composer text keys on the Chats bucket
+// instead, so that move neither clears what was typed nor leaves it behind
+// under the root for the next new Chat to show.
+const NEW_CHAT_DRAFT_DIRECTORY = CHAT_DRAFT_PROJECT_ID;
+
 const resolveChatDraftIdentity = (column: ChatColumnSession | null): ChatDraftIdentity | null => {
     const sessionState = useSessionUIStore.getState();
     const sessionId = column ? column.sessionId : sessionState.currentSessionId;
-    const newSessionDirectory = sessionState.newSessionDraft?.open
-        ? sessionState.newSessionDraft.bootstrapPendingDirectory ?? sessionState.newSessionDraft.directoryOverride
+    const draft = sessionState.newSessionDraft;
+    const newSessionDirectory = draft?.open
+        ? draft.target === 'chat' ? NEW_CHAT_DRAFT_DIRECTORY : draft.bootstrapPendingDirectory ?? draft.directoryOverride
         : null;
     const directory = sessionId
         ? sessionState.getDirectoryForSession(sessionId) ?? (column ? column.directory : sessionState.currentSessionDirectory)
@@ -466,13 +476,16 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
     // they no longer apply.
     const isPromotedBtwSession = wasPromotedBtwSession(btwPanel.parentSession);
     const activeRuntimeKey = getRuntimeKey();
+    const isNewChatDraft = useSessionUIStore((s) => (
+        !columnPinned && !currentSessionId && Boolean(s.newSessionDraft?.open) && s.newSessionDraft.target === 'chat'
+    ));
     const chatDraftIdentity = React.useMemo(
         () => createChatDraftIdentity(
             activeRuntimeKey,
-            currentSessionDirectoryForSync ?? currentDirectory,
+            isNewChatDraft ? NEW_CHAT_DRAFT_DIRECTORY : currentSessionDirectoryForSync ?? currentDirectory,
             isBtwActive ? btwComposerSessionId : currentSessionId,
         ),
-        [activeRuntimeKey, btwComposerSessionId, currentDirectory, currentSessionDirectoryForSync, currentSessionId, isBtwActive],
+        [activeRuntimeKey, btwComposerSessionId, currentDirectory, currentSessionDirectoryForSync, currentSessionId, isBtwActive, isNewChatDraft],
     );
     const claimAttachmentSlot = React.useCallback(() => {
         useInputStore.getState().selectAttachmentDraft(chatDraftIdentity);
@@ -500,12 +513,10 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         (s) => btwComposerSessionId ? s.sessionAgentSelections.get(btwComposerSessionId) ?? null : null,
         [btwComposerSessionId],
     ));
-    const consumePendingInputText = useInputStore((s) => s.consumePendingInputText);
     const consumePendingBtwComposerRequest = useInputStore((s) => s.consumePendingBtwComposerRequest);
     const pendingBtwComposerRequest = useInputStore((s) => s.pendingBtwComposerRequest);
     const pendingPresetSubmit = useInputStore((s) => s.pendingPresetSubmit);
     const setPendingInputText = useInputStore((s) => s.setPendingInputText);
-    const pendingInputText = useInputStore((s) => s.pendingInputText);
     const pendingGuestIssue = useInputStore((s) => s.pendingGuestIssue);
     const consumePendingGuestIssue = useInputStore((s) => s.consumePendingGuestIssue);
     const pendingComposerReferenceCount = usePendingComposerReferences((s) => s.references.length);
@@ -1210,29 +1221,11 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         composerRef.current?.blur();
     }, [isMobile]);
 
-    // Consume pending input text (e.g., from revert action)
-    React.useEffect(() => {
-        if (!isBtwActive && pendingInputText !== null) {
-            const pending = consumePendingInputText(mailboxTarget);
-            if (pending?.text) {
-                if (pending.mode === 'append') {
-                    setMessage((prev) => {
-                        const next = pending.text;
-                        if (!next.trim()) return prev;
-                        return appendWithLineBreaks(prev, next);
-                    });
-                } else if (pending.mode === 'append-inline') {
-                    setMessage((prev) => appendInlineText(prev, pending.text));
-                } else {
-                    setMessage(pending.text);
-                }
-                // Focus textarea after setting message
-                setTimeout(() => {
-                    composerRef.current?.focus();
-                }, 0);
-            }
-        }
-    }, [isBtwActive, mailboxTarget, pendingInputText, consumePendingInputText]);
+    // Consume pending input text (e.g., from revert action). Must stay after
+    // useComposerDraft: on a draft switch the incoming draft loads first and
+    // the pending text lands on top of it.
+    const focusComposer = React.useCallback(() => composerRef.current?.focus(), []);
+    usePendingComposerText({ enabled: !isBtwActive, target: mailboxTarget, setMessage, focus: focusComposer });
 
     const parallel = useParallelComposer({
         enabled: !isMobile && !isBtwActive,
@@ -1342,6 +1335,12 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
             selectSkillsForDirectory(useSkillsStore.getState(), currentDirectory).map((skill) => skill.name),
         );
         const skillInstruction = buildSkillMentionInstruction(collectInlineSkillMentions(sanitizedText, availableSkillNames));
+        // The server and the VS Code auto-send deliver `text` as is, so its
+        // snippets expand now; `content` keeps them for editing.
+        const textToQueue = await useSnippetsStore.getState().expandText(sanitizedText).catch((error) => {
+            console.warn('[queue] Failed to expand snippets, queueing original text:', error);
+            return sanitizedText;
+        });
 
         // Everything attached to the composer leaves with the message: the
         // chips are part of what was queued, and come back if it is edited.
@@ -1379,7 +1378,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         try {
             await addToQueue(queueTarget, {
                 content: messageToQueue,
-                text: sanitizedText,
+                text: textToQueue,
                 agentMention: mention?.name,
                 attachments: attachmentsToQueue.length > 0 ? attachmentsToQueue : undefined,
                 context: context.length > 0 ? context : undefined,
@@ -1657,6 +1656,27 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         const agentNameToSend = capturedSendConfig?.agent ?? (isBtwActive ? effectiveBtwSelection.agent : currentAgentName);
         const variantToSend = capturedSendConfig?.variant ?? (isBtwActive ? effectiveBtwSelection.variant : currentVariant);
 
+        // The isolated space the message targets, if any: a session by its directory, a draft by
+        // the creation request it still waits on or by its directory.
+        const spaceTarget = currentSessionId
+            ? { requestId: null, directory: currentSessionDirectoryForSync ?? currentDirectory ?? null }
+            : newSessionDraftOpen
+                ? { requestId: newSessionDraft?.pendingWorktreeRequestId ?? null, directory: newSessionDraft?.directoryOverride ?? null }
+                : null;
+        // A stopped space takes no message on any model, and its catalog does not load while it is
+        // stopped, so this comes before the model check. The message stays in the composer;
+        // "Start", where the group's menu offers it, brings the space back and the user sends again.
+        const stoppedSpace = spaceTarget ? stoppedSpaceOfTarget(spaceTarget) : null;
+        if (stoppedSpace) {
+            toast.error(t(stoppedSpace.reason === 'gone' ? 'spaces.draft.spaceGone' : 'spaces.draft.spaceStopped'), stoppedSpace.start ? {
+                action: {
+                    label: t('spaces.actions.start'),
+                    onClick: () => void runSpaceAction(stoppedSpace.spaceId, 'start'),
+                },
+            } : undefined);
+            return;
+        }
+
         if (!providerIdToSend || !modelIdToSend) {
             console.warn('Cannot send message: provider or model not selected');
             toast.error(t('chat.chatInput.toast.noModelSelected'));
@@ -1665,11 +1685,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
 
         // A message to an isolated space goes only on a model the space holds a key for; otherwise
         // it stays in the input with the reason and the way to the grant dialog.
-        const spaceRefusal = currentSessionId
-            ? spaceModelRefusal({ requestId: null, directory: currentSessionDirectoryForSync ?? currentDirectory ?? null }, providerIdToSend)
-            : newSessionDraftOpen
-                ? spaceModelRefusal({ requestId: newSessionDraft?.pendingWorktreeRequestId ?? null, directory: newSessionDraft?.directoryOverride ?? null }, providerIdToSend)
-                : null;
+        const spaceRefusal = spaceTarget ? spaceModelRefusal(spaceTarget, providerIdToSend) : null;
         if (spaceRefusal) {
             const provider = useConfigStore.getState().providers.find((entry) => entry.id === spaceRefusal.providerId)?.name ?? spaceRefusal.providerId;
             toast.error(spaceRefusal.reason === 'domain_blocked'
@@ -2486,6 +2502,9 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
     }, [abortCurrentOperation, btwSessionId, clearAbortPrompt, currentSessionId, isBtwActive]);
 
     const handleCycleAgent = React.useCallback((direction: 1 | -1 = 1) => {
+        // Auto hides the agent control, so the shortcut must not change a
+        // choice the user cannot see.
+        if (isAutoModel(currentProviderId, currentModelId)) return;
         const nextAgentName = getCycledPrimaryAgentName(agents, currentAgentName, direction, useUIStore.getState().favoriteAgents);
         if (!nextAgentName) return;
 
@@ -2495,7 +2514,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         if (currentSessionId) {
             saveSessionAgentSelection(currentSessionId, nextAgentName);
         }
-    }, [agents, columnPinned, currentAgentName, currentSessionId, setAgent, saveSessionAgentSelection]);
+    }, [agents, columnPinned, currentAgentName, currentModelId, currentProviderId, currentSessionId, setAgent, saveSessionAgentSelection]);
 
     // Height the failed-dictation salvage text needs. Its overlay sits
     // absolutely over the composer, so the composer must be able to grow for
@@ -2599,7 +2618,7 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         }, 700);
     }, []);
 
-    const handleComposerChange = ({ value, selection, fromPaste, insertedText }: ComposerChange) => {
+    const handleComposerChange = ({ value, selection, fromPaste, insertedText, fromValueProp }: ComposerChange) => {
         if (largeTextPasteBehavior === 'inline-double-paste') {
             largeTextPasteGesture.change({
                 value, selection, fromPaste, insertedText,
@@ -2649,6 +2668,12 @@ const ChatInputComponent: React.FC<ChatInputProps> = ({
         }
 
         setMessage(value);
+        // Text the app set (a restored draft, a prepared prompt) is not a
+        // trigger being typed: a `#` line in it must not open the snippet list.
+        if (fromValueProp) {
+            closeAutocomplete();
+            return;
+        }
         updateAutocompleteState(value, selection.start, inputSource, pastedInsertedText);
     };
 

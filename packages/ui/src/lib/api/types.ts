@@ -663,6 +663,7 @@ export type GitNetworkOperationErrorCode =
   | 'OUTCOME_UNKNOWN'
   | 'RUNTIME_UNSUPPORTED'
   | 'GIT_LFS_CLIENT_MISSING'
+  | 'CHECKOUT_TOO_LARGE'
   | 'UNKNOWN';
 
 export interface GitNetworkOperationError<Code extends GitNetworkOperationErrorCode = GitNetworkOperationErrorCode> {
@@ -736,6 +737,7 @@ export type GitNetworkOperation =
         | 'TRANSPORT_FAILED'
         | 'RUNTIME_UNSUPPORTED'
         | 'GIT_LFS_CLIENT_MISSING'
+        | 'CHECKOUT_TOO_LARGE'
         | 'UNKNOWN'
       >;
     })
@@ -748,6 +750,7 @@ export type GitNetworkOperation =
         | 'TRANSPORT_FAILED'
         | 'RUNTIME_UNSUPPORTED'
         | 'GIT_LFS_CLIENT_MISSING'
+        | 'CHECKOUT_TOO_LARGE'
         | 'UNKNOWN'
       >;
     })
@@ -1255,7 +1258,7 @@ export interface FilesAPI {
   rename?(oldPath: string, newPath: string): Promise<{ success: boolean; path: string }>;
   revealPath?(path: string): Promise<{ success: boolean }>;
   execCommands?(commands: string[], cwd: string): Promise<{ success: boolean; results: CommandExecResult[] }>;
-  downloadFile?(path: string): Promise<void>;
+  downloadFile?(path: string, options?: FileReadOptions): Promise<void>;
 }
 
 export interface ProjectEntry {
