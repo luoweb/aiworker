@@ -408,6 +408,23 @@
     "autoSaveEnabled": {
       "scope": "profile"
     },
+    "confirmFileTreeMove": {
+      "scope": "profile"
+    },
+    "fileTreeSide": {
+      "scope": "profile",
+      "surfaces": [
+        "web",
+        "desktop"
+      ]
+    },
+    "layoutAnimations": {
+      "scope": "profile",
+      "surfaces": [
+        "web",
+        "desktop"
+      ]
+    },
     "autoCreateWorktree": {
       "scope": "profile"
     },
@@ -459,9 +476,6 @@
       "scope": "profile"
     },
     "draftStartersScheduleTaskAdded": {
-      "scope": "profile"
-    },
-    "addProjectDialogDismissed": {
       "scope": "profile"
     },
     "fontSize": {
@@ -733,6 +747,10 @@
       "local": true
     },
     "contextRailHiddenSurfaces": {
+      "scope": "device",
+      "local": true
+    },
+    "contextSurfaceZones": {
       "scope": "device",
       "local": true
     },
