@@ -43,13 +43,11 @@ import { getContextObligatoryMessages } from '@/lib/contextObligatoryMessages';
 import { setContextObligatoryMessage } from '@/sync/session-actions';
 import { isVSCodeRuntime } from '@/lib/desktop';
 import { useChatColumnActions } from './chatColumnSession';
-import { isFileChangeTool, isShellTool } from '@/lib/opencode/tools';
 
 const ToolOutputDialog = lazyWithChunkRecovery(() => import('./message/ToolOutputDialog'));
 
 const EXPANDED_TOOLS_CACHE_MAX = 4000;
 const expandedToolsStateCache = new Map<string, Set<string>>();
-const collapsedToolsStateCache = new Map<string, Set<string>>();
 
 const readExpandedToolsCache = (messageId: string): Set<string> => {
     const cached = expandedToolsStateCache.get(messageId);
@@ -66,21 +64,6 @@ const writeExpandedToolsCache = (messageId: string, value: Set<string>): void =>
     expandedToolsStateCache.set(messageId, new Set(value));
 };
 
-const readCollapsedToolsCache = (messageId: string): Set<string> => {
-    const cached = collapsedToolsStateCache.get(messageId);
-    return cached ? new Set(cached) : new Set();
-};
-
-const writeCollapsedToolsCache = (messageId: string, value: Set<string>): void => {
-    if (collapsedToolsStateCache.size >= EXPANDED_TOOLS_CACHE_MAX && !collapsedToolsStateCache.has(messageId)) {
-        const oldest = collapsedToolsStateCache.keys().next().value;
-        if (typeof oldest === 'string') {
-            collapsedToolsStateCache.delete(oldest);
-        }
-    }
-    collapsedToolsStateCache.set(messageId, new Set(value));
-};
-
 function useStickyDisplayValue<T>(value: T | null | undefined): T | null | undefined {
     const [stickyValue, setStickyValue] = React.useState<T | null | undefined>(value);
 
@@ -92,6 +75,17 @@ function useStickyDisplayValue<T>(value: T | null | undefined): T | null | undef
 
     return value ?? stickyValue;
 }
+
+// Assistant text goes to the clipboard as Markdown with its rendered HTML,
+// or as the plain text the reader sees when the user asked for that.
+const copyAssistantText = async (text: string) => {
+    const { renderMarkdownSync } = await import('./markdown/markdownCore');
+    const html = renderMarkdownSync(text);
+    const plainText = useUIStore.getState().copyMessagesAsPlainText
+        ? (await import('./markdown/selectionMarkdown')).renderedMarkdownHtmlToPlainText(html, document)
+        : undefined;
+    return copyMarkdownToClipboard(text, html, { plainText });
+};
 
 const getMessageInfoProp = (info: unknown, key: string): unknown => {
     if (typeof info === 'object' && info !== null) {
@@ -151,13 +145,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }
 
     const providers = useConfigStore((state) => state.providers);
-    const { showReasoningTraces, stickyUserHeader, chatRenderMode, showExpandedBashTools, showExpandedEditTools } = useUIStore(
+    const { showReasoningTraces, stickyUserHeader } = useUIStore(
         useShallow((state) => ({
             showReasoningTraces: state.showReasoningTraces,
             stickyUserHeader: state.stickyUserHeader,
-            chatRenderMode: state.chatRenderMode,
-            showExpandedBashTools: state.showExpandedBashTools,
-            showExpandedEditTools: state.showExpandedEditTools,
         }))
     );
 
@@ -165,7 +156,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     const [copiedMessage, setCopiedMessage] = React.useState(false);
     const handleCopyLink = useCopyMessageLink(message.info.sessionID, message.info.id);
     const [expandedTools, setExpandedTools] = React.useState<Set<string>>(() => readExpandedToolsCache(message.info.id));
-    const [collapsedTools, setCollapsedTools] = React.useState<Set<string>>(() => readCollapsedToolsCache(message.info.id));
     const [popupContent, setPopupContent] = React.useState<ToolPopupContent>({
         open: false,
         title: '',
@@ -174,7 +164,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
     React.useEffect(() => {
         setExpandedTools(readExpandedToolsCache(message.info.id));
-        setCollapsedTools(readCollapsedToolsCache(message.info.id));
     }, [message.info.id]);
 
 
@@ -337,77 +326,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         [normalizedParts, showReasoningTraces]
     );
 
-    const displayParts = React.useMemo(() => {
-        if (isUser) {
-            return visibleParts;
-        }
-
-        if (!isMessageCompleted && chatRenderMode === 'sorted') {
-            return [];
-        }
-
-        return visibleParts;
-    }, [chatRenderMode, isMessageCompleted, isUser, visibleParts]);
-
-
-    const toolParts = React.useMemo(() => {
-        if (isUser) {
-            return [];
-        }
-        const filtered = visibleParts.filter((part) => part.type === 'tool');
-        return filtered;
-    }, [isUser, visibleParts]);
-
-    const turnActivityToolParts = React.useMemo(() => {
-        if (isUser) {
-            return [] as Part[];
-        }
-        const records = turnGroupingContext?.activityParts ?? [];
-        return records
-            .filter((record) => record.kind === 'tool')
-            .map((record) => record.part)
-            .filter((part): part is Part => part.type === 'tool');
-    }, [isUser, turnGroupingContext?.activityParts]);
-
-    const defaultOpenToolIds = React.useMemo(() => {
-        if (!showExpandedBashTools && !showExpandedEditTools) {
-            return new Set<string>();
-        }
-
-        const next = new Set<string>();
-        for (const part of [...toolParts, ...turnActivityToolParts]) {
-            const toolId = typeof part?.id === 'string' ? part.id : '';
-            if (!toolId) continue;
-            const toolName = (part as { tool?: string }).tool;
-            if (showExpandedBashTools && isShellTool(toolName)) {
-                next.add(toolId);
-                continue;
-            }
-            if (showExpandedEditTools && isFileChangeTool(toolName)) {
-                next.add(toolId);
-            }
-        }
-
-        return next;
-    }, [showExpandedBashTools, showExpandedEditTools, toolParts, turnActivityToolParts]);
-
-    const effectiveExpandedTools = React.useMemo(() => {
-        if (defaultOpenToolIds.size === 0 && collapsedTools.size === 0) {
-            return expandedTools;
-        }
-
-        const next = new Set(expandedTools);
-        defaultOpenToolIds.forEach((toolId) => {
-            if (!collapsedTools.has(toolId)) {
-                next.add(toolId);
-            }
-        });
-        collapsedTools.forEach((toolId) => {
-            next.delete(toolId);
-        });
-        return next;
-    }, [collapsedTools, defaultOpenToolIds, expandedTools]);
-
     const agentMention = React.useMemo(() => {
         if (!isUser) {
             return undefined;
@@ -427,7 +345,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         return { name, token: rawValue } satisfies AgentMentionInfo;
     }, [isUser, normalizedParts]);
 
-    const shouldHideUserMessage = isUser && displayParts.length === 0;
+    const shouldHideUserMessage = isUser && visibleParts.length === 0;
 
     const themeVariant = currentTheme?.metadata.variant;
     const isDarkTheme = React.useMemo(() => {
@@ -602,29 +520,28 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
     const messageTextContent = React.useMemo(() => {
         if (isUser) {
-            return flattenUserTextParts(displayParts);
+            return flattenUserTextParts(visibleParts);
         }
 
         if (assistantErrorText && assistantErrorText.trim().length > 0) {
             return assistantErrorText;
         }
 
-        return flattenAssistantTextParts(displayParts);
-    }, [assistantErrorText, displayParts, isUser]);
+        return flattenAssistantTextParts(visibleParts);
+    }, [assistantErrorText, visibleParts, isUser]);
 
     const hasTextContent = messageTextContent.length > 0;
+
+    // The turn footer copies the whole reply: what the earlier steps of the
+    // turn wrote before their tool calls, then this message.
+    const earlierAssistantText = isUser ? undefined : turnGroupingContext?.earlierAssistantText;
 
     const handleCopyMessage = React.useCallback(async () => {
         let result;
         if (isUser) {
             result = await copyTextToClipboard(messageTextContent);
         } else {
-            const { renderMarkdownSync } = await import('./markdown/markdownCore');
-            const html = renderMarkdownSync(messageTextContent);
-            const plainText = useUIStore.getState().copyMessagesAsPlainText
-                ? (await import('./markdown/selectionMarkdown')).renderedMarkdownHtmlToPlainText(html, document)
-                : undefined;
-            result = await copyMarkdownToClipboard(messageTextContent, html, { plainText });
+            result = await copyAssistantText(messageTextContent);
         }
         if (!result.ok) {
             return false;
@@ -635,6 +552,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         }
         return true;
     }, [isUser, messageTextContent]);
+
+    const handleCopyTurn = React.useCallback(async () => {
+        const turnText = [...(earlierAssistantText ?? []), messageTextContent].filter((text) => text.length > 0).join('\n\n');
+        const result = await copyAssistantText(turnText);
+        return result.ok;
+    }, [earlierAssistantText, messageTextContent]);
 
     const handleRevert = React.useCallback(() => {
         if (!sessionId || !message.info.id) return;
@@ -670,32 +593,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
     }, [sessionId, message.info.id]);
 
     const handleToggleTool = React.useCallback((toolId: string) => {
-        const isDefaultOpen = defaultOpenToolIds.has(toolId);
-        const isCurrentlyExpanded = effectiveExpandedTools.has(toolId);
-
-        if (isDefaultOpen) {
-            setCollapsedTools((prev) => {
-                const next = new Set(prev);
-                if (isCurrentlyExpanded) {
-                    next.add(toolId);
-                } else {
-                    next.delete(toolId);
-                }
-                writeCollapsedToolsCache(message.info.id, next);
-                return next;
-            });
-
-            if (!isCurrentlyExpanded) {
-                setExpandedTools((prev) => {
-                    const next = new Set(prev);
-                    next.delete(toolId);
-                    writeExpandedToolsCache(message.info.id, next);
-                    return next;
-                });
-            }
-            return;
-        }
-
         setExpandedTools((prev) => {
             const next = new Set(prev);
             if (next.has(toolId)) {
@@ -706,17 +603,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             writeExpandedToolsCache(message.info.id, next);
             return next;
         });
-
-        setCollapsedTools((prev) => {
-            if (!prev.has(toolId)) {
-                return prev;
-            }
-            const next = new Set(prev);
-            next.delete(toolId);
-            writeCollapsedToolsCache(message.info.id, next);
-            return next;
-        });
-    }, [defaultOpenToolIds, effectiveExpandedTools, message.info.id]);
+    }, [message.info.id]);
 
     const hasEverStreamedRef = React.useRef(false);
 
@@ -773,7 +660,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             >
                 <div className="chat-message-column relative">
                     {isUser ? (
-                        displayParts.length === 0 ? null : (
+                        visibleParts.length === 0 ? null : (
                             <FadeInOnReveal
                                 forceAnimation
                                 skipAnimation={!animateUserOnMount}
@@ -801,7 +688,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                         >
                                             <MessageBody
                                                 messageId={message.info.id}
-                                                parts={displayParts}
+                                                parts={visibleParts}
                                                 isUser={isUser}
                                                 isMessageCompleted={isMessageCompleted}
                                                 messageFinish={messageFinish}
@@ -838,7 +725,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                         {useExternalUserActionsRow ? (
                                             <MessageBody
                                                 messageId={message.info.id}
-                                                parts={displayParts}
+                                                parts={visibleParts}
                                                 isUser={isUser}
                                                 isMessageCompleted={isMessageCompleted}
                                                 messageFinish={messageFinish}
@@ -895,7 +782,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                  hasTouchInput={hasTouchInput}
                                 copiedCode={copiedCode}
                                 onCopyCode={handleCopyCode}
-                                expandedTools={effectiveExpandedTools}
+                                expandedTools={expandedTools}
                                 onToggleTool={handleToggleTool}
                                 onShowPopup={handleShowPopup}
                                 streamPhase={streamPhase}
@@ -903,6 +790,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                                 shouldShowHeader={shouldShowHeader}
                                 hasTextContent={hasTextContent}
                                 onCopyMessage={handleCopyMessage}
+                                onCopyTurn={earlierAssistantText ? handleCopyTurn : undefined}
                                 onCopyLink={handleCopyLink}
                                 copiedMessage={copiedMessage}
                                 showReasoningTraces={showReasoningTraces}
