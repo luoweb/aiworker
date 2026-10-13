@@ -11,6 +11,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -3248,6 +3249,7 @@ export const dict = {
   'updateDialog.status.waitingForServer': 'ממתין לשרת…',
   'updateDialog.status.autoReloadHint': 'הדף ייטען מחדש אוטומטית כשהעדכון יסתיים.',
   'updateDialog.fallback.updateViaTerminal': 'או לעדכן דרך המסוף:',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} זמין. יש לעדכן אותו במחשב שבו הוא פועל.',
   'updateDialog.actions.copyCommand': 'העתק פקודה',
   'updateDialog.actions.copied': 'הועתק!',
   'updateDialog.status.downloadingPayload': 'מוריד את חבילת העדכון…',
@@ -3763,6 +3765,7 @@ export const dict = {
   ...webSearchI18n.he,
   ...isolatedSpacesI18n.he,
   ...sourceBoardI18n.he,
+  ...projectActionsI18n.he,
   ...environmentI18n.he,
   ...providersI18n.he,
   ...mcpGridI18n.he,
@@ -3773,6 +3776,10 @@ export const dict = {
   'settings.openchamber.visual.field.layoutAnimations': 'הנפשת חלוניות',
   'settings.openchamber.visual.field.layoutAnimationsAria': "הנפשת סרגל הצד והחלוניות סביב הצ'אט בזמן פתיחה וסגירה",
   'settings.openchamber.visual.field.layoutAnimationsInfo': "סרגל הצד, החלוניות סביב הצ'אט וכרטיס מצב העבודה מחליקים בזמן פתיחה וסגירה. כיבוי האפשרות מציג ומסתיר אותם מיד.",
+  'settings.openchamber.visual.field.openLinksInBrowserPanel': 'פתיחת קישורים בדפדפן המובנה',
+  'settings.openchamber.visual.field.openLinksInBrowserPanelInfo': 'קישורים בצ׳אט נפתחים בכרטיסיית דפדפן לצד הצ׳אט. Cmd+לחיצה או Ctrl+לחיצה פותחת אותם בדפדפן ברירת המחדל.',
+  'settings.openchamber.visual.field.openTrackerLinksOnBoard': 'פתיחת בעיות ובקשות משיכה ב-OpenChamber',
+  'settings.openchamber.visual.field.openTrackerLinksOnBoardInfo': 'קישורים לבעיות, בקשות משיכה ובקשות מיזוג ב-GitHub וב-GitLab ולבעיות Linear נפתחים בלוח בעיות ו-PR כשהפרויקט שלהם פתוח כאן. Cmd+לחיצה או Ctrl+לחיצה פותחת את הקישור עצמו.',
   'settings.openchamber.visual.field.fileTreeSide': 'צד עץ הקבצים',
   'settings.openchamber.visual.option.fileTreeSide.left': 'ימין',
   'settings.openchamber.visual.option.fileTreeSide.right': 'שמאל',
@@ -3808,6 +3815,8 @@ export const dict = {
   'filesView.editor.moreActions': 'פעולות נוספות',
   'filesView.editor.toast.contentsCopied': 'תוכן הקובץ הועתק',
   'diffView.whitespace.hidden': 'שינויי רווחים מוסתרים',
+  'diffView.layout.switchToUnified': 'מעבר לתצוגה מאוחדת',
+  'diffView.layout.switchToSideBySide': 'מעבר לתצוגה זה לצד זה',
   'diffView.whitespace.shown': 'שינויי רווחים מוצגים',
   'session.newWorktree.trust.skip': 'דילוג',
   'chat.revertPopover.toast.restoreFailed': 'לא ניתן היה לשחזר את ההודעות שבוטלו',

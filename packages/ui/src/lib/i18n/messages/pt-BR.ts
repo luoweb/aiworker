@@ -12,6 +12,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -147,6 +148,7 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n['pt-BR'],
   ...isolatedSpacesI18n['pt-BR'],
   ...sourceBoardI18n['pt-BR'],
+  ...projectActionsI18n['pt-BR'],
   ...environmentI18n['pt-BR'],
   ...providersI18n['pt-BR'],
   ...mcpGridI18n['pt-BR'],
@@ -1808,6 +1810,8 @@ export const dict: Record<I18nKey, string> = {
   "diffView.actions.enableLineWrap": "Ativar ajuste de linha",
   "diffView.actions.hideWhitespace": "Ocultar alterações de espaços em branco",
   "diffView.whitespace.hidden": "Alterações de espaços em branco ocultas",
+  "diffView.layout.switchToUnified": "Mudar para a visualização unificada",
+  "diffView.layout.switchToSideBySide": "Mudar para a visualização lado a lado",
   "diffView.whitespace.shown": "Alterações de espaços em branco visíveis",
   "diffView.actions.openFileInEditorAtChange": "Abrir este arquivo no editor nesta alteração",
   "diffView.actions.openFileAtFirstChangedLine": "Abrir este arquivo na primeira linha alterada",
@@ -3240,6 +3244,7 @@ export const dict: Record<I18nKey, string> = {
   "updateDialog.status.waitingForServer": "Aguardando o servidor...",
   "updateDialog.status.autoReloadHint": "A página será recarregada automaticamente quando a atualização terminar.",
   "updateDialog.fallback.updateViaTerminal": "Ou atualize pelo terminal:",
+  "updateDialog.desktopHostInstall": "OpenChamber {version} está disponível. Atualize no computador em que ele roda.",
   "updateDialog.actions.copyCommand": "Copiar comando",
   "updateDialog.actions.copied": "Copiado!",
   "updateDialog.status.downloadingPayload": "Baixando o payload de atualização...",

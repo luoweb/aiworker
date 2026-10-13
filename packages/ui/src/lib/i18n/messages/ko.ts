@@ -12,6 +12,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -137,6 +138,7 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n.ko,
   ...isolatedSpacesI18n.ko,
   ...sourceBoardI18n.ko,
+  ...projectActionsI18n.ko,
   ...environmentI18n.ko,
   ...providersI18n.ko,
   ...mcpGridI18n.ko,
@@ -1854,6 +1856,8 @@ export const dict: Record<I18nKey, string> = {
   'diffView.actions.enableLineWrap': '줄 바꿈 켜기',
   'diffView.actions.hideWhitespace': '공백 변경 숨기기',
   'diffView.whitespace.hidden': '공백 변경 숨김',
+  'diffView.layout.switchToUnified': '통합 보기로 전환',
+  'diffView.layout.switchToSideBySide': '나란히 보기로 전환',
   'diffView.whitespace.shown': '공백 변경 표시 중',
   'diffView.actions.openFileInEditorAtChange': '변경 위치에서 이 파일을 에디터로 열기',
   'diffView.actions.openFileAtFirstChangedLine': '첫 변경 줄에서 이 파일 열기',
@@ -3286,6 +3290,7 @@ export const dict: Record<I18nKey, string> = {
   'updateDialog.status.waitingForServer': '서버 대기 중…',
   'updateDialog.status.autoReloadHint': '업데이트가 완료되면 페이지가 자동으로 새로고침됩니다.',
   'updateDialog.fallback.updateViaTerminal': '또는 터미널에서 업데이트:',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version}을(를) 사용할 수 있습니다. 실행 중인 컴퓨터에서 업데이트하세요.',
   'updateDialog.actions.copyCommand': '명령어 복사',
   'updateDialog.actions.copied': '복사 완료!',
   'updateDialog.status.downloadingPayload': '업데이트 패키지 다운로드 중…',

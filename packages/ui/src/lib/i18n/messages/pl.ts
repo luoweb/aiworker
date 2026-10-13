@@ -12,6 +12,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -137,6 +138,7 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n.pl,
   ...isolatedSpacesI18n.pl,
   ...sourceBoardI18n.pl,
+  ...projectActionsI18n.pl,
   ...environmentI18n.pl,
   ...providersI18n.pl,
   ...mcpGridI18n.pl,
@@ -2056,6 +2058,8 @@ export const dict: Record<I18nKey, string> = {
   'diffView.actions.enableLineWrap': 'Włącz zawijanie linii',
   'diffView.actions.hideWhitespace': 'Ukryj zmiany białych znaków',
   'diffView.whitespace.hidden': 'Zmiany białych znaków ukryte',
+  'diffView.layout.switchToUnified': 'Przełącz na widok ujednolicony',
+  'diffView.layout.switchToSideBySide': 'Przełącz na widok obok siebie',
   'diffView.whitespace.shown': 'Zmiany białych znaków widoczne',
   'diffView.actions.expandAll': 'Rozwiń wszystko',
   'diffView.actions.collapseAll': 'Zwiń wszystko',
@@ -3300,6 +3304,7 @@ export const dict: Record<I18nKey, string> = {
   'mobileUpdate.toast.actions.download': 'Pobierz',
   'mobileUpdate.toast.actions.dismiss': 'Odrzuć',
   'updateDialog.fallback.updateViaTerminal': 'Lub zaktualizuj przez terminal:',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} jest dostępny. Zaktualizuj go na komputerze, na którym działa.',
   'updateDialog.header.updateAvailable': 'Dostępna aktualizacja',
   'updateDialog.header.updating': 'Aktualizowanie OpenChamber...',
   'updateDialog.status.autoReloadHint': 'Strona automatycznie odświeży się po zakończeniu aktualizacji.',

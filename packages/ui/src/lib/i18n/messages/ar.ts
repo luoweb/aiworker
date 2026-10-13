@@ -11,6 +11,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -3248,6 +3249,7 @@ export const dict = {
   'updateDialog.status.waitingForServer': 'في انتظار الخادم…',
   'updateDialog.status.autoReloadHint': 'ستُعاد تحميل الصفحة تلقائيًا عند اكتمال التحديث.',
   'updateDialog.fallback.updateViaTerminal': 'أو حدّث عبر الطرفية:',
+  'updateDialog.desktopHostInstall': 'يتوفر OpenChamber {version}. حدّثه على الكمبيوتر الذي يعمل عليه.',
   'updateDialog.actions.copyCommand': 'نسخ الأمر',
   'updateDialog.actions.copied': 'تم النسخ!',
   'updateDialog.status.downloadingPayload': 'جارٍ تنزيل حزمة التحديث…',
@@ -3763,6 +3765,7 @@ export const dict = {
   ...webSearchI18n.ar,
   ...isolatedSpacesI18n.ar,
   ...sourceBoardI18n.ar,
+  ...projectActionsI18n.ar,
   ...environmentI18n.ar,
   ...providersI18n.ar,
   ...mcpGridI18n.ar,
@@ -3773,6 +3776,10 @@ export const dict = {
   'settings.openchamber.visual.field.layoutAnimations': 'تحريك اللوحات',
   'settings.openchamber.visual.field.layoutAnimationsAria': 'تحريك الشريط الجانبي واللوحات حول المحادثة عند فتحها وإغلاقها',
   'settings.openchamber.visual.field.layoutAnimationsInfo': 'ينزلق الشريط الجانبي واللوحات حول المحادثة وبطاقة حالة العمل عند فتحها وإغلاقها. أوقف هذا الخيار لإظهارها وإخفائها فورًا.',
+  'settings.openchamber.visual.field.openLinksInBrowserPanel': 'فتح الروابط في المتصفح المدمج',
+  'settings.openchamber.visual.field.openLinksInBrowserPanelInfo': 'تُفتح الروابط في المحادثة في علامة تبويب متصفح بجوار المحادثة. يفتحها Cmd+نقر أو Ctrl+نقر في متصفحك الافتراضي.',
+  'settings.openchamber.visual.field.openTrackerLinksOnBoard': 'فتح المشكلات وطلبات السحب في OpenChamber',
+  'settings.openchamber.visual.field.openTrackerLinksOnBoardInfo': 'تُفتح روابط مشكلات GitHub وGitLab وطلبات السحب والدمج ومشكلات Linear في لوحة المشكلات وطلبات السحب عندما يكون مشروعها مفتوحًا هنا. يفتح Cmd+نقر أو Ctrl+نقر الرابط نفسه.',
   'settings.openchamber.visual.field.fileTreeSide': 'جانب شجرة الملفات',
   'settings.openchamber.visual.option.fileTreeSide.left': 'اليمين',
   'settings.openchamber.visual.option.fileTreeSide.right': 'اليسار',
@@ -3808,6 +3815,8 @@ export const dict = {
   'filesView.editor.moreActions': 'إجراءات أخرى',
   'filesView.editor.toast.contentsCopied': 'تم نسخ محتوى الملف',
   'diffView.whitespace.hidden': 'تغييرات المسافات مخفية',
+  'diffView.layout.switchToUnified': 'التبديل إلى العرض الموحّد',
+  'diffView.layout.switchToSideBySide': 'التبديل إلى العرض جنبًا إلى جنب',
   'diffView.whitespace.shown': 'تغييرات المسافات ظاهرة',
   'session.newWorktree.trust.skip': 'تخطٍّ',
   'chat.revertPopover.toast.restoreFailed': 'تعذّرت استعادة الرسائل المتراجع عنها',

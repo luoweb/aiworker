@@ -12,6 +12,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -137,6 +138,7 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n['zh-CN'],
   ...isolatedSpacesI18n['zh-CN'],
   ...sourceBoardI18n['zh-CN'],
+  ...projectActionsI18n['zh-CN'],
   ...environmentI18n['zh-CN'],
   ...providersI18n['zh-CN'],
   ...mcpGridI18n['zh-CN'],
@@ -1820,6 +1822,8 @@ export const dict: Record<I18nKey, string> = {
   'diffView.actions.enableLineWrap': '开启自动换行',
   'diffView.actions.hideWhitespace': '隐藏空白更改',
   'diffView.whitespace.hidden': '已隐藏空白更改',
+  'diffView.layout.switchToUnified': '切换到统一视图',
+  'diffView.layout.switchToSideBySide': '切换到并排视图',
   'diffView.whitespace.shown': '正在显示空白更改',
   'diffView.actions.openFileInEditorAtChange': '在编辑器中打开此文件并定位变更',
   'diffView.actions.openFileAtFirstChangedLine': '在首个变更行打开此文件',
@@ -3252,6 +3256,7 @@ export const dict: Record<I18nKey, string> = {
   'updateDialog.status.waitingForServer': '正在等待服务器...',
   'updateDialog.status.autoReloadHint': '更新完成后页面将自动重新加载。',
   'updateDialog.fallback.updateViaTerminal': '或通过终端更新：',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} 已可用。请在运行它的电脑上更新。',
   'updateDialog.actions.copyCommand': '复制命令',
   'updateDialog.actions.copied': '已复制！',
   'updateDialog.status.downloadingPayload': '正在下载更新包...',

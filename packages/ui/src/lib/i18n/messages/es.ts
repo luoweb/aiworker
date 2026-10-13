@@ -12,6 +12,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -147,6 +148,7 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n.es,
   ...isolatedSpacesI18n.es,
   ...sourceBoardI18n.es,
+  ...projectActionsI18n.es,
   ...environmentI18n.es,
   ...providersI18n.es,
   ...mcpGridI18n.es,
@@ -1808,6 +1810,8 @@ export const dict: Record<I18nKey, string> = {
   "diffView.actions.enableLineWrap": "Activar ajuste de línea",
   "diffView.actions.hideWhitespace": "Ocultar cambios de espacios en blanco",
   "diffView.whitespace.hidden": "Cambios de espacios en blanco ocultos",
+  "diffView.layout.switchToUnified": "Cambiar a vista unificada",
+  "diffView.layout.switchToSideBySide": "Cambiar a vista lado a lado",
   "diffView.whitespace.shown": "Cambios de espacios en blanco visibles",
   "diffView.actions.openFileInEditorAtChange": "Abrir este archivo en el editor en el cambio",
   "diffView.actions.openFileAtFirstChangedLine": "Abrir este archivo en la primera línea modificada",
@@ -3240,6 +3244,7 @@ export const dict: Record<I18nKey, string> = {
   "updateDialog.status.waitingForServer": "Esperando al servidor...",
   "updateDialog.status.autoReloadHint": "La página se recargará automáticamente cuando la actualización finalice.",
   "updateDialog.fallback.updateViaTerminal": "O actualiza desde la terminal:",
+  "updateDialog.desktopHostInstall": "OpenChamber {version} está disponible. Actualízalo en el ordenador donde se ejecuta.",
   "updateDialog.actions.copyCommand": "Copiar comando",
   "updateDialog.actions.copied": "Copiado!",
   "updateDialog.status.downloadingPayload": "Descargando el payload de actualización...",

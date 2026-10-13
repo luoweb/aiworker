@@ -11,6 +11,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -136,6 +137,7 @@ export const dict = {
   ...webSearchI18n.nl,
   ...isolatedSpacesI18n.nl,
   ...sourceBoardI18n.nl,
+  ...projectActionsI18n.nl,
   ...environmentI18n.nl,
   ...providersI18n.nl,
   ...mcpGridI18n.nl,
@@ -1846,6 +1848,8 @@ export const dict = {
   'diffView.actions.enableLineWrap': 'Regelafbreking aanzetten',
   'diffView.actions.hideWhitespace': 'Witruimtewijzigingen verbergen',
   'diffView.whitespace.hidden': 'Witruimtewijzigingen verborgen',
+  'diffView.layout.switchToUnified': 'Overschakelen naar samengevoegde weergave',
+  'diffView.layout.switchToSideBySide': 'Overschakelen naar weergave naast elkaar',
   'diffView.whitespace.shown': 'Witruimtewijzigingen zichtbaar',
   'diffView.actions.openFileInEditorAtChange': 'Dit bestand in de editor openen op de wijziging',
   'diffView.actions.openFileAtFirstChangedLine': 'Dit bestand openen bij de eerste gewijzigde regel',
@@ -3287,6 +3291,7 @@ export const dict = {
   'updateDialog.status.waitingForServer': 'Wachten op server...',
   'updateDialog.status.autoReloadHint': 'De pagina wordt automatisch herladen zodra de update voltooid is.',
   'updateDialog.fallback.updateViaTerminal': 'Of werk bij via de terminal:',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} is beschikbaar. Werk het bij op de computer waarop het draait.',
   'updateDialog.actions.copyCommand': 'Opdracht kopiëren',
   'updateDialog.actions.copied': 'Gekopieerd!',
   'updateDialog.status.downloadingPayload': 'Update-payload downloaden...',

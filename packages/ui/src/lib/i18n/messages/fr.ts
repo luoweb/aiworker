@@ -11,6 +11,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -136,6 +137,7 @@ export const dict = {
   ...webSearchI18n.fr,
   ...isolatedSpacesI18n.fr,
   ...sourceBoardI18n.fr,
+  ...projectActionsI18n.fr,
   ...environmentI18n.fr,
   ...providersI18n.fr,
   ...mcpGridI18n.fr,
@@ -1600,6 +1602,8 @@ export const dict = {
   'diffView.actions.enableLineWrap': 'Activer le retour à la ligne',
   'diffView.actions.hideWhitespace': 'Masquer les changements d’espacement',
   'diffView.whitespace.hidden': 'Changements d’espacement masqués',
+  'diffView.layout.switchToUnified': 'Passer à la vue unifiée',
+  'diffView.layout.switchToSideBySide': 'Passer à la vue côte à côte',
   'diffView.whitespace.shown': 'Changements d’espacement affichés',
   'diffView.actions.openFileInEditorAtChange': 'Ouvrez ce fichier dans l\'éditeur lors du changement',
   'diffView.actions.openFileAtFirstChangedLine': 'Ouvrez ce fichier à la première ligne modifiée',
@@ -2946,6 +2950,7 @@ export const dict = {
   'updateDialog.status.waitingForServer': 'En attente du serveur...',
   'updateDialog.status.autoReloadHint': 'La page se rechargera automatiquement une fois la mise à jour terminée.',
   'updateDialog.fallback.updateViaTerminal': 'Ou mettre à jour via le terminal :',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} est disponible. Mettez-le à jour sur l’ordinateur où il s’exécute.',
   'updateDialog.actions.copyCommand': 'Commande Copier',
   'updateDialog.actions.copied': 'Copié!',
   'updateDialog.status.downloadingPayload': 'Téléchargement de la charge utile de la mise à jour...',

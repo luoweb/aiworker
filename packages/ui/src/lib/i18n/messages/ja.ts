@@ -12,6 +12,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -137,6 +138,7 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n.ja,
   ...isolatedSpacesI18n.ja,
   ...sourceBoardI18n.ja,
+  ...projectActionsI18n.ja,
   ...environmentI18n.ja,
   ...providersI18n.ja,
   ...mcpGridI18n.ja,
@@ -1850,6 +1852,8 @@ export const dict: Record<I18nKey, string> = {
   'diffView.actions.enableLineWrap': '行の折り返しを有効にする',
   'diffView.actions.hideWhitespace': '空白の変更を非表示',
   'diffView.whitespace.hidden': '空白の変更を非表示中',
+  'diffView.layout.switchToUnified': '統合表示に切り替え',
+  'diffView.layout.switchToSideBySide': '左右に並べた表示に切り替え',
   'diffView.whitespace.shown': '空白の変更を表示中',
   'diffView.actions.openFileInEditorAtChange': '変更箇所でファイルをエディターで開く',
   'diffView.actions.openFileAtFirstChangedLine': '最初の変更行でファイルを開く',
@@ -3282,6 +3286,7 @@ export const dict: Record<I18nKey, string> = {
   'updateDialog.status.waitingForServer': 'サーバーを待機中...',
   'updateDialog.status.autoReloadHint': '更新が完了すると自動的にページが再読み込みされます。',
   'updateDialog.fallback.updateViaTerminal': 'またはターミナルで更新:',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} が利用可能です。実行しているコンピューター上で更新してください。',
   'updateDialog.actions.copyCommand': 'コマンドをコピー',
   'updateDialog.actions.copied': 'コピーしました！',
   'updateDialog.status.downloadingPayload': '更新ペイロードをダウンロード中...',

@@ -11,6 +11,7 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
+import { projectActionsI18n } from './project-actions.i18n';
 import { environmentI18n } from './environment.i18n';
 import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
@@ -136,6 +137,7 @@ export const dict = {
   ...webSearchI18n.en,
   ...isolatedSpacesI18n.en,
   ...sourceBoardI18n.en,
+  ...projectActionsI18n.en,
   ...environmentI18n.en,
   ...providersI18n.en,
   ...mcpGridI18n.en,
@@ -1854,6 +1856,8 @@ export const dict = {
   'diffView.actions.enableLineWrap': 'Enable line wrap',
   'diffView.actions.hideWhitespace': 'Hide whitespace changes',
   'diffView.whitespace.hidden': 'Whitespace changes hidden',
+  'diffView.layout.switchToUnified': 'Switch to unified view',
+  'diffView.layout.switchToSideBySide': 'Switch to side-by-side view',
   'diffView.whitespace.shown': 'Whitespace changes shown',
   'diffView.actions.openFileInEditorAtChange': 'Open this file in editor at change',
   'diffView.actions.openFileAtFirstChangedLine': 'Open this file at first changed line',
@@ -3286,6 +3290,7 @@ export const dict = {
   'updateDialog.status.waitingForServer': 'Waiting for server...',
   'updateDialog.status.autoReloadHint': 'The page will reload automatically when the update is complete.',
   'updateDialog.fallback.updateViaTerminal': 'Or update via terminal:',
+  'updateDialog.desktopHostInstall': 'OpenChamber {version} is available. Update it on the computer it runs on.',
   'updateDialog.actions.copyCommand': 'Copy command',
   'updateDialog.actions.copied': 'Copied!',
   'updateDialog.status.downloadingPayload': 'Downloading update payload...',
