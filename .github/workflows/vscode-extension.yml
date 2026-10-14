@@ -57,5 +57,8 @@ jobs:
           tag_name: ${{ github.ref_name }}
           files: packages/vscode/*.vsix
           generate_release_notes: false
+          # The release workflow publishes the release once every platform is
+          # on it; uploading here must not publish the draft early.
+          draft: true
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
