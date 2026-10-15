@@ -159,7 +159,11 @@ const extractAppImage = (appImagePath, destination) => {
 
 const main = () => {
   const rootPackage = readJson(path.join(workspaceRoot, 'package.json'));
-  const target = normalizeTargetArchitecture(process.env.OPENCHAMBER_TARGET_ARCH || process.arch).node;
+  const target = normalizeTargetArchitecture(
+    // The renamed release workflow exports AIWORKER_TARGET_ARCH; the legacy
+    // OPENCHAMBER_TARGET_ARCH name is still honored for older callers.
+    process.env.AIWORKER_TARGET_ARCH || process.env.OPENCHAMBER_TARGET_ARCH || process.arch,
+  ).node;
   const appImagePath = process.argv[2] ? path.resolve(process.argv[2]) : findAppImage(rootPackage.version, target);
   assertElfArchitecture(appImagePath, target, 'AppImage');
 

@@ -133,5 +133,6 @@ find ${baseDir}/ui/src/lib/i18n/messages/ -type f -name "zh-CN.ts" -not -path "*
   -e "s#'session.githubIntegration.tabs.pullRequests': 'Pull Requests'#'session.githubIntegration.tabs.pullRequests': '拉取请求'#g" \
   {} +
 
-# cleanup .bak files
-find ${baseDir}/ -name "*.bak" -type f -delete
+# cleanup .bak files (the sed batches above run over the whole repo, not just
+# packages/, so clean the same scope)
+find ${baseDir}/../ -name "*.bak" -type f -not -path "*/node_modules/*" -delete

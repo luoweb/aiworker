@@ -245,7 +245,15 @@ jobs:
           node-version: '22'
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        # Same rename-before-build contract as the Linux Electron job: abc.sh
+        # rebrands packages/electron/package.json so electron-builder emits
+        # AiWorker-* installers instead of OpenChamber-*. Renaming workspace
+        # package names invalidates bun.lock, so install without
+        # --frozen-lockfile (same as publish-npm).
+        shell: bash
+        run: |
+          bash -x ./packages/abc.sh
+          bun install
 
       - name: Get bundled OpenCode CLI version
         id: opencode_cli_version
@@ -350,7 +358,15 @@ jobs:
           test "$(node -p 'process.arch')" = "$AIWORKER_TARGET_ARCH"
 
       - name: Install dependencies
-        run: bun install --frozen-lockfile
+        # abc.sh applies the brand rename BEFORE the build so electron-builder
+        # emits AiWorker-* artifacts (the names this workflow uploads). It also
+        # rewrites the verify scripts, so verify:linux-appimage expects the
+        # renamed AppImage and reads AIWORKER_TARGET_ARCH. Renaming workspace
+        # package names invalidates bun.lock, so install without
+        # --frozen-lockfile (same contract as publish-npm).
+        run: |
+          bash -x ./packages/abc.sh
+          bun install
 
       - name: Get bundled OpenCode CLI version
         id: opencode_cli_version
@@ -388,16 +404,45 @@ jobs:
           bun run verify:opencode-cli:packaged
           bun run verify:linux-appimage
 
-      # - name: Validate Linux update manifest
-      #   working-directory: packages/electron
-      #   env:
-      #     VERSION: ${{ needs.create-release.outputs.version }}
-      #     ARTIFACT_ARCH: ${{ matrix.artifact_arch }}
-      #     MANIFEST: ${{ matrix.manifest }}
-      #   run: |
-      #     set -euo pipefail
-      #     APPIMAGE="dist/AiWorker-${VERSION}-linux-${ARTIFACT_ARCH}.AppImage"
-      #     node ./scripts/verify-update-manifest.mjs "dist/${MANIFEST}" "$APPIMAGE" "$VERSION"
+      - name: Validate Linux update manifest
+        working-directory: packages/electron
+        env:
+          VERSION: ${{ needs.create-release.outputs.version }}
+          ARTIFACT_ARCH: ${{ matrix.artifact_arch }}
+          MANIFEST: ${{ matrix.manifest }}
+        run: |
+          set -euo pipefail
+          PRODUCT_NAME="$(node -p "require('./package.json').build.productName")"
+          APPIMAGE="dist/${PRODUCT_NAME}-${VERSION}-linux-${ARTIFACT_ARCH}.AppImage"
+          node ./scripts/verify-update-manifest.mjs "dist/${MANIFEST}" "$APPIMAGE" "$VERSION"
+
+      - name: Verify expected Linux release files exist
+        working-directory: packages/electron
+        env:
+          VERSION: ${{ needs.create-release.outputs.version }}
+          ARTIFACT_ARCH: ${{ matrix.artifact_arch }}
+          MANIFEST: ${{ matrix.manifest }}
+        run: |
+          set -euo pipefail
+          # upload-artifact only fails when NO path matches, so a missing
+          # AppImage next to an existing latest-linux.yml once published a
+          # release that contained only the manifest. Fail here instead, and
+          # keep the build config's productName in sync with the AiWorker
+          # asset names this workflow uploads (abc.sh applies the rename).
+          PRODUCT_NAME="$(node -p "require('./package.json').build.productName")"
+          if [ "$PRODUCT_NAME" != "AiWorker" ]; then
+            echo "::error::packages/electron build.productName is '${PRODUCT_NAME}', expected 'AiWorker' (did packages/abc.sh run?)"
+            exit 1
+          fi
+          APPIMAGE="dist/AiWorker-${VERSION}-linux-${ARTIFACT_ARCH}.AppImage"
+          for expected in "$APPIMAGE" "dist/${MANIFEST}"; do
+            if [ ! -s "$expected" ]; then
+              echo "::error::Expected release file is missing or empty: ${expected}"
+              ls -lh dist
+              exit 1
+            fi
+          done
+          ls -lh "$APPIMAGE" "dist/${MANIFEST}"
 
       - name: Upload validated Linux release files
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -427,19 +472,19 @@ jobs:
           name: linux-release-arm64
           path: artifacts/arm64
 
-      # - name: Revalidate separate Linux manifests
-      #   env:
-      #     VERSION: ${{ needs.create-release.outputs.version }}
-      #   run: |
-      #     set -euo pipefail
-      #     node packages/electron/scripts/verify-update-manifest.mjs \
-      #       artifacts/x64/latest-linux.yml \
-      #       "artifacts/x64/AiWorker-${VERSION}-linux-x86_64.AppImage" \
-      #       "$VERSION"
-      #     node packages/electron/scripts/verify-update-manifest.mjs \
-      #       artifacts/arm64/latest-linux-arm64.yml \
-      #       "artifacts/arm64/AiWorker-${VERSION}-linux-arm64.AppImage" \
-      #       "$VERSION"
+      - name: Revalidate separate Linux manifests
+        env:
+          VERSION: ${{ needs.create-release.outputs.version }}
+        run: |
+          set -euo pipefail
+          node packages/electron/scripts/verify-update-manifest.mjs \
+            artifacts/x64/latest-linux.yml \
+            "artifacts/x64/AiWorker-${VERSION}-linux-x86_64.AppImage" \
+            "$VERSION"
+          node packages/electron/scripts/verify-update-manifest.mjs \
+            artifacts/arm64/latest-linux-arm64.yml \
+            "artifacts/arm64/AiWorker-${VERSION}-linux-arm64.AppImage" \
+            "$VERSION"
 
       - name: Upload Linux AppImages and manifests to release
         if: ${{ github.event.inputs.dry_run != 'true' }}
@@ -471,12 +516,12 @@ jobs:
           pattern: latest-yml-*
           path: artifacts
 
-      # - name: Finalize combined manifests
-      #   env:
-      #     LATEST_YML_DIR: ${{ github.workspace }}/artifacts
-      #     GH_REPO: ${{ github.repository }}
-      #     AIWORKER_VERSION: ${{ needs.create-release.outputs.version }}
-      #   run: node packages/electron/scripts/finalize-latest-yml.mjs
+      - name: Finalize combined manifests
+        env:
+          LATEST_YML_DIR: ${{ github.workspace }}/artifacts
+          GH_REPO: ${{ github.repository }}
+          AIWORKER_VERSION: ${{ needs.create-release.outputs.version }}
+        run: node packages/electron/scripts/finalize-latest-yml.mjs
 
       - name: Upload combined manifests to release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
