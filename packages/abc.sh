@@ -20,7 +20,10 @@ cp ${baseDir}/vscode/README_zh.md ${baseDir}/vscode/README.md
 echo "########## custom vscode extension ########## "
 # Batch 1 - brand rename on ext files. Specific patterns BEFORE generic ones
 # so github.com/openchamber/* isn't clobbered before it can match.
-find ${baseDir}/../ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.html" -o -name "*.mjs" -o -name "*.json" -o -name "*.mdx" -o -name "*.md"  -o -name "*.zig"  -o -name "*.yml" \) \! -name abc.sh -not -path "*/node_modules/*" -exec sed -i.bak \
+# *.cjs is included: the after-pack verifier (packaged-app-contents.cjs) and
+# friends carry @openchamber/* package literals and must rename with the
+# workspace packages they verify, or the packaged-contents check fails.
+find ${baseDir}/../ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.cjs" -o -name "*.html" -o -name "*.mjs" -o -name "*.json" -o -name "*.mdx" -o -name "*.md"  -o -name "*.zig"  -o -name "*.yml" \) \! -name abc.sh -not -path "*/node_modules/*" -exec sed -i.bak \
   -e 's#github.com/openchamber/openchamber#roweb.cn/roweb/aihander#g' \
   -e 's#https://x.com/openchamber_dev#https://map.roweb.cn/aihander#g' \
   -e 's#OPENCHAMBER#AIWORKER#g' \
@@ -39,7 +42,8 @@ find ${baseDir}/ -type f \( -name "index.html" -o -name "cli-args.js" \) -not -p
   {} +
 
 # filter - undo over-renamed identifiers that should stay openchamber-*
-find ${baseDir}/../ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.mjs"  -o -name "*.html" -o -name "*.json" -o -name "*.mdx" -o -name "*.md" \) -not -path "*/node_modules/*" -exec sed -i.bak \
+# (*.cjs included here too, so the same files get the same filter passes)
+find ${baseDir}/../ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.cjs" -o -name "*.mjs"  -o -name "*.html" -o -name "*.json" -o -name "*.mdx" -o -name "*.md" \) -not -path "*/node_modules/*" -exec sed -i.bak \
   -e 's#aiworkerConfig#openchamberConfig#g' \
   -e 's#aiworkerEvents#openchamberEvents#g' \
   -e 's#aiworker-route#openchamber-route#g' \
