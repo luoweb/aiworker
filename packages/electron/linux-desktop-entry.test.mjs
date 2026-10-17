@@ -8,11 +8,20 @@ import { buildAppImageDesktopEntry, reconcileAppImageDesktopEntry } from './linu
 
 const ICON = Buffer.from('png-bytes');
 
+// Mirrors linux-desktop-entry.mjs (APPDIR_ICON_RELATIVE_PATH and
+// ICON_RELATIVE_PATH). Build icon paths from segments, like the module does:
+// the CI brand rename (packages/abc.sh) restores `/aiworker` path segments
+// back to `/openchamber` because it protects import paths and config dirs, so
+// a joined 'usr/share/icons/hicolor/512x512/apps/openchamber.png' literal
+// would revert while the module's segmented 'openchamber.png' renames and the
+// fixture icon would never be found.
+const ICON_NAME = 'openchamber';
+
 const makeLab = async (t) => {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'openchamber-desktop-entry-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const appDir = path.join(root, 'mount');
-  const iconSource = path.join(appDir, 'usr/share/icons/hicolor/512x512/apps/openchamber.png');
+  const iconSource = path.join(appDir, 'usr', 'share', 'icons', 'hicolor', '512x512', 'apps', `${ICON_NAME}.png`);
   await fs.mkdir(path.dirname(iconSource), { recursive: true });
   await fs.writeFile(iconSource, ICON);
   const dataHome = path.join(root, 'data');
@@ -27,7 +36,7 @@ const makeLab = async (t) => {
     env,
     homeDir: root,
     desktopPath: path.join(dataHome, 'applications', 'openchamber.desktop'),
-    iconPath: path.join(dataHome, 'icons/hicolor/512x512/apps/openchamber.png'),
+    iconPath: path.join(dataHome, 'icons', 'hicolor', '512x512', 'apps', `${ICON_NAME}.png`),
     packageEntryPath: path.join(systemData, 'applications', 'openchamber.desktop'),
   };
 };
