@@ -210,6 +210,14 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     isAvailable: (ctx) => ctx.isDesktop && !ctx.isMobile && !ctx.isVSCode,
   },
   {
+    id: 'layout.mobile-workspace-tabs',
+    page: 'general',
+    titleKey: 'settings.layout.general.mobileTabs.title',
+    descriptionKey: 'settings.layout.general.mobileTabs.info',
+    keywords: ['tabs', 'workspace', 'panel', 'order', 'hide', 'git', 'files', 'terminal', 'mcp', 'mobile'],
+    isAvailable: (ctx) => ctx.isMobile,
+  },
+  {
     id: 'appearance.open-tracker-links-on-board',
     page: 'general',
     titleKey: 'settings.openchamber.visual.field.openTrackerLinksOnBoard',
@@ -332,6 +340,12 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     titleKey: 'settings.openchamber.visual.field.streamingAutoFollow',
     descriptionKey: 'settings.openchamber.visual.field.streamingAutoFollowInfo',
     keywords: ['autoscroll', 'auto-scroll', 'follow', 'stick to bottom', 'streaming'],
+  },
+  {
+    id: 'chat.sticky-user-header',
+    page: 'chat',
+    titleKey: 'settings.openchamber.visual.field.stickyUserHeader',
+    keywords: ['sticky', 'pin', 'prompt', 'header', 'user messages'],
   },
   {
     id: 'chat.prompt-navigator',
@@ -1475,7 +1489,7 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     titleKey: 'settings.integrations.thirdParty.title',
     descriptionKey: 'settings.integrations.thirdParty.info',
     keywords: ['plugin', 'provider', 'install', 'update', 'remove', 'subscription'],
-    isAvailable: (ctx) => !ctx.isVSCode,
+    isAvailable: (ctx) => !ctx.isVSCode && !ctx.enterpriseMode,
   },
   {
     id: 'integrations.third-party.opencode-claude',
@@ -1483,7 +1497,7 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     titleKey: 'settings.integrations.thirdParty.opencodeClaude.name',
     descriptionKey: 'settings.integrations.thirdParty.opencodeClaude.description',
     keywords: ['claude', 'anthropic', 'claude code', 'pro', 'max', 'agent sdk', '@openchamber/opencode-claude'],
-    isAvailable: (ctx) => !ctx.isVSCode,
+    isAvailable: (ctx) => !ctx.isVSCode && !ctx.enterpriseMode,
   },
   {
     id: 'integrations.extensions',
