@@ -417,7 +417,7 @@ jobs:
           set -euo pipefail
           PRODUCT_NAME="$(node -p "require('./package.json').build.productName")"
           APPIMAGE="dist/${PRODUCT_NAME}-${VERSION}-linux-${ARTIFACT_ARCH}.AppImage"
-          node ./scripts/verify-update-manifest.mjs "dist/${MANIFEST}" "$APPIMAGE" "$VERSION"
+          node ./scripts/verify-update-manifest.mjs "dist/${MANIFEST}" "$VERSION" "$APPIMAGE"
 
       - name: Verify expected Linux release files exist
         working-directory: packages/electron
@@ -482,12 +482,12 @@ jobs:
           set -euo pipefail
           node packages/electron/scripts/verify-update-manifest.mjs \
             artifacts/x64/latest-linux.yml \
-            "artifacts/x64/AiWorker-${VERSION}-linux-x86_64.AppImage" \
-            "$VERSION"
+            "$VERSION" \
+            "artifacts/x64/AiWorker-${VERSION}-linux-x86_64.AppImage"
           node packages/electron/scripts/verify-update-manifest.mjs \
             artifacts/arm64/latest-linux-arm64.yml \
-            "artifacts/arm64/AiWorker-${VERSION}-linux-arm64.AppImage" \
-            "$VERSION"
+            "$VERSION" \
+            "artifacts/arm64/AiWorker-${VERSION}-linux-arm64.AppImage"
 
       - name: Upload Linux AppImages and manifests to release
         if: ${{ github.event.inputs.dry_run != 'true' }}

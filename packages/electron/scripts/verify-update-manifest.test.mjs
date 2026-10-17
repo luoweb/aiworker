@@ -3,7 +3,9 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import { verifyUpdateManifest } from './verify-update-manifest.mjs';
 
@@ -83,4 +85,22 @@ test('rejects a listed file whose bytes changed', (t) => {
   const value = fixture(t, 'latest-linux.yml', names);
   fs.writeFileSync(value.artifactPaths[1], 'tampered');
   assert.throws(() => verifyUpdateManifest({ ...value, expectedVersion: '1.15.0' }), /mismatch for OpenChamber-1\.15\.0-linux-amd64\.deb/);
+});
+
+// The release workflows call this script as a CLI; only the exported function
+// was covered before, so a swapped argument order shipped and failed in CI
+// ("expected <artifact path>, got <version>"). Lock the argv contract:
+// <manifest> <version> <artifact>...
+test('the CLI takes <manifest> <version> <artifact> and rejects a swapped order', (t) => {
+  const value = fixture(t, 'latest-linux.yml', ['OpenChamber-1.15.0-linux-x86_64.AppImage']);
+  const scriptPath = fileURLToPath(new URL('./verify-update-manifest.mjs', import.meta.url));
+  const run = (...args) => spawnSync(process.execPath, [scriptPath, ...args], { encoding: 'utf8' });
+
+  const ok = run(value.manifestPath, '1.15.0', value.artifactPaths[0]);
+  assert.equal(ok.status, 0, ok.stderr);
+  assert.match(ok.stdout, /verified latest-linux\.yml for OpenChamber-1\.15\.0-linux-x86_64\.AppImage/);
+
+  const swapped = run(value.manifestPath, value.artifactPaths[0], '1.15.0');
+  assert.equal(swapped.status, 1);
+  assert.match(swapped.stderr, /version mismatch/);
 });
