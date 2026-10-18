@@ -116,16 +116,11 @@ if (!macX64 && !macArm64) {
 } else {
   output['latest-mac.yml'] = serialize({
     version: macArm64.version,
+    minimumSystemVersion: MAC_MINIMUM_DARWIN_VERSION,
     files: [...macArm64.files, ...macX64.files],
     releaseDate: macArm64.releaseDate,
   });
 }
-output['latest-mac.yml'] = serialize({
-  version: macArm64.version,
-  minimumSystemVersion: MAC_MINIMUM_DARWIN_VERSION,
-  files: [...macArm64.files, ...macX64.files],
-  releaseDate: macArm64.releaseDate,
-});
 
 const tag = `v${version}`;
 const tmp = process.env.RUNNER_TEMP || '/tmp';
