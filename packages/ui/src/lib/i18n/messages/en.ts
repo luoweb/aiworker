@@ -21,6 +21,7 @@ import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
+import { diffFindI18n } from './diff-find.i18n';
 
 export const dict = {
   "opencodeCompatibility.bundled": "OpenCode is bundled with OpenChamber. Update OpenChamber to get OpenCode v2.",
@@ -152,6 +153,7 @@ export const dict = {
   ...mcpGridI18n.en,
   ...pluginsGridI18n.en,
   ...integrationsCatalogI18n['en'],
+  ...diffFindI18n['en'],
   'terminalView.actions.attachSelection': 'Attach selected output',
   'terminalView.actions.copySelection': 'Copy selected output',
   'terminalView.toast.selectionCopied': 'Output copied',
@@ -2299,6 +2301,9 @@ export const dict = {
   'session.newWorktree.toast.worktreeCreatedDescription': '{target} - bootstrapping in background',
   'session.newWorktree.toast.fetchSourceFailed': 'Couldn\'t fetch from remote — created from local state',
   'session.newWorktree.toast.fetchSourceAccess': 'Couldn\'t fetch: this repository\'s access needs attention in Configure repository. Created from local state.',
+  'session.newWorktree.toast.startFolderMissing': 'This worktree has no "{folder}" folder, so OpenCode started at the worktree root.',
+  'session.newWorktree.toast.startFolderUnverified': 'Couldn\'t check the "{folder}" folder, so OpenCode started at the worktree root.',
+  'session.newWorktree.toast.startFolderUnknown': 'Couldn\'t tell which folder of the repository this project opens, so OpenCode started at the worktree root.',
   'session.newWorktree.toast.branchBackup': '{branch} now matches the remote. Its previous commits are kept in {backup}.',
   'session.githubIntegration.tabs.pullRequests': 'Pull Requests',
   'session.githubIntegration.validation.branchAlreadyCheckedOut': 'Branch is already checked out in a worktree',

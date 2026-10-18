@@ -22,6 +22,7 @@ import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
+import { diffFindI18n } from './diff-find.i18n';
 
 export const dict: Record<I18nKey, string> = {
   "opencodeCompatibility.bundled": "OpenCode viene incluido en OpenChamber. Actualiza OpenChamber para obtener OpenCode v2.",
@@ -163,6 +164,7 @@ export const dict: Record<I18nKey, string> = {
   ...mcpGridI18n.es,
   ...pluginsGridI18n.es,
   ...integrationsCatalogI18n['es'],
+  ...diffFindI18n['es'],
   'terminalView.actions.attachSelection': 'Adjuntar salida seleccionada',
   'terminalView.actions.copySelection': 'Copiar salida seleccionada',
   'terminalView.toast.selectionCopied': 'Salida copiada',
@@ -2265,6 +2267,9 @@ export const dict: Record<I18nKey, string> = {
   "session.newWorktree.toast.worktreeCreatedDescription": "{target} - configurando en segundo plano",
   "session.newWorktree.toast.fetchSourceFailed": "No se pudo obtener del remoto; se creó a partir del estado local",
   "session.newWorktree.toast.fetchSourceAccess": "No se pudo obtener: el acceso a este repositorio necesita atención en Configurar repositorio. Se creó a partir del estado local.",
+  "session.newWorktree.toast.startFolderMissing": "Este worktree no tiene la carpeta \"{folder}\", así que OpenCode empezó en la raíz del worktree.",
+  "session.newWorktree.toast.startFolderUnverified": "No se pudo comprobar la carpeta \"{folder}\", así que OpenCode empezó en la raíz del worktree.",
+  "session.newWorktree.toast.startFolderUnknown": "No se pudo determinar qué carpeta del repositorio abre este proyecto, así que OpenCode empezó en la raíz del worktree.",
   "session.newWorktree.toast.branchBackup": "{branch} ahora coincide con el remoto. Sus commits anteriores se guardaron en {backup}.",
   "session.githubIntegration.tabs.pullRequests": "PR",
   "session.githubIntegration.validation.branchAlreadyCheckedOut": "La rama ya está en uso en un worktree",

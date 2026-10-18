@@ -22,6 +22,7 @@ import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
+import { diffFindI18n } from './diff-find.i18n';
 
 export const dict: Record<I18nKey, string> = {
   "opencodeCompatibility.bundled": "OpenCode 隨 OpenChamber 一起提供。請更新 OpenChamber 以取得 OpenCode v2。",
@@ -153,6 +154,7 @@ export const dict: Record<I18nKey, string> = {
   ...mcpGridI18n['zh-TW'],
   ...pluginsGridI18n['zh-TW'],
   ...integrationsCatalogI18n['zh-TW'],
+  ...diffFindI18n['zh-TW'],
   'terminalView.actions.attachSelection': '附加所選輸出',
   'terminalView.actions.copySelection': '複製所選輸出',
   'terminalView.toast.selectionCopied': '已複製輸出',
@@ -2274,6 +2276,9 @@ export const dict: Record<I18nKey, string> = {
   'session.newWorktree.toast.worktreeCreatedDescription': '{target} - 正在背景初始化',
   'session.newWorktree.toast.fetchSourceFailed': '無法從遠端擷取 — 已基於本機狀態建立',
   'session.newWorktree.toast.fetchSourceAccess': '無法擷取：需要在「設定儲存庫」中處理此儲存庫的存取權限。已基於本機狀態建立。',
+  'session.newWorktree.toast.startFolderMissing': '此 worktree 中沒有「{folder}」資料夾，因此 OpenCode 在 worktree 根目錄啟動。',
+  'session.newWorktree.toast.startFolderUnverified': '無法檢查「{folder}」資料夾，因此 OpenCode 在 worktree 根目錄啟動。',
+  'session.newWorktree.toast.startFolderUnknown': '無法確定此專案開啟的是儲存庫中的哪個資料夾，因此 OpenCode 在 worktree 根目錄啟動。',
   'session.newWorktree.toast.branchBackup': '{branch} 現在與遠端一致。先前的提交保留在 {backup} 中。',
   'session.githubIntegration.tabs.pullRequests': 'Pull Requests',
   'session.githubIntegration.validation.branchAlreadyCheckedOut': '該分支已在某個 worktree 中簽出',

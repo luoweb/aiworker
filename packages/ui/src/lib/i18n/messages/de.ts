@@ -21,6 +21,7 @@ import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
+import { diffFindI18n } from './diff-find.i18n';
 
 export const dict = {
   "opencodeCompatibility.bundled": "OpenCode ist in OpenChamber enthalten. Aktualisieren Sie OpenChamber, um OpenCode v2 zu erhalten.",
@@ -152,6 +153,7 @@ export const dict = {
   ...mcpGridI18n.de,
   ...pluginsGridI18n.de,
   ...integrationsCatalogI18n['de'],
+  ...diffFindI18n['de'],
   'common.language.german': 'Deutsch',
   'common.loading': 'Wird geladen...',
   'common.unavailable': 'Nicht verfügbar',
@@ -2044,6 +2046,9 @@ export const dict = {
   'session.newWorktree.toast.worktreeCreatedDescription': '{target} - im Hintergrund initialisiert',
   'session.newWorktree.toast.fetchSourceFailed': 'Remote konnte nicht abgerufen werden – aus dem lokalen Stand erstellt',
   'session.newWorktree.toast.fetchSourceAccess': 'Abruf nicht möglich: Der Zugriff auf dieses Repository muss unter „Repository konfigurieren“ geprüft werden. Aus dem lokalen Stand erstellt.',
+  'session.newWorktree.toast.startFolderMissing': 'Dieser Worktree hat keinen Ordner „{folder}“, daher wurde OpenCode im Worktree-Stammverzeichnis gestartet.',
+  'session.newWorktree.toast.startFolderUnverified': 'Der Ordner „{folder}“ konnte nicht geprüft werden, daher wurde OpenCode im Worktree-Stammverzeichnis gestartet.',
+  'session.newWorktree.toast.startFolderUnknown': 'Es konnte nicht ermittelt werden, welchen Ordner des Repositorys dieses Projekt öffnet, daher wurde OpenCode im Worktree-Stammverzeichnis gestartet.',
   'session.newWorktree.toast.branchBackup': '{branch} entspricht jetzt dem Remote. Die vorherigen Commits liegen in {backup}.',
   'session.githubIntegration.tabs.pullRequests': 'Pull Requests',
   'session.githubIntegration.validation.branchAlreadyCheckedOut': 'Branch ist bereits in einem Worktree ausgecheckt',

@@ -21,6 +21,7 @@ import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
+import { diffFindI18n } from './diff-find.i18n';
 
 export const dict = {
   'opencodeCompatibility.bundled': 'يأتي OpenCode مضمّنًا مع OpenChamber. حدّث OpenChamber للحصول على OpenCode v2.',
@@ -2250,6 +2251,9 @@ export const dict = {
   'session.newWorktree.toast.worktreeCreatedDescription': '{target} - جارٍ التهيئة في الخلفية',
   'session.newWorktree.toast.fetchSourceFailed': 'تعذّر الجلب من المستودع البعيد — أُنشئت من الحالة المحلية',
   'session.newWorktree.toast.fetchSourceAccess': 'تعذّر الجلب: يحتاج وصول هذا المستودع إلى مراجعة في «إعداد المستودع». أُنشئت من الحالة المحلية.',
+  'session.newWorktree.toast.startFolderMissing': 'لا يحتوي هذا الـ worktree على المجلد "{folder}"، لذا بدأ OpenCode من جذر الـ worktree.',
+  'session.newWorktree.toast.startFolderUnverified': 'تعذّر فحص المجلد "{folder}"، لذا بدأ OpenCode من جذر الـ worktree.',
+  'session.newWorktree.toast.startFolderUnknown': 'تعذّر تحديد أي مجلد من المستودع يفتحه هذا المشروع، لذا بدأ OpenCode من جذر الـ worktree.',
   'session.newWorktree.toast.branchBackup': 'أصبح الفرع {branch} مطابقًا للفرع البعيد. حُفظت إيداعاته السابقة في {backup}.',
   'session.githubIntegration.tabs.pullRequests': 'طلبات السحب',
   'session.githubIntegration.validation.branchAlreadyCheckedOut': 'الفرع مسحوب بالفعل في شجرة عمل (worktree)',
@@ -3800,6 +3804,7 @@ export const dict = {
   ...mcpGridI18n.ar,
   ...pluginsGridI18n.ar,
   ...integrationsCatalogI18n['ar'],
+  ...diffFindI18n['ar'],
   'settings.usage.page.state.claudeSignedOutTitle': 'لم يتم تسجيل الدخول إلى Claude Code',
   'settings.usage.page.state.claudeSignInCommand': 'شغّل هذا الأمر في الطرفية:',
   'settings.openchamber.visual.field.confirmFileTreeMove': 'التأكيد قبل نقل الملفات',

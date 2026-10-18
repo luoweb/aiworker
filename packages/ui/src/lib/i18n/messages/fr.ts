@@ -21,6 +21,7 @@ import { providersI18n } from './providers.i18n';
 import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
+import { diffFindI18n } from './diff-find.i18n';
 
 export const dict = {
   "opencodeCompatibility.bundled": "OpenCode est inclus dans OpenChamber. Mettez OpenChamber à jour pour obtenir OpenCode v2.",
@@ -152,6 +153,7 @@ export const dict = {
   ...mcpGridI18n.fr,
   ...pluginsGridI18n.fr,
   ...integrationsCatalogI18n['fr'],
+  ...diffFindI18n['fr'],
   'terminalView.actions.attachSelection': 'Joindre la sortie sélectionnée',
   'terminalView.actions.copySelection': 'Copier la sortie sélectionnée',
   'terminalView.toast.selectionCopied': 'Sortie copiée',
@@ -2035,6 +2037,9 @@ export const dict = {
   'session.newWorktree.toast.worktreeCreatedDescription': '{target} - démarrage en arrière-plan',
   'session.newWorktree.toast.fetchSourceFailed': 'Impossible de récupérer depuis le dépôt distant — création à partir de l\'état local',
   'session.newWorktree.toast.fetchSourceAccess': 'Récupération impossible : l\'accès à ce dépôt doit être vérifié dans Configurer le dépôt. Création à partir de l\'état local.',
+  'session.newWorktree.toast.startFolderMissing': 'Ce worktree n\'a pas de dossier « {folder} », OpenCode a donc démarré à la racine du worktree.',
+  'session.newWorktree.toast.startFolderUnverified': 'Impossible de vérifier le dossier « {folder} », OpenCode a donc démarré à la racine du worktree.',
+  'session.newWorktree.toast.startFolderUnknown': 'Impossible de déterminer quel dossier du dépôt ce projet ouvre, OpenCode a donc démarré à la racine du worktree.',
   'session.newWorktree.toast.branchBackup': '{branch} correspond maintenant au distant. Ses commits précédents sont conservés dans {backup}.',
   'session.githubIntegration.tabs.pullRequests': 'PR',
   'session.githubIntegration.validation.branchAlreadyCheckedOut': 'La branche est déjà active dans un worktree',

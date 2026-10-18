@@ -196,6 +196,13 @@ as a project when the list is empty and warms it on every start, so either path
 used to put the home, or the project just removed, back in the sidebar and
 start OpenCode there on every launch.
 
+Restoring the saved directory through `applyPersistedDirectoryPreferences`
+probes that one path with the host's directory-stats route. A confirmed missing
+path uses `goToNoProjectDirectory` and clears the saved choice. An unavailable
+probe keeps it, including before login. A newer directory, settings snapshot,
+or runtime switch retires the probe; a runtime switch during fallback resolution
+also prevents it from changing the directory or persistence.
+
 Nothing about directories is carried from one host to another (the desktop
 host switcher, a mobile instance switch). Three rules hold that:
 
@@ -759,6 +766,7 @@ Expected model:
 - the sync event handler issues one Git refresh hint when a live file-mutating tool first reaches `completed`; this does not depend on `ToolPart` mounting, and duplicate terminal events do not replay the hint
 - tool hints are coalesced per directory: the first completion opens a 250 ms window and every completion in that directory during it is answered by one pathless hint at its end, so a burst of parallel or back-to-back tool calls costs one status read. Direct hints (editor saves, reverts, explicit actions) are delivered at once. A runtime switch drops hints still waiting (`sessionEvents.cancelPendingGitRefreshes`)
 - every Git refresh hint invalidates the store request generation and the HTTP status cache before visible consumers request status, so they share one post-mutation read instead of accepting a cached or pre-mutation response
+- the new-session draft target re-reads its branch list and worktree topology when the window regains focus or becomes visible and when its branch picker opens, throttled to one read every two seconds; the composer is visible only in that state, so a hidden surface does no work and no timer polls
 - a successful dirty save from the in-app file editor issues a path-scoped Git refresh hint; clean autosave checks remain no-ops
 - refresh hints with authoritative file paths invalidate only those cached and currently rendered diffs before status refresh; pathless tools request status reconciliation without broadly remounting DiffView
 - targeted diff remounts preserve the user's current file-section anchor and intra-file offset before paint instead of resetting the stacked view to the top
