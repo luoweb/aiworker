@@ -37,6 +37,7 @@ import {
     tryParseJsonOutput,
     coerceToText,
     capToolOutputText,
+    unwrapTextBlocks,
 } from '../toolRenderers';
 import { JsonTreeViewer } from '@/components/ui/JsonTreeViewer';
 import { JsonSummaryView } from './JsonSummaryView';
@@ -46,7 +47,6 @@ import { useDefaultDiffViewMode } from '../useDefaultDiffViewMode';
 import { MinDurationShineText } from './MinDurationShineText';
 import { getToolIcon } from './toolPresentation';
 import { GuestToolTable } from './GuestToolTable';
-import type { JsonValue } from '@openchamber/sdk';
 import {
     guestToolTableRows,
     guestToolHeaderReadsOutput,
@@ -80,6 +80,7 @@ import { useStreamingTextThrottle } from '../../hooks/useStreamingTextThrottle';
 import { getStreamingOutputAppend, getToolOutput } from './toolOutput';
 import { toAbsoluteFilePath } from '@/lib/path-utils';
 import { hasTextSelectionInside } from '@/lib/textSelection';
+import { dispatchRowExpand } from '@/components/chat/lib/scroll/timelineScrollIntent';
 import {
     executeOutputTruncation,
     executeScript,
@@ -675,6 +676,8 @@ const JsonToolOutput: React.FC<{
         useUIStore.getState().setToolJsonViewMode(view);
     }, []);
 
+    const textOutput = jsonViewMode === 'summary' ? unwrapTextBlocks(jsonResult.data) : null;
+
     return (
         <div className="tool-output-surface relative p-2 rounded-xl w-full min-w-0">
             <div className="absolute inset-e-2 top-2 z-10 flex items-center gap-1">
@@ -714,7 +717,19 @@ const JsonToolOutput: React.FC<{
                 <CopyToolOutputButton output={renderedOutput} />
             </div>
             {jsonViewMode === 'summary' ? (
-                <JsonSummaryView data={jsonResult.data} />
+                textOutput !== null ? (
+                    <div className="typography-code pe-12 text-muted-foreground/90">
+                        <WorkerHighlightedCode
+                            language="text"
+                            code={textOutput}
+                            style={TOOL_COLLAPSED_CUSTOM_STYLE}
+                            codeStyle={CODE_TAG_PROPS.style}
+                            wrap
+                        />
+                    </div>
+                ) : (
+                    <JsonSummaryView data={jsonResult.data} />
+                )
             ) : jsonViewMode === 'formatted' ? (
                 <JsonTreeViewer
                     data={jsonResult.data}
@@ -770,9 +785,7 @@ const ToolScrollableTextOutput: React.FC<{
     if (forcedMode === 'table' && presentation?.columns?.length) {
         // A declared table whose output is not a list falls through to the
         // host's own detection, so the user still sees the raw result.
-        // SAFETY: `tryParseJsonOutput` fills `data` from JSON.parse of the tool
-        // output, so a parsed result is a JSON value.
-        const rows = jsonResult.isJson ? guestToolTableRows(jsonResult.data as JsonValue) : null;
+        const rows = jsonResult.isJson ? guestToolTableRows(jsonResult.data) : null;
         if (rows) {
             return <GuestToolTable rows={rows} columns={presentation.columns} />;
         }
@@ -1570,7 +1583,7 @@ type ToolRowHeader = {
 const ToolPartContent: React.FC<ToolPartProps & { header?: ToolRowHeader; subagentSessionId?: string }> = ({
     part,
     isExpanded,
-    onToggle,
+    onToggle: toggleRow,
     isMobile,
     onShowPopup,
     animateTailText = true,
@@ -1578,6 +1591,11 @@ const ToolPartContent: React.FC<ToolPartProps & { header?: ToolRowHeader; subage
     subagentSessionId: taskSessionId,
 }) => {
     const { t } = useI18n();
+    const rowRef = React.useRef<HTMLDivElement>(null);
+    const onToggle = (toolId: string) => {
+        if (!isExpanded) dispatchRowExpand(rowRef.current);
+        toggleRow(toolId);
+    };
     const state = part.state;
     const stateWithData = state as ToolStateWithMetadata;
     const metadata = stateWithData.metadata;
@@ -1895,7 +1913,7 @@ const ToolPartContent: React.FC<ToolPartProps & { header?: ToolRowHeader; subage
     }
 
     return (
-        <div>
+        <div ref={rowRef}>
             {}
             <div
                 className={cn(
