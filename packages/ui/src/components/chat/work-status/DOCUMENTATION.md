@@ -118,6 +118,7 @@ which requests only providers enabled for this panel.
 | Usage | `components/usage/usageGroups.ts` over `useQuotaStore` | grouping shared with the mobile popover; presentation is not |
 | Linked threads | `lib/linkedIssues.ts` over session metadata; state from tracked items | written by the flows that attach an issue or PR, and removable from the row; a linked PR that is also the checked-out branch's PR shows the branch summary, as its sidebar row does |
 | Turn stats | `telemetry.ts` over `useSessionMessageRecords` | computed while authoritatively idle, including when collapsed so the headline stays current; either rate above 5,000 tok/s is reported as unknown (see the two-rate description below) |
+| Keep-warm switch | `useSessionWarmingStore`, mirrored from the server's `lib/session-warming` | on the Context row, shown only while Settings chose per-session warming and for a root session outside an isolated space; the tooltip's countdown ticks only while it is open |
 | Goal | `useSessionGoal` | respects the Settings toggle |
 | MCP | `useMcpStore` | connect/disconnect reuses the dropdown's actions |
 | Pinned messages | `getContextObligatoryMessages` + `state.part`, else one `getSessionMessage` read | see below |
@@ -188,8 +189,8 @@ the final assistant completion. It includes model waits, tool execution,
 compaction, and other gaps; it is not used as a throughput denominator.
 
 Metric labels stay short. Every row is a single hover and keyboard-focus target
-for a shared tooltip, with a 750ms hover delay and a portal outside the panel's
-scroller. Tooltips explain the measurement in every locale. The token row uses
+for a shared tooltip that opens above the row after a 300ms hover delay, with a
+portal outside the panel's scroller. Tooltips explain the measurement in every locale. The token row uses
 compact input/output arrows; its tooltip gives full counts and explains that
 input excludes cached tokens and output includes reasoning across all steps.
 

@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -143,8 +145,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n['zh-CN'],
   ...fileContentSearchI18n['zh-CN'],
   ...htmlRenderI18n['zh-CN'],
+  ...sessionNoticesI18n['zh-CN'],
   ...usageStatsI18n['zh-CN'],
   ...webSearchI18n['zh-CN'],
+  ...sessionWarmingI18n['zh-CN'],
   ...isolatedSpacesI18n['zh-CN'],
   ...sourceBoardI18n['zh-CN'],
   ...projectActionsI18n['zh-CN'],
@@ -162,6 +166,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': '复制',
   'terminalView.actions.paste': '粘贴',
   'terminalView.toast.pasteFailed': '无法读取剪贴板。请使用粘贴快捷键。',
+  'terminalView.toast.pasteFailedTouch': '无法读取剪贴板。',
   'terminalView.actions.restart': '重启终端',
   'chat.message.terminalContext': '{terminal}，第 {start}-{end} 行',
   'chat.message.context.codeComment': '对 {file} 第 {start}-{end} 行的评论',
@@ -613,6 +618,10 @@ export const dict: Record<I18nKey, string> = {
   'sessions.archivePage.allDirectories': '所有目录',
   'sessions.sidebar.header.projectDisplay.label': '显示项目',
   'sessions.sidebar.header.projectDisplay.all': '所有项目',
+  'sessions.sidebar.header.listGrouping.label': '会话',
+  'sessions.sidebar.header.listGrouping.project': '按项目',
+  'sessions.sidebar.header.listGrouping.time': '按时间',
+  'sessions.sidebar.activity.projectsTitle': '项目',
   'sessions.sidebar.header.projectDisplay.single': '单个项目',
   'sessions.sidebar.project.selectAria': '选择项目，当前为 {project}',
   'sessions.sidebar.project.actions.manageWorktrees': '管理工作树',
@@ -1720,6 +1729,7 @@ export const dict: Record<I18nKey, string> = {
   'filesView.error.switchToEditMode': '请切换到编辑模式修复问题。',
   'filesView.error.readFileFailed': '读取文件失败',
   'filesView.editor.htmlPreviewTitle': 'HTML 预览',
+  'filesView.editor.htmlAnnotate.intro': '这是来自 HTML 文件预览的标注选区。',
   'filesView.diagram.closeDiagramView': '关闭图表视图',
   'filesView.diagram.saveDiagram': '保存图表',
   'filesView.excalidraw.installHint': '安装 Excalidraw 扩展即可在此文件中绘图。',
@@ -1749,7 +1759,7 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.breakdown.user': '用户',
   'contextSidebar.breakdown.assistant': '助手',
   'contextSidebar.breakdown.toolCalls': '工具调用',
-  'contextSidebar.breakdown.other': '其他',
+  'contextSidebar.breakdown.other': '系统与工具',
   'contextSidebar.stats.messages': '消息',
   'contextSidebar.stats.user': '用户',
   'contextSidebar.stats.assistant': '助手',
@@ -1855,6 +1865,9 @@ export const dict: Record<I18nKey, string> = {
   'diffView.whitespace.hidden': '已隐藏空白更改',
   'diffView.layout.switchToUnified': '切换到统一视图',
   'diffView.layout.switchToSideBySide': '切换到并排视图',
+  'diffView.layout.sideBySide': '并排视图',
+  'diffView.actions.wrapLines': '自动换行',
+  'diffView.actions.moreActions': '更多操作',
   'diffView.whitespace.shown': '正在显示空白更改',
   'diffView.actions.openFileInEditorAtChange': '在编辑器中打开此文件并定位变更',
   'diffView.actions.openFileAtFirstChangedLine': '在首个变更行打开此文件',
@@ -2403,6 +2416,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.queuedMessage.edit': '编辑',
   'chat.queuedMessage.send': '发送',
   'chat.queuedMessage.removeAria': '从队列移除',
+  'chat.queuedMessage.goal': '发送时启动目标',
   'chat.queuedMessage.reorderAria': '拖动以重新排序',
   'chat.queuedMessage.toast.queueFailed': '无法将消息加入队列，已放回输入框。',
   'chat.queuedMessage.toast.takeFailed': '无法加载队列中的消息，请重试。',
@@ -2590,6 +2604,9 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.attachFileFailed': '附加文件失败',
   'chat.chatInput.toast.attachNamedFailed': '附加 {name} 失败',
   'chat.chatInput.toast.unsupportedAttachmentModalities': '{model} 不支持 {files} 所需的 {modalities} 输入。你仍可发送消息，但这些附件可能会被忽略。',
+  'chat.chatInput.toast.imagesSaving': '正在保存 {files}…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model} 无法读取图像。已将 {files} 保存到 {folder}。',
+  'chat.chatInput.toast.imageSaveFailed': '无法保存 {files}。已改为附加。',
   'chat.chatInput.toast.someFilesSkipped': '部分文件被跳过：\n{summary}',
   'chat.chatInput.toast.vscodePickFailed': '在 VS Code 中选择文件失败',
   'chat.chatInput.toast.openSessionFirst': '请先打开一个会话',
@@ -3826,6 +3843,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': '无法移动聊天',
   'chat.worktreeSetup.running': '正在设置 worktree：正在运行项目的设置命令…',
   'desktopHostSwitcher.startup.fellBackToLocal': '未能建立连接，因此 OpenChamber 以 Local 启动。待其可访问后，请在实例切换器中连接。',
+  'desktopSafeStart.title': 'OpenChamber 多次崩溃',
+  'desktopSafeStart.description': '面板已关闭，文件夹已折叠。',
   'chat.chatInput.contextPreview.saveEdit': '保存评论',
   'chat.chatInput.contextPreview.cancelEdit': '取消编辑',
   'sessions.scheduledTasks.dialog.actions.openSession': '打开会话',

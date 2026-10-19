@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -153,8 +155,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n.es,
   ...fileContentSearchI18n.es,
   ...htmlRenderI18n.es,
+  ...sessionNoticesI18n.es,
   ...usageStatsI18n.es,
   ...webSearchI18n.es,
+  ...sessionWarmingI18n.es,
   ...isolatedSpacesI18n.es,
   ...sourceBoardI18n.es,
   ...projectActionsI18n.es,
@@ -172,6 +176,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': 'Copiar',
   'terminalView.actions.paste': 'Pegar',
   'terminalView.toast.pasteFailed': 'No se pudo leer el portapapeles. Usa el atajo de teclado para pegar.',
+  'terminalView.toast.pasteFailedTouch': 'No se pudo leer el portapapeles.',
   'terminalView.actions.restart': 'Reiniciar terminal',
   'chat.message.terminalContext': '{terminal}, líneas {start}-{end}',
   'chat.message.context.codeComment': 'Comentario en {file}, líneas {start}-{end}',
@@ -622,6 +627,10 @@ export const dict: Record<I18nKey, string> = {
   "sessions.archivePage.allDirectories": "Todos los directorios",
   "sessions.sidebar.header.projectDisplay.label": "Mostrar proyectos",
   "sessions.sidebar.header.projectDisplay.all": "Todos los proyectos",
+  "sessions.sidebar.header.listGrouping.label": "Sesiones",
+  "sessions.sidebar.header.listGrouping.project": "Por proyecto",
+  "sessions.sidebar.header.listGrouping.time": "Por fecha",
+  "sessions.sidebar.activity.projectsTitle": "Proyectos",
   "sessions.sidebar.header.projectDisplay.single": "Un proyecto",
   "sessions.sidebar.project.selectAria": "Seleccionar proyecto, actualmente {project}",
   "sessions.sidebar.project.actions.manageWorktrees": "Gestionar worktrees",
@@ -1708,6 +1717,7 @@ export const dict: Record<I18nKey, string> = {
   "filesView.error.switchToEditMode": "Cambia al modo de edición para resolver el problema.",
   "filesView.error.readFileFailed": "No se pudo leer el archivo",
   "filesView.editor.htmlPreviewTitle": "Vista previa HTML",
+  "filesView.editor.htmlAnnotate.intro": "Esta es una selección anotada de la vista previa de un archivo HTML.",
   "filesView.diagram.closeDiagramView": "Cerrar vista de diagrama",
   "filesView.diagram.saveDiagram": "Guardar diagrama",
   "filesView.excalidraw.installHint": "Instala la extensión de Excalidraw para dibujar en este archivo.",
@@ -1737,7 +1747,7 @@ export const dict: Record<I18nKey, string> = {
   "contextSidebar.breakdown.user": "Usuario",
   "contextSidebar.breakdown.assistant": "Asistente",
   "contextSidebar.breakdown.toolCalls": "Llamadas a herramientas",
-  "contextSidebar.breakdown.other": "Otro",
+  "contextSidebar.breakdown.other": "Sistema y herramientas",
   "contextSidebar.stats.messages": "Mensajes",
   "contextSidebar.stats.user": "Usuario",
   "contextSidebar.stats.assistant": "Asistente",
@@ -1843,6 +1853,9 @@ export const dict: Record<I18nKey, string> = {
   "diffView.whitespace.hidden": "Cambios de espacios en blanco ocultos",
   "diffView.layout.switchToUnified": "Cambiar a vista unificada",
   "diffView.layout.switchToSideBySide": "Cambiar a vista lado a lado",
+  "diffView.layout.sideBySide": "Vista lado a lado",
+  "diffView.actions.wrapLines": "Ajuste de línea",
+  "diffView.actions.moreActions": "Más acciones",
   "diffView.whitespace.shown": "Cambios de espacios en blanco visibles",
   "diffView.actions.openFileInEditorAtChange": "Abrir este archivo en el editor en el cambio",
   "diffView.actions.openFileAtFirstChangedLine": "Abrir este archivo en la primera línea modificada",
@@ -2403,6 +2416,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.queuedMessage.edit": "edit",
   "chat.queuedMessage.send": "send",
   "chat.queuedMessage.removeAria": "Eliminar de la cola",
+  "chat.queuedMessage.goal": "Inicia un objetivo al enviarse",
   "chat.queuedMessage.reorderAria": "Arrastra para reordenar",
   "chat.queuedMessage.toast.queueFailed": "No se pudo poner el mensaje en cola. Vuelve a estar en el editor.",
   "chat.queuedMessage.toast.takeFailed": "No se pudo cargar el mensaje en cola. Inténtalo de nuevo.",
@@ -2578,6 +2592,9 @@ export const dict: Record<I18nKey, string> = {
   "chat.chatInput.toast.attachFileFailed": "No se pudo adjuntar el archivo",
   "chat.chatInput.toast.attachNamedFailed": "No se pudo adjuntar {name}",
   "chat.chatInput.toast.unsupportedAttachmentModalities": "{model} no admite la entrada de {modalities} necesaria para {files}. Aún puedes enviar el mensaje, pero estos adjuntos podrían ignorarse.",
+  "chat.chatInput.toast.imagesSaving": "Guardando {files}…",
+  "chat.chatInput.toast.imagesSavedForTextModel": "{model} no puede leer imágenes. {files} se guardó en {folder}.",
+  "chat.chatInput.toast.imageSaveFailed": "No se pudo guardar {files}. Se adjuntó en su lugar.",
   "chat.chatInput.toast.someFilesSkipped": "Algunos archivos se omitieron:\n{summary}",
   "chat.chatInput.toast.vscodePickFailed": "No se pudieron seleccionar archivos en VS Code",
   "chat.chatInput.toast.openSessionFirst": "Abre una sesión primero",
@@ -3826,6 +3843,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': 'No se pudo mover el chat',
   'chat.worktreeSetup.running': 'Preparando el worktree: ejecutando los comandos de configuración del proyecto…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'No se pudo abrir su conexión, así que OpenChamber se inició en Local. Conéctala desde el selector de instancias cuando esté disponible.',
+  'desktopSafeStart.title': 'OpenChamber falló varias veces seguidas',
+  'desktopSafeStart.description': 'Los paneles están cerrados y las carpetas, contraídas.',
   'chat.chatInput.contextPreview.saveEdit': 'Guardar comentario',
   'chat.chatInput.contextPreview.cancelEdit': 'Cancelar edición',
   'sessions.scheduledTasks.dialog.actions.openSession': 'Abrir sesión',

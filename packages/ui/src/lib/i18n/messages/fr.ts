@@ -10,8 +10,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -142,8 +144,10 @@ export const dict = {
   ...fileArtifactsI18n.fr,
   ...fileContentSearchI18n.fr,
   ...htmlRenderI18n.fr,
+  ...sessionNoticesI18n.fr,
   ...usageStatsI18n.fr,
   ...webSearchI18n.fr,
+  ...sessionWarmingI18n.fr,
   ...isolatedSpacesI18n.fr,
   ...sourceBoardI18n.fr,
   ...projectActionsI18n.fr,
@@ -161,6 +165,7 @@ export const dict = {
   'terminalView.actions.copy': 'Copier',
   'terminalView.actions.paste': 'Coller',
   'terminalView.toast.pasteFailed': 'Impossible de lire le presse-papiers. Utilisez le raccourci clavier pour coller.',
+  'terminalView.toast.pasteFailedTouch': 'Impossible de lire le presse-papiers.',
   'terminalView.actions.restart': 'Redémarrer le terminal',
   'chat.message.terminalContext': '{terminal}, lignes {start}-{end}',
   'chat.message.context.codeComment': 'Commentaire sur {file}, lignes {start}-{end}',
@@ -434,6 +439,10 @@ export const dict = {
   'sessions.archivePage.allDirectories': 'Tous les répertoires',
   'sessions.sidebar.header.projectDisplay.label': 'Afficher les projets',
   'sessions.sidebar.header.projectDisplay.all': 'Tous les projets',
+  'sessions.sidebar.header.listGrouping.label': 'Sessions',
+  'sessions.sidebar.header.listGrouping.project': 'Par projet',
+  'sessions.sidebar.header.listGrouping.time': 'Par date',
+  'sessions.sidebar.activity.projectsTitle': 'Projets',
   'sessions.sidebar.header.projectDisplay.single': 'Un projet',
   'sessions.sidebar.project.selectAria': 'Sélectionner un projet, actuellement {project}',
   'sessions.sidebar.project.actions.manageWorktrees': 'Gérer les worktrees',
@@ -1505,6 +1514,7 @@ export const dict = {
   'filesView.error.switchToEditMode': 'Passez en mode édition pour résoudre le problème.',
   'filesView.error.readFileFailed': 'Échec de la lecture du fichier',
   'filesView.editor.htmlPreviewTitle': 'Aperçu HTML',
+  'filesView.editor.htmlAnnotate.intro': 'Ceci est une sélection annotée de l\'aperçu d\'un fichier HTML.',
   'contextUsage.aria.label': 'Utilisation du contexte',
   'contextUsage.mobile.title': 'Utilisation du contexte',
   'contextUsage.mobile.usedTokens': 'Jetons utilisés',
@@ -1526,7 +1536,7 @@ export const dict = {
   'contextSidebar.breakdown.user': 'Utilisateur',
   'contextSidebar.breakdown.assistant': 'Assistant',
   'contextSidebar.breakdown.toolCalls': 'Appels d\'outils',
-  'contextSidebar.breakdown.other': 'Autre',
+  'contextSidebar.breakdown.other': 'Système et outils',
   'contextSidebar.stats.messages': 'Messages',
   'contextSidebar.stats.user': 'Utilisateur',
   'contextSidebar.stats.assistant': 'Assistant',
@@ -1632,6 +1642,9 @@ export const dict = {
   'diffView.whitespace.hidden': 'Changements d’espacement masqués',
   'diffView.layout.switchToUnified': 'Passer à la vue unifiée',
   'diffView.layout.switchToSideBySide': 'Passer à la vue côte à côte',
+  'diffView.layout.sideBySide': 'Vue côte à côte',
+  'diffView.actions.wrapLines': 'Retour à la ligne',
+  'diffView.actions.moreActions': 'Plus d’actions',
   'diffView.whitespace.shown': 'Changements d’espacement affichés',
   'diffView.actions.openFileInEditorAtChange': 'Ouvrez ce fichier dans l\'éditeur lors du changement',
   'diffView.actions.openFileAtFirstChangedLine': 'Ouvrez ce fichier à la première ligne modifiée',
@@ -2142,6 +2155,7 @@ export const dict = {
   'chat.queuedMessage.edit': 'modifier',
   'chat.queuedMessage.send': 'envoyer',
   'chat.queuedMessage.removeAria': 'Supprimer de la file d\'attente',
+  'chat.queuedMessage.goal': 'Démarre un objectif à l\'envoi',
   'chat.queuedMessage.reorderAria': 'Glisser pour réorganiser',
   'chat.queuedMessage.toast.queueFailed': 'Impossible de mettre le message en file d\'attente. Il est de retour dans l\'éditeur.',
   'chat.queuedMessage.toast.takeFailed': 'Impossible de charger le message en file d\'attente. Veuillez réessayer.',
@@ -2311,6 +2325,9 @@ export const dict = {
   'chat.chatInput.toast.attachFileFailed': 'Impossible de joindre le fichier',
   'chat.chatInput.toast.attachNamedFailed': 'Échec de la connexion du {name}',
   'chat.chatInput.toast.unsupportedAttachmentModalities': '{model} ne prend pas en charge l’entrée {modalities} requise par {files}. Vous pouvez tout de même envoyer le message, mais ces pièces jointes risquent d’être ignorées.',
+  'chat.chatInput.toast.imagesSaving': 'Enregistrement de {files}…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model} ne peut pas lire les images. {files} enregistré dans {folder}.',
+  'chat.chatInput.toast.imageSaveFailed': 'Impossible d’enregistrer {files}. Joint à la place.',
   'chat.chatInput.toast.someFilesSkipped': 'Certains fichiers ont été ignorés :\n{summary}',
   'chat.chatInput.toast.vscodePickFailed': 'Échec de la sélection des fichiers dans VS Code',
   'chat.chatInput.toast.openSessionFirst': 'Ouvrir d\'abord une session',
@@ -3824,6 +3841,8 @@ export const dict = {
   'sessions.moveChatToProject.failed': 'Impossible de déplacer le chat',
   'chat.worktreeSetup.running': 'Préparation du worktree : exécution des commandes de configuration du projet…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'Sa connexion ne s’est pas ouverte, OpenChamber a donc démarré sur Local. Connectez-la depuis le sélecteur d’instances dès qu’elle est joignable.',
+  'desktopSafeStart.title': 'OpenChamber a planté à plusieurs reprises',
+  'desktopSafeStart.description': 'Les panneaux sont fermés et les dossiers réduits.',
   'chat.chatInput.contextPreview.saveEdit': 'Enregistrer le commentaire',
   'chat.chatInput.contextPreview.cancelEdit': 'Annuler la modification',
   'sessions.scheduledTasks.dialog.actions.openSession': 'Ouvrir la session',

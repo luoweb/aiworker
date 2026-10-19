@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -153,8 +155,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n['pt-BR'],
   ...fileContentSearchI18n['pt-BR'],
   ...htmlRenderI18n['pt-BR'],
+  ...sessionNoticesI18n['pt-BR'],
   ...usageStatsI18n['pt-BR'],
   ...webSearchI18n['pt-BR'],
+  ...sessionWarmingI18n['pt-BR'],
   ...isolatedSpacesI18n['pt-BR'],
   ...sourceBoardI18n['pt-BR'],
   ...projectActionsI18n['pt-BR'],
@@ -172,6 +176,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': 'Copiar',
   'terminalView.actions.paste': 'Colar',
   'terminalView.toast.pasteFailed': 'Não foi possível ler a área de transferência. Use o atalho de teclado para colar.',
+  'terminalView.toast.pasteFailedTouch': 'Não foi possível ler a área de transferência.',
   'terminalView.actions.restart': 'Reiniciar terminal',
   'chat.message.terminalContext': '{terminal}, linhas {start}-{end}',
   'chat.message.context.codeComment': 'Comentário em {file}, linhas {start}-{end}',
@@ -622,6 +627,10 @@ export const dict: Record<I18nKey, string> = {
   "sessions.archivePage.allDirectories": "Todos os diretórios",
   "sessions.sidebar.header.projectDisplay.label": "Exibir projetos",
   "sessions.sidebar.header.projectDisplay.all": "Todos os projetos",
+  "sessions.sidebar.header.listGrouping.label": "Sessões",
+  "sessions.sidebar.header.listGrouping.project": "Por projeto",
+  "sessions.sidebar.header.listGrouping.time": "Por data",
+  "sessions.sidebar.activity.projectsTitle": "Projetos",
   "sessions.sidebar.header.projectDisplay.single": "Um projeto",
   "sessions.sidebar.project.selectAria": "Selecionar projeto, atualmente {project}",
   "sessions.sidebar.project.actions.manageWorktrees": "Gerenciar worktrees",
@@ -1708,6 +1717,7 @@ export const dict: Record<I18nKey, string> = {
   "filesView.error.switchToEditMode": "Alterne para o modo de edição para resolver o problema.",
   "filesView.error.readFileFailed": "Não foi possível ler o arquivo",
   "filesView.editor.htmlPreviewTitle": "Pré-visualização HTML",
+  "filesView.editor.htmlAnnotate.intro": "Esta é uma seleção anotada da pré-visualização de um arquivo HTML.",
   "filesView.diagram.closeDiagramView": "Fechar visualização de diagrama",
   "filesView.diagram.saveDiagram": "Salvar diagrama",
   "filesView.excalidraw.installHint": "Instale a extensão Excalidraw para desenhar neste arquivo.",
@@ -1737,7 +1747,7 @@ export const dict: Record<I18nKey, string> = {
   "contextSidebar.breakdown.user": "Usuário",
   "contextSidebar.breakdown.assistant": "Assistente",
   "contextSidebar.breakdown.toolCalls": "Chamadas de ferramentas",
-  "contextSidebar.breakdown.other": "Outro",
+  "contextSidebar.breakdown.other": "Sistema e ferramentas",
   "contextSidebar.stats.messages": "Mensagens",
   "contextSidebar.stats.user": "Usuário",
   "contextSidebar.stats.assistant": "Assistente",
@@ -1843,6 +1853,9 @@ export const dict: Record<I18nKey, string> = {
   "diffView.whitespace.hidden": "Alterações de espaços em branco ocultas",
   "diffView.layout.switchToUnified": "Mudar para a visualização unificada",
   "diffView.layout.switchToSideBySide": "Mudar para a visualização lado a lado",
+  "diffView.layout.sideBySide": "Visualização lado a lado",
+  "diffView.actions.wrapLines": "Quebra de linha",
+  "diffView.actions.moreActions": "Mais ações",
   "diffView.whitespace.shown": "Alterações de espaços em branco visíveis",
   "diffView.actions.openFileInEditorAtChange": "Abrir este arquivo no editor nesta alteração",
   "diffView.actions.openFileAtFirstChangedLine": "Abrir este arquivo na primeira linha alterada",
@@ -2403,6 +2416,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.queuedMessage.edit": "edit",
   "chat.queuedMessage.send": "send",
   "chat.queuedMessage.removeAria": "Excluir da fila",
+  "chat.queuedMessage.goal": "Inicia um objetivo ao ser enviada",
   "chat.queuedMessage.reorderAria": "Arraste para reordenar",
   "chat.queuedMessage.toast.queueFailed": "Não foi possível enfileirar a mensagem. Ela voltou para o campo de texto.",
   "chat.queuedMessage.toast.takeFailed": "Não foi possível carregar a mensagem da fila. Tente novamente.",
@@ -2578,6 +2592,9 @@ export const dict: Record<I18nKey, string> = {
   "chat.chatInput.toast.attachFileFailed": "Não foi possível anexar o arquivo",
   "chat.chatInput.toast.attachNamedFailed": "Não foi possível anexar {name}",
   "chat.chatInput.toast.unsupportedAttachmentModalities": "{model} não oferece suporte à entrada de {modalities} exigida por {files}. Você ainda pode enviar a mensagem, mas esses anexos podem ser ignorados.",
+  "chat.chatInput.toast.imagesSaving": "Salvando {files}…",
+  "chat.chatInput.toast.imagesSavedForTextModel": "{model} não consegue ler imagens. {files} foi salvo em {folder}.",
+  "chat.chatInput.toast.imageSaveFailed": "Não foi possível salvar {files}. Anexado no lugar.",
   "chat.chatInput.toast.someFilesSkipped": "Alguns arquivos foram omitidos:\n{summary}",
   "chat.chatInput.toast.vscodePickFailed": "Não foi possível selecionar arquivos em VS Code",
   "chat.chatInput.toast.openSessionFirst": "Abra uma sessão primeiro",
@@ -3826,6 +3843,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': 'Não foi possível mover o chat',
   'chat.worktreeSetup.running': 'Preparando o worktree: executando os comandos de configuração do projeto…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'A conexão não abriu, então o OpenChamber iniciou no Local. Conecte-a pelo seletor de instâncias quando estiver acessível.',
+  'desktopSafeStart.title': 'O OpenChamber travou várias vezes seguidas',
+  'desktopSafeStart.description': 'Os painéis foram fechados e as pastas, recolhidas.',
   'chat.chatInput.contextPreview.saveEdit': 'Salvar comentário',
   'chat.chatInput.contextPreview.cancelEdit': 'Cancelar edição',
   'sessions.scheduledTasks.dialog.actions.openSession': 'Abrir sessão',

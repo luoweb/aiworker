@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -153,8 +155,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n.uk,
   ...fileContentSearchI18n.uk,
   ...htmlRenderI18n.uk,
+  ...sessionNoticesI18n.uk,
   ...usageStatsI18n.uk,
   ...webSearchI18n.uk,
+  ...sessionWarmingI18n.uk,
   ...isolatedSpacesI18n.uk,
   ...sourceBoardI18n.uk,
   ...projectActionsI18n.uk,
@@ -172,6 +176,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': 'Копіювати',
   'terminalView.actions.paste': 'Вставити',
   'terminalView.toast.pasteFailed': 'Не вдалося прочитати буфер обміну. Скористайтеся комбінацією клавіш для вставлення.',
+  'terminalView.toast.pasteFailedTouch': 'Не вдалося прочитати буфер обміну.',
   'terminalView.actions.restart': 'Перезапустити термінал',
   'chat.message.terminalContext': '{terminal}, рядки {start}-{end}',
   'chat.message.context.codeComment': 'Коментар до {file}, рядки {start}-{end}',
@@ -622,6 +627,10 @@ export const dict: Record<I18nKey, string> = {
   "sessions.archivePage.allDirectories": "Всі директорії",
   "sessions.sidebar.header.projectDisplay.label": "Показувати проєкти",
   "sessions.sidebar.header.projectDisplay.all": "Усі проєкти",
+  "sessions.sidebar.header.listGrouping.label": "Сесії",
+  "sessions.sidebar.header.listGrouping.project": "За проєктами",
+  "sessions.sidebar.header.listGrouping.time": "За часом",
+  "sessions.sidebar.activity.projectsTitle": "Проєкти",
   "sessions.sidebar.header.projectDisplay.single": "Один проєкт",
   "sessions.sidebar.project.selectAria": "Вибрати проєкт, зараз {project}",
   "sessions.sidebar.project.actions.manageWorktrees": "Керувати worktree",
@@ -1708,6 +1717,7 @@ export const dict: Record<I18nKey, string> = {
   "filesView.error.switchToEditMode": "Перейдіть у режим редагування, щоб усунути проблему.",
   "filesView.error.readFileFailed": "Не вдалося прочитати файл",
   "filesView.editor.htmlPreviewTitle": "Попередній перегляд HTML",
+  "filesView.editor.htmlAnnotate.intro": "Це анотований фрагмент із попереднього перегляду HTML-файлу.",
   "filesView.diagram.closeDiagramView": "Закрити перегляд діаграми",
   "filesView.diagram.saveDiagram": "Зберегти діаграму",
   "filesView.excalidraw.installHint": "Встановіть розширення Excalidraw, щоб малювати в цьому файлі.",
@@ -1737,7 +1747,7 @@ export const dict: Record<I18nKey, string> = {
   "contextSidebar.breakdown.user": "Користувач",
   "contextSidebar.breakdown.assistant": "Асистент",
   "contextSidebar.breakdown.toolCalls": "Виклики інструментів",
-  "contextSidebar.breakdown.other": "Інше",
+  "contextSidebar.breakdown.other": "Система та інструменти",
   "contextSidebar.stats.messages": "Повідомлення",
   "contextSidebar.stats.user": "Користувач",
   "contextSidebar.stats.assistant": "Асистент",
@@ -1843,6 +1853,9 @@ export const dict: Record<I18nKey, string> = {
   "diffView.whitespace.hidden": "Зміни пробілів приховано",
   "diffView.layout.switchToUnified": "Перейти до єдиного вигляду",
   "diffView.layout.switchToSideBySide": "Перейти до вигляду поруч",
+  "diffView.layout.sideBySide": "Вигляд поруч",
+  "diffView.actions.wrapLines": "Переносити рядки",
+  "diffView.actions.moreActions": "Більше дій",
   "diffView.whitespace.shown": "Зміни пробілів показано",
   "diffView.actions.openFileInEditorAtChange": "Відкрити цей файл у редакторі на зміні",
   "diffView.actions.openFileAtFirstChangedLine": "Відкрити цей файл у першому зміненому рядку",
@@ -2403,6 +2416,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.queuedMessage.edit": "edit",
   "chat.queuedMessage.send": "send",
   "chat.queuedMessage.removeAria": "Видалити з черги",
+  "chat.queuedMessage.goal": "Почне ціль, коли буде надіслано",
   "chat.queuedMessage.reorderAria": "Перетягніть, щоб змінити порядок",
   "chat.queuedMessage.toast.queueFailed": "Не вдалося додати повідомлення в чергу. Воно повернулося в поле вводу.",
   "chat.queuedMessage.toast.takeFailed": "Не вдалося завантажити повідомлення з черги. Спробуйте ще раз.",
@@ -2578,6 +2592,9 @@ export const dict: Record<I18nKey, string> = {
   "chat.chatInput.toast.attachFileFailed": "Не вдалося прикріпити файл",
   "chat.chatInput.toast.attachNamedFailed": "Не вдалося прикріпити {name}",
   "chat.chatInput.toast.unsupportedAttachmentModalities": "{model} не підтримує вхідні дані {modalities}, потрібні для {files}. Повідомлення все одно можна надіслати, але ці вкладення можуть бути проігноровані.",
+  "chat.chatInput.toast.imagesSaving": "Зберігаю {files}…",
+  "chat.chatInput.toast.imagesSavedForTextModel": "{model} не читає зображень. {files} збережено в {folder}.",
+  "chat.chatInput.toast.imageSaveFailed": "Не вдалося зберегти {files}. Додано як вкладення.",
   "chat.chatInput.toast.someFilesSkipped": "Деякі файли були пропущені:\n{summary}",
   "chat.chatInput.toast.vscodePickFailed": "Не вдалося вибрати файли в VS Code",
   "chat.chatInput.toast.openSessionFirst": "Спочатку відкрийте сесію",
@@ -3826,6 +3843,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': 'Не вдалося перенести чат',
   'chat.worktreeSetup.running': 'Налаштовуємо worktree: виконуються команди налаштування проєкту…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'З\'єднання не відкрилося, тож OpenChamber запустився на Local. Підключіть інстанс через перемикач, щойно він стане доступним.',
+  'desktopSafeStart.title': 'OpenChamber раз у раз аварійно закривався',
+  'desktopSafeStart.description': 'Панелі закрито, папки згорнуто.',
   'chat.chatInput.contextPreview.saveEdit': 'Зберегти коментар',
   'chat.chatInput.contextPreview.cancelEdit': 'Скасувати редагування',
   'sessions.scheduledTasks.dialog.actions.openSession': 'Відкрити сесію',

@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -143,8 +145,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n.ko,
   ...fileContentSearchI18n.ko,
   ...htmlRenderI18n.ko,
+  ...sessionNoticesI18n.ko,
   ...usageStatsI18n.ko,
   ...webSearchI18n.ko,
+  ...sessionWarmingI18n.ko,
   ...isolatedSpacesI18n.ko,
   ...sourceBoardI18n.ko,
   ...projectActionsI18n.ko,
@@ -162,6 +166,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': '복사',
   'terminalView.actions.paste': '붙여넣기',
   'terminalView.toast.pasteFailed': '클립보드를 읽을 수 없습니다. 붙여넣기 단축키를 사용하세요.',
+  'terminalView.toast.pasteFailedTouch': '클립보드를 읽을 수 없습니다.',
   'terminalView.actions.restart': '터미널 다시 시작',
   'chat.message.terminalContext': '{terminal}, {start}-{end}행',
   'chat.message.context.codeComment': '{file} {start}-{end}행에 대한 댓글',
@@ -613,6 +618,10 @@ export const dict: Record<I18nKey, string> = {
   'sessions.archivePage.allDirectories': '모든 디렉터리',
   'sessions.sidebar.header.projectDisplay.label': '프로젝트 표시',
   'sessions.sidebar.header.projectDisplay.all': '모든 프로젝트',
+  'sessions.sidebar.header.listGrouping.label': '세션',
+  'sessions.sidebar.header.listGrouping.project': '프로젝트별',
+  'sessions.sidebar.header.listGrouping.time': '시간순',
+  'sessions.sidebar.activity.projectsTitle': '프로젝트',
   'sessions.sidebar.header.projectDisplay.single': '프로젝트 하나',
   'sessions.sidebar.project.selectAria': '프로젝트 선택, 현재 {project}',
   'sessions.sidebar.project.actions.manageWorktrees': '워크트리 관리',
@@ -1754,6 +1763,7 @@ export const dict: Record<I18nKey, string> = {
   'filesView.error.switchToEditMode': '문제를 수정하려면 편집 모드로 전환하세요.',
   'filesView.error.readFileFailed': '파일 읽기 실패',
   'filesView.editor.htmlPreviewTitle': 'HTML 미리보기',
+  'filesView.editor.htmlAnnotate.intro': 'HTML 파일 미리보기에서 주석을 단 선택 영역입니다.',
   'filesView.diagram.closeDiagramView': '다이어그램 보기 닫기',
   'filesView.diagram.saveDiagram': '다이어그램 저장',
   'filesView.excalidraw.installHint': '이 파일에서 그리려면 Excalidraw 확장을 설치하세요.',
@@ -1783,7 +1793,7 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.breakdown.user': '사용자',
   'contextSidebar.breakdown.assistant': '어시스턴트',
   'contextSidebar.breakdown.toolCalls': '도구 호출',
-  'contextSidebar.breakdown.other': '기타',
+  'contextSidebar.breakdown.other': '시스템 및 도구',
   'contextSidebar.stats.messages': '메시지',
   'contextSidebar.stats.user': '사용자',
   'contextSidebar.stats.assistant': '어시스턴트',
@@ -1889,6 +1899,9 @@ export const dict: Record<I18nKey, string> = {
   'diffView.whitespace.hidden': '공백 변경 숨김',
   'diffView.layout.switchToUnified': '통합 보기로 전환',
   'diffView.layout.switchToSideBySide': '나란히 보기로 전환',
+  'diffView.layout.sideBySide': '나란히 보기',
+  'diffView.actions.wrapLines': '줄 바꿈',
+  'diffView.actions.moreActions': '추가 작업',
   'diffView.whitespace.shown': '공백 변경 표시 중',
   'diffView.actions.openFileInEditorAtChange': '변경 위치에서 이 파일을 에디터로 열기',
   'diffView.actions.openFileAtFirstChangedLine': '첫 변경 줄에서 이 파일 열기',
@@ -2437,6 +2450,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.queuedMessage.edit': 'edit',
   'chat.queuedMessage.send': 'send',
   'chat.queuedMessage.removeAria': '큐에서 제거',
+  'chat.queuedMessage.goal': '보낼 때 목표 시작',
   'chat.queuedMessage.reorderAria': '드래그하여 순서 변경',
   'chat.queuedMessage.toast.queueFailed': '메시지를 대기열에 추가하지 못했습니다. 입력창으로 되돌렸습니다.',
   'chat.queuedMessage.toast.takeFailed': '대기열의 메시지를 불러오지 못했습니다. 다시 시도해 주세요.',
@@ -2624,6 +2638,9 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.attachFileFailed': '첨부 파일 실패',
   'chat.chatInput.toast.attachNamedFailed': '첨부 {name} 실패',
   'chat.chatInput.toast.unsupportedAttachmentModalities': '{model}은(는) {files}에 필요한 {modalities} 입력을 지원하지 않습니다. 메시지를 보낼 수는 있지만 해당 첨부 파일이 무시될 수 있습니다.',
+  'chat.chatInput.toast.imagesSaving': '{files} 저장 중…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model}은(는) 이미지를 읽을 수 없습니다. {files}을(를) {folder}에 저장했습니다.',
+  'chat.chatInput.toast.imageSaveFailed': '{files}을(를) 저장하지 못했습니다. 대신 첨부했습니다.',
   'chat.chatInput.toast.someFilesSkipped': '일부 파일을 건너뛰었습니다:\n{summary}',
   'chat.chatInput.toast.vscodePickFailed': 'VS Code에서 파일 선택에 실패했습니다',
   'chat.chatInput.toast.openSessionFirst': '먼저 세션을 여세요',
@@ -3825,6 +3842,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': '채팅을 옮길 수 없습니다',
   'chat.worktreeSetup.running': 'worktree 준비 중: 프로젝트 설정 명령을 실행하고 있습니다…',
   'desktopHostSwitcher.startup.fellBackToLocal': '연결을 열지 못해 OpenChamber가 Local로 시작했습니다. 접속할 수 있게 되면 인스턴스 전환기에서 연결하세요.',
+  'desktopSafeStart.title': 'OpenChamber가 계속 충돌했습니다',
+  'desktopSafeStart.description': '패널을 닫고 폴더를 접었습니다.',
   'chat.chatInput.contextPreview.saveEdit': '댓글 저장',
   'chat.chatInput.contextPreview.cancelEdit': '편집 취소',
   'sessions.scheduledTasks.dialog.actions.openSession': '세션 열기',

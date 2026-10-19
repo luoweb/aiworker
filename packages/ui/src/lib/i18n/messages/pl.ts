@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -143,8 +145,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n.pl,
   ...fileContentSearchI18n.pl,
   ...htmlRenderI18n.pl,
+  ...sessionNoticesI18n.pl,
   ...usageStatsI18n.pl,
   ...webSearchI18n.pl,
+  ...sessionWarmingI18n.pl,
   ...isolatedSpacesI18n.pl,
   ...sourceBoardI18n.pl,
   ...projectActionsI18n.pl,
@@ -162,6 +166,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': 'Kopiuj',
   'terminalView.actions.paste': 'Wklej',
   'terminalView.toast.pasteFailed': 'Nie udało się odczytać schowka. Użyj skrótu klawiaturowego do wklejania.',
+  'terminalView.toast.pasteFailedTouch': 'Nie udało się odczytać schowka.',
   'terminalView.actions.restart': 'Uruchom terminal ponownie',
   'chat.message.terminalContext': '{terminal}, wiersze {start}-{end}',
   'chat.message.context.codeComment': 'Komentarz do {file}, wiersze {start}-{end}',
@@ -454,6 +459,10 @@ export const dict: Record<I18nKey, string> = {
   'sessions.archivePage.allDirectories': 'Wszystkie katalogi',
   'sessions.sidebar.header.projectDisplay.label': 'Wyświetlanie projektów',
   'sessions.sidebar.header.projectDisplay.all': 'Wszystkie projekty',
+  'sessions.sidebar.header.listGrouping.label': 'Sesje',
+  'sessions.sidebar.header.listGrouping.project': 'Według projektu',
+  'sessions.sidebar.header.listGrouping.time': 'Według czasu',
+  'sessions.sidebar.activity.projectsTitle': 'Projekty',
   'sessions.sidebar.header.projectDisplay.single': 'Jeden projekt',
   'sessions.sidebar.project.selectAria': 'Wybierz projekt, obecnie {project}',
   'sessions.sidebar.project.actions.manageWorktrees': 'Zarządzaj worktree',
@@ -1033,6 +1042,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.queuedMessage.edit': 'edit',
   'chat.queuedMessage.send': 'send',
   'chat.queuedMessage.removeAria': 'Usuń z kolejki',
+  'chat.queuedMessage.goal': 'Rozpoczyna cel po wysłaniu',
   'chat.queuedMessage.reorderAria': 'Przeciągnij, aby zmienić kolejność',
   'chat.queuedMessage.toast.queueFailed': 'Nie udało się dodać wiadomości do kolejki. Wróciła do pola wpisywania.',
   'chat.queuedMessage.toast.takeFailed': 'Nie udało się wczytać wiadomości z kolejki. Spróbuj ponownie.',
@@ -1438,6 +1448,9 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.attachFileFailed': 'Nie udało się dołączyć pliku',
   'chat.chatInput.toast.attachNamedFailed': 'Nie udało się dołączyć {name}',
   'chat.chatInput.toast.unsupportedAttachmentModalities': 'Model {model} nie obsługuje danych wejściowych {modalities} wymaganych przez {files}. Nadal możesz wysłać wiadomość, ale te załączniki mogą zostać zignorowane.',
+  'chat.chatInput.toast.imagesSaving': 'Zapisywanie {files}…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model} nie odczytuje obrazów. Zapisano {files} w {folder}.',
+  'chat.chatInput.toast.imageSaveFailed': 'Nie udało się zapisać {files}. Dołączono zamiast tego.',
   'chat.chatInput.toast.attachmentsTooLarge': 'Załączniki są zbyt duże, aby je wysłać. Spróbuj zmniejszyć liczbę lub rozmiar obrazów.',
   'chat.chatInput.toast.clipboardAttachFailed': 'Nie udało się dołączyć obrazu ze schowka',
   'chat.chatInput.toast.clipboardTextAttachFailed': 'Nie udało się dołączyć wklejonego tekstu jako pliku',
@@ -1973,7 +1986,7 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.actions.copy': 'Kopiuj',
   'contextSidebar.actions.copyJson': 'Kopiuj JSON',
   'contextSidebar.breakdown.assistant': 'Asystent',
-  'contextSidebar.breakdown.other': 'Inne',
+  'contextSidebar.breakdown.other': 'System i narzędzia',
   'contextSidebar.breakdown.toolCalls': 'Wywołania narzędzi',
   'contextSidebar.breakdown.user': 'Użytkownik',
   'contextSidebar.context.percentUsed': 'Wykorzystano {percent}%',
@@ -2091,6 +2104,9 @@ export const dict: Record<I18nKey, string> = {
   'diffView.whitespace.hidden': 'Zmiany białych znaków ukryte',
   'diffView.layout.switchToUnified': 'Przełącz na widok ujednolicony',
   'diffView.layout.switchToSideBySide': 'Przełącz na widok obok siebie',
+  'diffView.layout.sideBySide': 'Widok obok siebie',
+  'diffView.actions.wrapLines': 'Zawijanie linii',
+  'diffView.actions.moreActions': 'Więcej akcji',
   'diffView.whitespace.shown': 'Zmiany białych znaków widoczne',
   'diffView.actions.expandAll': 'Rozwiń wszystko',
   'diffView.actions.collapseAll': 'Zwiń wszystko',
@@ -2295,6 +2311,7 @@ export const dict: Record<I18nKey, string> = {
   'filesView.symbols.noneInFile': 'W tym pliku nie znaleziono funkcji, klas ani nagłówków',
   'filesView.symbols.noMatches': 'Brak pasujących symboli',
   'filesView.editor.htmlPreviewTitle': 'Podgląd HTML',
+  'filesView.editor.htmlAnnotate.intro': 'To jest opatrzony adnotacją fragment z podglądu pliku HTML.',
   'filesView.editor.switchToEditMode': 'Przełącz na tryb edycji',
   'filesView.editor.switchToPreviewMode': 'Przełącz na tryb podglądu',
   'filesView.diagram.closeDiagramView': 'Zamknij widok diagramu',
@@ -3830,6 +3847,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': 'Nie udało się przenieść czatu',
   'chat.worktreeSetup.running': 'Przygotowywanie worktree: uruchamianie poleceń konfiguracyjnych projektu…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'Nie udało się nawiązać połączenia, więc OpenChamber uruchomił się na Local. Połącz się z przełącznika instancji, gdy będzie dostępna.',
+  'desktopSafeStart.title': 'OpenChamber wielokrotnie uległ awarii',
+  'desktopSafeStart.description': 'Panele są zamknięte, a foldery zwinięte.',
   'chat.chatInput.contextPreview.saveEdit': 'Zapisz komentarz',
   'chat.chatInput.contextPreview.cancelEdit': 'Anuluj edycję',
   'sessions.scheduledTasks.dialog.actions.openSession': 'Otwórz sesję',

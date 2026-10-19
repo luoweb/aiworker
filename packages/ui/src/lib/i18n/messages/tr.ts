@@ -10,8 +10,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -81,8 +83,10 @@ export const dict = {
   ...fileArtifactsI18n.tr,
   ...fileContentSearchI18n.tr,
   ...htmlRenderI18n.tr,
+  ...sessionNoticesI18n.tr,
   ...usageStatsI18n.tr,
   ...webSearchI18n.tr,
+  ...sessionWarmingI18n.tr,
   ...isolatedSpacesI18n.tr,
   ...sourceBoardI18n.tr,
   ...projectActionsI18n.tr,
@@ -100,6 +104,7 @@ export const dict = {
   'terminalView.actions.copy': 'Kopyala',
   'terminalView.actions.paste': 'Yapıştır',
   'terminalView.toast.pasteFailed': 'Pano okunamadı. Yapıştırmak için klavye kısayolunu kullanın.',
+  'terminalView.toast.pasteFailedTouch': 'Pano okunamadı.',
   'terminalView.actions.restart': 'Terminali yeniden başlat',
   'chat.message.terminalContext': '{terminal}, {start}-{end}. satırlar',
   'chat.chatInput.terminalContext': '{terminal}, {start}-{end}. satırlar',
@@ -534,6 +539,10 @@ export const dict = {
   'sessions.archivePage.allDirectories': 'Tüm dizinler',
   'sessions.sidebar.header.projectDisplay.label': 'Projeleri göster',
   'sessions.sidebar.header.projectDisplay.all': 'Tüm projeler',
+  'sessions.sidebar.header.listGrouping.label': 'Session\'lar',
+  'sessions.sidebar.header.listGrouping.project': 'Projeye göre',
+  'sessions.sidebar.header.listGrouping.time': 'Zamana göre',
+  'sessions.sidebar.activity.projectsTitle': 'Projeler',
   'sessions.sidebar.header.projectDisplay.single': 'Tek proje',
   'sessions.sidebar.project.selectAria': 'Proje seçin, şu an {project}',
   'sessions.sidebar.project.actions.manageWorktrees': 'Worktree\'leri yönet',
@@ -1626,6 +1635,7 @@ export const dict = {
   'filesView.error.switchToEditMode': 'Sorunu düzeltmek için düzenleme moduna geçin.',
   'filesView.error.readFileFailed': 'Dosya okunamadı',
   'filesView.editor.htmlPreviewTitle': 'HTML Önizleme',
+  'filesView.editor.htmlAnnotate.intro': 'Bu, bir HTML dosyası önizlemesinden alınmış açıklamalı bir seçimdir.',
   'filesView.diagram.closeDiagramView': 'Diyagram görünümünü kapat',
   'filesView.diagram.saveDiagram': 'Diyagramı kaydet',
   'filesView.excalidraw.installHint': 'Bu dosyada çizmek için Excalidraw uzantısını kurun.',
@@ -1655,7 +1665,7 @@ export const dict = {
   'contextSidebar.breakdown.user': 'Kullanıcı',
   'contextSidebar.breakdown.assistant': 'Asistan',
   'contextSidebar.breakdown.toolCalls': 'Araç Çağrıları',
-  'contextSidebar.breakdown.other': 'Diğer',
+  'contextSidebar.breakdown.other': 'Sistem ve araçlar',
   'contextSidebar.stats.messages': 'Mesajlar',
   'contextSidebar.stats.user': 'Kullanıcı',
   'contextSidebar.stats.assistant': 'Asistan',
@@ -1754,6 +1764,9 @@ export const dict = {
   'diffView.whitespace.hidden': 'Boşluk değişiklikleri gizli',
   'diffView.layout.switchToUnified': 'Birleşik görünüme geç',
   'diffView.layout.switchToSideBySide': 'Yan yana görünüme geç',
+  'diffView.layout.sideBySide': 'Yan yana görünüm',
+  'diffView.actions.wrapLines': 'Satır kaydırma',
+  'diffView.actions.moreActions': 'Diğer işlemler',
   'diffView.whitespace.shown': 'Boşluk değişiklikleri gösteriliyor',
   'diffView.actions.openFileInEditorAtChange': 'Bu dosyayı değişiklik konumunda editörde aç',
   'diffView.actions.openFileAtFirstChangedLine': 'Bu dosyayı ilk değişen satırda aç',
@@ -2293,6 +2306,7 @@ export const dict = {
   'chat.queuedMessage.edit': 'düzenle',
   'chat.queuedMessage.send': 'gönder',
   'chat.queuedMessage.removeAria': 'Kuyruktan kaldır',
+  'chat.queuedMessage.goal': 'Gönderildiğinde bir hedef başlatır',
   'chat.queuedMessage.reorderAria': 'Yeniden sıralamak için sürükle',
   'chat.queuedMessage.toast.queueFailed': 'Mesaj kuyruğa eklenemedi. Yazma alanına geri kondu.',
   'chat.queuedMessage.toast.takeFailed': 'Kuyruktaki mesaj yüklenemedi. Lütfen tekrar deneyin.',
@@ -2453,6 +2467,9 @@ export const dict = {
   'chat.chatInput.toast.attachFileFailed': 'Dosya eklenemedi',
   'chat.chatInput.toast.attachNamedFailed': '{name} eklenemedi',
   'chat.chatInput.toast.unsupportedAttachmentModalities': '{model}, {files} için gereken {modalities} girişini desteklemiyor. Mesajı yine de gönderebilirsiniz ancak bu ekler yok sayılabilir.',
+  'chat.chatInput.toast.imagesSaving': '{files} kaydediliyor…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model} görselleri okuyamıyor. {files}, {folder} klasörüne kaydedildi.',
+  'chat.chatInput.toast.imageSaveFailed': '{files} kaydedilemedi. Bunun yerine eklendi.',
   'chat.chatInput.toast.someFilesSkipped': 'Bazı dosyalar atlandı:\\n{summary}',
   'chat.chatInput.toast.vscodePickFailed': 'VS Code\'da dosya seçilemedi',
   'chat.chatInput.toast.openSessionFirst': 'Önce bir session açın',
@@ -3823,6 +3840,8 @@ export const dict = {
   'sessions.moveChatToProject.failed': 'Sohbet taşınamadı',
   'chat.worktreeSetup.running': 'Worktree hazırlanıyor: projenin kurulum komutları çalışıyor…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'Bağlantısı açılamadı, bu yüzden OpenChamber Local ile başladı. Erişilebilir olduğunda örnek değiştiriciden bağlanın.',
+  'desktopSafeStart.title': 'OpenChamber art arda çöktü',
+  'desktopSafeStart.description': 'Paneller kapatıldı ve klasörler daraltıldı.',
   'chat.chatInput.contextPreview.saveEdit': 'Yorumu kaydet',
   'chat.chatInput.contextPreview.cancelEdit': 'Düzenlemeyi iptal et',
   'sessions.scheduledTasks.dialog.actions.openSession': 'Oturumu aç',

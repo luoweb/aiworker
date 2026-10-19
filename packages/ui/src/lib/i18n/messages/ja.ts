@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -143,8 +145,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n.ja,
   ...fileContentSearchI18n.ja,
   ...htmlRenderI18n.ja,
+  ...sessionNoticesI18n.ja,
   ...usageStatsI18n.ja,
   ...webSearchI18n.ja,
+  ...sessionWarmingI18n.ja,
   ...isolatedSpacesI18n.ja,
   ...sourceBoardI18n.ja,
   ...projectActionsI18n.ja,
@@ -162,6 +166,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': 'コピー',
   'terminalView.actions.paste': '貼り付け',
   'terminalView.toast.pasteFailed': 'クリップボードを読み取れませんでした。貼り付けのキーボードショートカットを使用してください。',
+  'terminalView.toast.pasteFailedTouch': 'クリップボードを読み取れませんでした。',
   'terminalView.actions.restart': 'ターミナルを再起動',
   'chat.message.terminalContext': '{terminal}、{start}〜{end}行',
   'chat.message.context.codeComment': '{file} の {start}〜{end} 行へのコメント',
@@ -613,6 +618,10 @@ export const dict: Record<I18nKey, string> = {
   'sessions.archivePage.allDirectories': 'すべてのディレクトリ',
   'sessions.sidebar.header.projectDisplay.label': 'プロジェクト表示',
   'sessions.sidebar.header.projectDisplay.all': 'すべてのプロジェクト',
+  'sessions.sidebar.header.listGrouping.label': 'セッション',
+  'sessions.sidebar.header.listGrouping.project': 'プロジェクト別',
+  'sessions.sidebar.header.listGrouping.time': '時間順',
+  'sessions.sidebar.activity.projectsTitle': 'プロジェクト',
   'sessions.sidebar.header.projectDisplay.single': '1つのプロジェクト',
   'sessions.sidebar.project.selectAria': 'プロジェクトを選択、現在は{project}',
   'sessions.sidebar.project.actions.manageWorktrees': 'ワークツリーを管理',
@@ -1750,6 +1759,7 @@ export const dict: Record<I18nKey, string> = {
   'filesView.error.switchToEditMode': '編集モードに切り替えて問題を修正してください。',
   'filesView.error.readFileFailed': 'ファイルの読み込みに失敗しました',
   'filesView.editor.htmlPreviewTitle': 'HTMLプレビュー',
+  'filesView.editor.htmlAnnotate.intro': 'これはHTMLファイルのプレビューで注釈を付けた選択範囲です。',
   'filesView.diagram.closeDiagramView': 'ダイアグラムビューを閉じる',
   'filesView.diagram.saveDiagram': 'ダイアグラムを保存',
   'filesView.excalidraw.installHint': 'このファイルで描くには Excalidraw 拡張機能をインストールしてください。',
@@ -1779,7 +1789,7 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.breakdown.user': 'ユーザー',
   'contextSidebar.breakdown.assistant': 'アシスタント',
   'contextSidebar.breakdown.toolCalls': 'ツール呼び出し',
-  'contextSidebar.breakdown.other': 'その他',
+  'contextSidebar.breakdown.other': 'システムとツール',
   'contextSidebar.stats.messages': 'メッセージ',
   'contextSidebar.stats.user': 'ユーザー',
   'contextSidebar.stats.assistant': 'アシスタント',
@@ -1885,6 +1895,9 @@ export const dict: Record<I18nKey, string> = {
   'diffView.whitespace.hidden': '空白の変更を非表示中',
   'diffView.layout.switchToUnified': '統合表示に切り替え',
   'diffView.layout.switchToSideBySide': '左右に並べた表示に切り替え',
+  'diffView.layout.sideBySide': '左右に並べた表示',
+  'diffView.actions.wrapLines': '行の折り返し',
+  'diffView.actions.moreActions': 'その他の操作',
   'diffView.whitespace.shown': '空白の変更を表示中',
   'diffView.actions.openFileInEditorAtChange': '変更箇所でファイルをエディターで開く',
   'diffView.actions.openFileAtFirstChangedLine': '最初の変更行でファイルを開く',
@@ -2433,6 +2446,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.queuedMessage.edit': '編集',
   'chat.queuedMessage.send': '送信',
   'chat.queuedMessage.removeAria': 'キューから削除',
+  'chat.queuedMessage.goal': '送信時にゴールを開始',
   'chat.queuedMessage.reorderAria': 'ドラッグして並び替え',
   'chat.queuedMessage.toast.queueFailed': 'メッセージをキューに追加できませんでした。入力欄に戻しました。',
   'chat.queuedMessage.toast.takeFailed': 'キューのメッセージを読み込めませんでした。もう一度お試しください。',
@@ -2623,6 +2637,9 @@ export const dict: Record<I18nKey, string> = {
   'gitView.commit.commitAria': 'コミットのariaラベル',
   'chat.chatInput.toast.attachNamedFailed': '{name}の添付に失敗しました',
   'chat.chatInput.toast.unsupportedAttachmentModalities': '{model} は {files} に必要な {modalities} 入力をサポートしていません。メッセージは送信できますが、これらの添付ファイルは無視される可能性があります。',
+  'chat.chatInput.toast.imagesSaving': '{files} を保存中…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model} は画像を読み取れません。{files} を {folder} に保存しました。',
+  'chat.chatInput.toast.imageSaveFailed': '{files} を保存できませんでした。代わりに添付しました。',
   'chat.chatInput.toast.someFilesSkipped': '一部のファイルがスキップされました:\n{summary}',
   'chat.chatInput.toast.vscodePickFailed': 'VS Codeでのファイル選択に失敗しました',
   'chat.chatInput.toast.openSessionFirst': '先にセッションを開いてください',
@@ -3825,6 +3842,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': 'チャットを移動できませんでした',
   'chat.worktreeSetup.running': 'worktree を準備中: プロジェクトのセットアップコマンドを実行しています…',
   'desktopHostSwitcher.startup.fellBackToLocal': '接続を開けなかったため、OpenChamber は Local で起動しました。到達できるようになったら、インスタンス切り替えから接続してください。',
+  'desktopSafeStart.title': 'OpenChamber が繰り返しクラッシュしました',
+  'desktopSafeStart.description': 'パネルを閉じ、フォルダを折りたたみました。',
   'chat.chatInput.contextPreview.saveEdit': 'コメントを保存',
   'chat.chatInput.contextPreview.cancelEdit': '編集をキャンセル',
   'sessions.scheduledTasks.dialog.actions.openSession': 'セッションを開く',

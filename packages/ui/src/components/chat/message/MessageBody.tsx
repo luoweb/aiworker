@@ -12,6 +12,8 @@ import type { TurnChangedFile, TurnGroupingContext } from '../lib/turns/types';
 import { cn } from '@/lib/utils';
 import { isEmptyTextPart, extractTextContent } from './partUtils';
 import { FadeInOnReveal } from './FadeInOnReveal';
+import { SessionNoticeBlock } from './SessionNoticeBlock';
+import { readSessionNoticePart } from '@/lib/opencode/session-notices';
 import { Button } from '@/components/ui/button';
 import { ErrorResponseDetails } from '@/components/chat/ErrorResponseDetails';
 import { SaveProjectPlanDialog } from '@/components/session/SaveProjectPlanDialog';
@@ -758,8 +760,11 @@ const UserMessageBody = React.memo(({ messageId, parts, messageCreatedAt, isMobi
                 className={userContentParts.length > 0 ? 'mb-2' : 'mt-0'}
             />
             {/* A long prompt in a sticky turn header scrolls inside the bubble,
-                so the header never covers more than 40% of the screen. */}
-            <div className="leading-relaxed text-foreground/90 text-base overflow-hidden overscroll-contain scrollbar-none in-data-[turn-sticky-header]:max-h-[40dvh] in-data-[turn-sticky-header]:overflow-y-auto">
+                so the header never covers more than 40% of the screen. Only
+                there: `overflow-hidden` already makes the text a scroll
+                container, and `overscroll-contain` on it stopped the wheel
+                over any prompt from reaching the chat. */}
+            <div className="leading-relaxed text-foreground/90 text-base overflow-hidden scrollbar-none in-data-[turn-sticky-header]:max-h-[40dvh] in-data-[turn-sticky-header]:overflow-y-auto in-data-[turn-sticky-header]:overscroll-contain">
                 {/* Positional keys, not part ids: the server echo of a just-sent
                     message swaps the optimistic part id, and id-based keys would
                     remount the text subtree (blank frame + height jump). */}
@@ -1735,6 +1740,19 @@ const AssistantMessageBody = React.memo(({
             if (part.type === 'tool') {
                 const toolPart = part as ToolPartType;
                 const toolName = toolPart.tool?.toLowerCase() ?? '';
+
+                // A session notice that landed during this step (see
+                // `attachSyntheticContext`) draws as its own info row.
+                const notice = readSessionNoticePart(toolPart);
+                if (notice) {
+                    rendered.push(
+                        <FadeInOnReveal key={`notice-${toolPart.id}`}>
+                            <SessionNoticeBlock notice={notice} blockId={toolPart.id} />
+                        </FadeInOnReveal>
+                    );
+                    i++;
+                    continue;
+                }
 
                 if (!isToolRowShown(toolPart)) {
                     i++;

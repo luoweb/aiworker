@@ -75,6 +75,8 @@ import { policySnapshotFromWire } from "@/stores/utils/permissionAutoAccept"
 import { selectSafetyNetAvailable, useRoutingStore } from "@/stores/useRoutingStore"
 import { useMessageQueueStore } from "@/stores/messageQueueStore"
 import { subscribeMessageQueueSync } from "./message-queue-sync"
+import { subscribeSessionWarmingSync } from "./session-warming-sync"
+import { subscribeSessionFoldersSync } from "./session-folders-sync"
 import { subscribeSpacePermissionModes } from "./permission-mode-sync"
 import { spaceFoldersOfProject, subscribeSpaceCatalogs } from "./space-catalog-sync"
 import {
@@ -109,6 +111,7 @@ import {
   isWorktreeDirectory,
   type LocationRelease,
 } from "./location-release"
+import { applySessionAssistEvent, subscribeSessionAssistSettled } from "./pending-session-assists"
 import { isChatDirectoryPath } from "@/lib/chatDirectories"
 import type { State } from "./types"
 import {
@@ -1714,6 +1717,13 @@ function scheduleMcpStatusRefresh(directory: string): void {
   }, MCP_STATUS_REFRESH_DEBOUNCE_MS))
 }
 
+function forgetMcpStatus(directory: string): void {
+  const pending = mcpStatusRefreshTimers.get(directory)
+  if (pending) clearTimeout(pending)
+  mcpStatusRefreshTimers.delete(directory)
+  useMcpStore.getState().forgetDirectory(directory)
+}
+
 // Only top-level sessions raise notifications. The directory store knows the
 // parent when the directory is open; the global cache covers the rest.
 const isSubtaskSession = (
@@ -1917,6 +1927,12 @@ export function handleEvent(
     return
   }
 
+  if (payload.type === "openchamber.session-assist") {
+    if (expectedRuntimeKey !== getRuntimeKey()) return
+    applySessionAssistEvent(payload.properties, resolveCachedSessionDirectory)
+    return
+  }
+
   if (payload.type === "openchamber.permission-auto-accept") {
     usePermissionStore.getState().applySnapshot(policySnapshotFromWire(payload.properties), expectedRuntimeKey, payload.properties.spaceId ?? "")
     return
@@ -1945,15 +1961,17 @@ export function handleEvent(
   // interrupted, arrive as their own events. Background directories are left
   // alone on purpose: re-reading them would recreate the services OpenCode
   // just evicted and turn every idle directory into an hourly refresh loop;
-  // they are re-read when selected or on the next reconnect.
+  // they are re-read when selected or on the next reconnect. Their MCP status
+  // is forgotten: the servers it describes are gone, and the status changes
+  // OpenCode announces while stopping them would otherwise re-read the
+  // directory and start it again moments after it was released.
   if (payload.type === "location.shutdown") {
-    if (
-      directory
-      && directory !== "global"
-      && expectedRuntimeKey === getRuntimeKey()
-      && directory === opencodeClient.getDirectory()
-      && childStores.getChild(directory)
-    ) {
+    if (!directory || directory === "global" || expectedRuntimeKey !== getRuntimeKey()) return
+    if (directory !== opencodeClient.getDirectory()) {
+      forgetMcpStatus(directory)
+      return
+    }
+    if (childStores.getChild(directory)) {
       childStores.requestBootstrap({ directory, priority: "selected", reason: "location-shutdown", force: true })
     }
     return
@@ -2689,7 +2707,11 @@ export function SyncProvider(props: {
       },
     })
     locationReleaseRef.current = release
+    // A left chat waiting for its recap is released as soon as the server
+    // has written it, not at its next busy re-check.
+    const unsubscribeAssistSettled = subscribeSessionAssistSettled((isSettledDirectory) => release.recheck(isSettledDirectory))
     return () => {
+      unsubscribeAssistSettled()
       release.dispose()
       if (locationReleaseRef.current === release) locationReleaseRef.current = null
     }
@@ -2987,6 +3009,8 @@ export function SyncProvider(props: {
   // Abort controller owned by the pipeline closure. Cleanup aborts + flushes.
   useEffect(() => {
     const unsubscribeQueueEvents = subscribeMessageQueueSync(runtimeKey)
+    const unsubscribeSessionWarming = subscribeSessionWarmingSync(runtimeKey)
+    const unsubscribeFolderEvents = subscribeSessionFoldersSync(runtimeKey)
     const unsubscribeSpaceModes = subscribeSpacePermissionModes(runtimeKey)
     const unsubscribeSpaceCatalogs = subscribeSpaceCatalogs(runtimeKey)
     const resyncAfterStreamGap = (reason: SessionMaterializationReason) => {
@@ -3123,6 +3147,8 @@ export function SyncProvider(props: {
       }
       pipeline.cleanup()
       unsubscribeQueueEvents()
+      unsubscribeSessionWarming()
+      unsubscribeFolderEvents()
       unsubscribeSpaceModes()
       unsubscribeSpaceCatalogs()
     }
@@ -3685,6 +3711,48 @@ export function useSessions(directory?: string) {
     useCallback((state: State) => state.session, []),
     directory,
   )
+}
+
+const sessionStartTimesCache = new WeakMap<State["session"], ReadonlyMap<string, number>>()
+
+const readSessionStartTimes = (sessions: State["session"]): ReadonlyMap<string, number> => {
+  let startTimes = sessionStartTimesCache.get(sessions)
+  if (!startTimes) {
+    startTimes = new Map(sessions.map((session) => [session.id, session.time.created]))
+    sessionStartTimesCache.set(sessions, startTimes)
+  }
+  return startTimes
+}
+
+const haveSameStartTimes = (left: ReadonlyMap<string, number>, right: ReadonlyMap<string, number>): boolean => {
+  if (left === right) return true
+  if (left.size !== right.size) return false
+  for (const [sessionID, created] of left) {
+    if (right.get(sessionID) !== created) return false
+  }
+  return true
+}
+
+/**
+ * When each session of a directory started, by session id. Keeps its identity
+ * until a session is added or removed: the session list is replaced on every
+ * streamed step (`session.updated` moves `time.updated`), start times never
+ * change.
+ */
+export function useSessionStartTimes(directory?: string): ReadonlyMap<string, number> {
+  const store = useDirectoryStore(directory)
+  const cacheRef = useRef<ReadonlyMap<string, number> | null>(null)
+  const getSnapshot = useCallback(() => {
+    const next = readSessionStartTimes(store.getState().session)
+    const cached = cacheRef.current
+    if (cached && haveSameStartTimes(cached, next)) return cached
+    cacheRef.current = next
+    return next
+  }, [store])
+  const subscribe = useCallback((notify: () => void) => store.subscribe((state, previous) => {
+    if (state.session !== previous.session) notify()
+  }), [store])
+  return React.useSyncExternalStore(subscribe, getSnapshot, getSnapshot)
 }
 
 const selectPermissionRequestsBySession = (state: State) => state.permission

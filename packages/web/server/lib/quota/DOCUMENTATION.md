@@ -94,7 +94,11 @@ On the first OpenCode Go usage refresh after upgrading, OpenChamber deletes the 
 
 Codex `credits.balance` is an OpenAI credit count, not a dollar amount. Web/Electron and VS Code expose it as a plain numeric `credits_balance.valueLabel` under the UI's localized Credits Balance title, without a currency symbol or two-decimal money rounding. Numeric strings are accepted; zero, unlimited, and unavailable balances retain their existing handling. Keep `providers/codex.js` and `packages/vscode/src/quotaProviders.ts` in sync. The separate business-account `spend_control.individual_limit` window is unchanged.
 
-A Codex usage 401 whose body has `error.type: "rejected_by_access_enforcement"` means the sign-in may not read usage (OpenCode's `chatgpt-token-sharing` method hits it) while the session itself is valid, so both runtimes report usage as unavailable for the sign-in method. Any other 401 reads as an expired session. Web and VS Code keep this branch identical.
+A Codex usage 401 whose body has `error.type: "rejected_by_access_enforcement"` is OpenCode's `chatgpt-token-sharing` sign-in ("Sign in with ChatGPT"). Its token is minted for `https://api.openai.com/v1` with the `chatgpt.tokens.use.direct` scope, which OpenAI admits only on the Responses route, and OpenAI publishes no usage endpoint for that sign-in: its guidance is to link to `chatgpt.com/settings/usage`. Both runtimes say exactly that and name the legacy Codex sign-ins as the ones that show usage in the app. Any other 401 reads as an expired session. Web and VS Code keep this branch identical.
+
+### Why no `ChatGPT-Account-Id` for the token-sharing sign-in
+
+The token-sharing credential carries `{ clientID, scopes }` and no account id, so the request goes without the `ChatGPT-Account-Id` header the legacy sign-ins send. Adding the header was weighed and dropped: the refusal comes from scope enforcement (`no_matching_rule`) on a route the token is not admitted to, and OpenAI documents the Responses route as the only one this token may use. If OpenAI ships a usage endpoint for this sign-in, it replaces the message.
 
 ## Claude credential and limit semantics
 
@@ -160,6 +164,11 @@ Antigravity reports dual-layer quota for Google Cloud Code / Antigravity IDE acc
 - **Windows**: each model row carries its group's rolling 5-hour (`5h`) and 7-day weekly (`weekly`) limits across Gemini and 3P (Claude/GPT) model groups. The provider card itself exposes no top-level windows (`windows: {}`), matching the Google provider: one overview row could only reflect a single group and would mislead a user whose tighter limit lives in the other group.
 - **Bottleneck prioritization**: when a group's weekly limit is exhausted or more constrained than its 5-hour limit, the weekly window is prioritized first in the model's window map.
 - **Runtime parity**: `packages/web/server/lib/quota/providers/antigravity/` and `packages/vscode/src/quotaProviders.ts` (`fetchAntigravityQuota`) implement the same summary parsing, fallback chain, and bottleneck ordering — keep them in sync.
+- **Client identity**: both runtimes take their request headers from `providers/antigravity/client.js`. The `User-Agent` is `antigravity/<ANTIGRAVITY_CLIENT_VERSION> <os>/<arch>`, with the platform of the machine the request runs on. Google gates the "Gemini Models" group of the daily host's `retrieveUserQuotaSummary` by that version: `antigravity/1.11.5` got the Claude/GPT group alone, answered 200, and the Gemini rows disappeared without an error (#5138). Keep the constant at the version Antigravity's own updater lists (the `version:` line of its `latest-arm64-mac.yml` manifest, URL in the file). A summary that has groups but none for Gemini logs one server-side warning per process that names the constant. The Google provider keeps its own headers.
+
+### Why a pinned client version and not one read from Antigravity's updater
+
+Reading the updater manifest on every start would track releases without a code change, but it adds a request to a Google host the quota card does not otherwise need, and a failed or changed manifest would still need a fallback version in code. A single constant plus the missing-group warning keeps the requests the same and makes the next stale version show up in the server log.
 
 ## MiniMax M3 / Token Plan migration
 

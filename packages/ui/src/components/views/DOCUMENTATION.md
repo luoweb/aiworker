@@ -86,7 +86,13 @@ whitespace mode, a file's full contents once its collapsed context was
 expanded, a pull request file rebuilt from both sides. A nested repository's row
 resolves to that repository's files, read from that repository and keyed by the
 row path plus their own path, the key their viewers register under. Reads run
-one at a time while the bar is open, and the active match is followed by what it
+one at a time while the bar is open, but on the local scopes the first one asks
+`getGitDiffs` for every file of its side and context in one request
+(`diffFind/findDiffBatch.ts`) and the reads after it are answered from that
+answer while their revision holds; a failed batch, a path it leaves out, or a
+runtime without `getGitDiffs` (VS Code) falls back to the file's own read. The
+range and turn scopes already hold their diffs and read nothing new. While
+files are still being read the total reads `12+`. The active match is followed by what it
 points at, so a file landing or re-read ahead of it does not move the view. A read that fails is counted in the bar
 and read again the next time the bar opens, so one unreadable file never turns
 into a silent zero. A file Git no longer has, or a folder it keeps as one row,
@@ -134,6 +140,15 @@ picker shrinks past its icons. Only while the pickers still overflow their slot
 does the sync button drop its word, and at the narrowest widths its counts;
 its tooltip names both. The panel keeps its 320 px minimum.
 
+The Changes toolbar (`DiffView`) drops its labels first, then, only while the
+row still overflows (a picker cut down to its icon does not count), moves its
+view options into "More actions" from the end: side-by-side, whitespace, line
+wrap, the tree view, and last, when the row still does not fit (a repository
+picker at 320 px), the walkthrough, which the rail opens as well. The fit sets
+one attribute per moved
+control; the menu reads them when it opens and shows a check beside each view
+option that is on.
+
 ## Large text files
 
 The 200,000-character threshold selects an initial code preview, not read-only
@@ -155,6 +170,22 @@ under the OpenChamber data directory and repository plans in a custom folder.
 `FilesView` selects `JsonTreeView`'s JSONC format for `.jsonc` files. That format
 accepts comments and trailing commas for preview without changing the source
 text. `JsonTreeView` defaults to strict JSON parsing for other callers.
+
+`JsonTreeViewer` (Files, chat tool output) draws its rows with the file
+tree's parts, `fileTreeRowPaddingLeft` and `FileTreeIndentGuides`, plus a
+copy of `FileTreeChevron`'s look, so nesting reads the same in both trees.
+`flattenTree` adds a closing `}` or `]` row after the last child of every
+expanded container that has children; collapsed and empty containers stay
+one row. The expand arrow stays the
+line's size on touch screens: inline `minHeight`/`minWidth` of 0 beat
+`mobile.css`'s 36px button floor, which made arrow rows taller than leaf rows
+and pushed their keys out of line, and an invisible `::before` covers the
+row's full height and part of the indent as the tap area, 26x24px. That is
+under the 36px floor on purpose: a 36px arrow is what made the rows uneven. The tree is code,
+so it renders `dir="ltr"` in every language; mirrored, it flipped brackets
+and showed `"</head>"` as `"<head/>"`. That is why the chevron is a copy:
+`FileTreeChevron`'s `rtl:-rotate-90` follows `<html dir>` and would point the
+unmirrored arrow up inside the LTR block.
 
 ## Pull request comparisons
 
@@ -226,7 +257,43 @@ a whitespace-only note. Hunk stage and discard actions are withheld meanwhile,
 because they act on the whole hunk, whitespace included. Line numbers do not
 move, so comments and context expansion work unchanged.
 
+## Sticky horizontal scrollbar
+
+Pierre scrolls each code column sideways on its own (two in a split diff, one
+in a unified one), so the columns' scrollbars sit after the last line. The
+inline layout hides them inside the shadow root and draws one track per column
+in `DiffStickyScrollbar`, a `sticky bottom-0` strip after the diff: while the
+diff runs past the bottom of the panel, its scrollbar stays at that bottom.
+Each track and its column copy each other's `scrollLeft`; sizes are read only
+in ResizeObserver callbacks, so vertical scrolling does no work for it.
+
+Sticky elements stick to their nearest scroll box and keep clear of its
+padding. Everything between a diff and the panel that scrolls it therefore
+clips with `overflow: clip`, never `hidden`, and end space below the list is
+padding on the content, not on the scroller (the Changes panel's `pb-16`).
+
+### Why mirrored tracks and not a scroll area per diff
+
+A per-diff scroll area with its own horizontal bar would have to be as tall as
+the panel to keep the bar on screen, which nests a vertical scroll area inside
+the panel's. #213 removed exactly that after nested scroll areas broke
+scrolling in the All files view (#215). The tracks scroll sideways only, so the
+panel stays the one vertical scroller.
+
 Most focused tests use Bun. `MultiFileDiffEntry.vitest.tsx` exercises the real
 diff component through the web workspace's Vitest runner because its transitive
 UI imports require Vite asset transforms. The web test configuration includes
 UI `*.vitest.tsx` fixtures; the isolated Bun runner intentionally does not.
+
+## Archive page
+
+`ArchiveView` lists archived top-level sessions. A subsession whose parent is
+archived too is left out: it comes back when the parent is restored. A
+subsession archived while its parent stays active is listed, indented under a
+row with the parent's title, and the subsessions of one parent sit together at
+the place of the newest of them. Without that row such a session would show
+nowhere: the sidebar hides archived sessions, and the parent is not in the
+archive. Restore brings it back on its own, under that parent. One rule,
+`isRestorableOnItsOwn` in `sync/session-restore-rule.ts`, decides what the page
+lists, when the chat header's session menu offers Restore, and what the restore
+action accepts, so the three never disagree.

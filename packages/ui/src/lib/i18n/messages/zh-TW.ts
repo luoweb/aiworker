@@ -11,8 +11,10 @@ import { surfacePanelI18n } from './surface-panel.i18n';
 import { fileArtifactsI18n } from './file-artifacts.i18n';
 import { fileContentSearchI18n } from './file-content-search.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
+import { sessionNoticesI18n } from './session-notices.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
+import { sessionWarmingI18n } from './session-warming.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
@@ -143,8 +145,10 @@ export const dict: Record<I18nKey, string> = {
   ...fileArtifactsI18n['zh-TW'],
   ...fileContentSearchI18n['zh-TW'],
   ...htmlRenderI18n['zh-TW'],
+  ...sessionNoticesI18n['zh-TW'],
   ...usageStatsI18n['zh-TW'],
   ...webSearchI18n['zh-TW'],
+  ...sessionWarmingI18n['zh-TW'],
   ...isolatedSpacesI18n['zh-TW'],
   ...sourceBoardI18n['zh-TW'],
   ...projectActionsI18n['zh-TW'],
@@ -162,6 +166,7 @@ export const dict: Record<I18nKey, string> = {
   'terminalView.actions.copy': '複製',
   'terminalView.actions.paste': '貼上',
   'terminalView.toast.pasteFailed': '無法讀取剪貼簿。請使用貼上快捷鍵。',
+  'terminalView.toast.pasteFailedTouch': '無法讀取剪貼簿。',
   'terminalView.actions.restart': '重新啟動終端',
   'chat.message.terminalContext': '{terminal}，第 {start}-{end} 行',
   'chat.message.context.codeComment': '對 {file} 第 {start}-{end} 行的評論',
@@ -641,6 +646,10 @@ export const dict: Record<I18nKey, string> = {
   'sessions.archivePage.allDirectories': '所有目錄',
   'sessions.sidebar.header.projectDisplay.label': '顯示專案',
   'sessions.sidebar.header.projectDisplay.all': '所有專案',
+  'sessions.sidebar.header.listGrouping.label': '會話',
+  'sessions.sidebar.header.listGrouping.project': '依專案',
+  'sessions.sidebar.header.listGrouping.time': '依時間',
+  'sessions.sidebar.activity.projectsTitle': '專案',
   'sessions.sidebar.header.projectDisplay.single': '單一專案',
   'sessions.sidebar.project.selectAria': '選擇專案，目前為 {project}',
   'sessions.sidebar.project.actions.manageWorktrees': '管理工作樹',
@@ -1735,6 +1744,7 @@ export const dict: Record<I18nKey, string> = {
   'filesView.error.switchToEditMode': '請切換到編輯模式修復問題。',
   'filesView.error.readFileFailed': '讀取檔案失敗',
   'filesView.editor.htmlPreviewTitle': 'HTML 預覽',
+  'filesView.editor.htmlAnnotate.intro': '這是來自 HTML 檔案預覽的標註選取範圍。',
   'filesView.diagram.closeDiagramView': '關閉圖表檢視',
   'filesView.diagram.saveDiagram': '儲存圖表',
   'filesView.excalidraw.installHint': '安裝 Excalidraw 擴充功能即可在此檔案中繪圖。',
@@ -1764,7 +1774,7 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.breakdown.user': '使用者',
   'contextSidebar.breakdown.assistant': '助理',
   'contextSidebar.breakdown.toolCalls': '工具呼叫',
-  'contextSidebar.breakdown.other': '其他',
+  'contextSidebar.breakdown.other': '系統與工具',
   'contextSidebar.stats.messages': '訊息',
   'contextSidebar.stats.user': '使用者',
   'contextSidebar.stats.assistant': '助理',
@@ -1870,6 +1880,9 @@ export const dict: Record<I18nKey, string> = {
   'diffView.whitespace.hidden': '已隱藏空白變更',
   'diffView.layout.switchToUnified': '切換到統一檢視',
   'diffView.layout.switchToSideBySide': '切換到並排檢視',
+  'diffView.layout.sideBySide': '並排檢視',
+  'diffView.actions.wrapLines': '自動換行',
+  'diffView.actions.moreActions': '更多操作',
   'diffView.whitespace.shown': '正在顯示空白變更',
   'diffView.actions.openFileInEditorAtChange': '在編輯器中開啟此檔案並定位變更',
   'diffView.actions.openFileAtFirstChangedLine': '在首個變更行開啟此檔案',
@@ -2412,6 +2425,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.queuedMessage.edit': 'edit',
   'chat.queuedMessage.send': 'send',
   'chat.queuedMessage.removeAria': '從佇列移除',
+  'chat.queuedMessage.goal': '傳送時啟動目標',
   'chat.queuedMessage.reorderAria': '拖曳以重新排序',
   'chat.queuedMessage.toast.queueFailed': '無法將訊息加入佇列，已放回輸入框。',
   'chat.queuedMessage.toast.takeFailed': '無法載入佇列中的訊息，請再試一次。',
@@ -2599,6 +2613,9 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.attachFileFailed': '附加檔案失敗',
   'chat.chatInput.toast.attachNamedFailed': '附加 {name} 失敗',
   'chat.chatInput.toast.unsupportedAttachmentModalities': '{model} 不支援 {files} 所需的 {modalities} 輸入。你仍可傳送訊息，但這些附件可能會被忽略。',
+  'chat.chatInput.toast.imagesSaving': '正在儲存 {files}…',
+  'chat.chatInput.toast.imagesSavedForTextModel': '{model} 無法讀取圖片。已將 {files} 儲存到 {folder}。',
+  'chat.chatInput.toast.imageSaveFailed': '無法儲存 {files}。已改為附加。',
   'chat.chatInput.toast.someFilesSkipped': '部分檔案被跳過：\n{summary}',
   'chat.chatInput.toast.vscodePickFailed': '在 VS Code 中選擇檔案失敗',
   'chat.chatInput.toast.openSessionFirst': '請先開啟一個會話',
@@ -3825,6 +3842,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.failed': '無法移動聊天',
   'chat.worktreeSetup.running': '正在設定 worktree：正在執行專案的設定命令…',
   'desktopHostSwitcher.startup.fellBackToLocal': '未能建立連線，因此 OpenChamber 以 Local 啟動。待其可連線後，請在實例切換器中連線。',
+  'desktopSafeStart.title': 'OpenChamber 多次當機',
+  'desktopSafeStart.description': '面板已關閉，資料夾已摺疊。',
   'chat.chatInput.contextPreview.saveEdit': '儲存評論',
   'chat.chatInput.contextPreview.cancelEdit': '取消編輯',
   'sessions.scheduledTasks.dialog.actions.openSession': '開啟工作階段',

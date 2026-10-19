@@ -17,6 +17,7 @@ import { useFilesViewTabsStore } from './useFilesViewTabsStore';
 import { rebaseMovedPath } from '@/lib/filePathMoves';
 import { isVSCodeRuntime } from '@/lib/desktop';
 import { noteBrowserTabOpenedWithAddress, requestBrowserTabLoad } from '@/lib/browser/devServerWait';
+import { clampLiveBrowserTabs, LIVE_BROWSER_TABS_DEFAULT } from '@/lib/browser/liveTabs';
 import { isContextPanelMode, type ContextPanelMode } from '@/lib/surfaces/modes';
 import { CONTEXT_SURFACE_WIDTHS } from '@/lib/surfaces/registry';
 import { orderMobileWorkspaceTabs, shownMobileWorkspaceTabs, type MobileWorkspaceTab } from '@/lib/mobileWorkspaceTabs';
@@ -1004,6 +1005,8 @@ interface UIStore {
   layoutAnimations: boolean;
   /** Plain clicks on links in chat open in the built-in browser panel (desktop only). */
   openLinksInBrowserPanel: boolean;
+  /** How many of the user's browser tabs keep their page loaded, across projects (desktop only). */
+  liveBrowserTabLimit: number;
   /** Plain clicks on issue, PR and Linear links in chat open them on the issues and PRs board. */
   openTrackerLinksOnBoard: boolean;
   autoDeleteAfterDays: number;
@@ -1090,6 +1093,7 @@ interface UIStore {
   persistChatDraft: boolean;
   showOpenCodeUpdateNotifications: boolean;
   agentControlToolEnabled: boolean;
+  agentScheduleToolEnabled: boolean;
   agentWebToolEnabled: boolean;
   /** Full-text message search (server index). Opt-in: off keeps every part of it idle. */
   messageSearchEnabled: boolean;
@@ -1150,6 +1154,7 @@ interface UIStore {
   promptNavigatorEnabled: boolean;
   showSplitAssistantMessageActions: boolean;
   allowPromptingSubagentSessions: boolean;
+  saveImagesForTextOnlyModels: boolean;
   isExpandedInput: boolean;
   reportUsage: boolean;
   shortcutOverrides: Record<string, ShortcutCombo>;
@@ -1289,6 +1294,7 @@ interface UIStore {
   setConfirmFileTreeMove: (value: boolean) => void;
   setLayoutAnimations: (value: boolean) => void;
   setOpenLinksInBrowserPanel: (value: boolean) => void;
+  setLiveBrowserTabLimit: (value: number) => void;
   setOpenTrackerLinksOnBoard: (value: boolean) => void;
   setFileTreeSide: (side: 'left' | 'right') => void;
   setAutoDeleteAfterDays: (days: number) => void;
@@ -1370,6 +1376,7 @@ interface UIStore {
   setPersistChatDraft: (value: boolean) => void;
   setShowOpenCodeUpdateNotifications: (value: boolean) => void;
   setAgentControlToolEnabled: (value: boolean) => void;
+  setAgentScheduleToolEnabled: (value: boolean) => void;
   setAgentWebToolEnabled: (value: boolean) => void;
   setMessageSearchEnabled: (value: boolean) => void;
   setMessageSearchReasoningEnabled: (value: boolean) => void;
@@ -1408,6 +1415,7 @@ interface UIStore {
   setPromptNavigatorEnabled: (value: boolean) => void;
   setShowSplitAssistantMessageActions: (value: boolean) => void;
   setAllowPromptingSubagentSessions: (value: boolean) => void;
+  setSaveImagesForTextOnlyModels: (value: boolean) => void;
   viewPagerPage: 'left' | 'center' | 'right';
   setViewPagerPage: (page: 'left' | 'center' | 'right') => void;
   toggleExpandedInput: () => void;
@@ -1527,6 +1535,7 @@ export const useUIStore = create<UIStore>()(
         confirmFileTreeMove: true,
         layoutAnimations: true,
         openLinksInBrowserPanel: false,
+        liveBrowserTabLimit: LIVE_BROWSER_TABS_DEFAULT,
         openTrackerLinksOnBoard: true,
         autoDeleteAfterDays: 30,
         sessionRetentionAction: 'archive',
@@ -1598,6 +1607,7 @@ export const useUIStore = create<UIStore>()(
         persistChatDraft: true,
         showOpenCodeUpdateNotifications: true,
         agentControlToolEnabled: true,
+        agentScheduleToolEnabled: true,
         agentWebToolEnabled: true,
         messageSearchEnabled: false,
         messageSearchReasoningEnabled: false,
@@ -1635,6 +1645,7 @@ export const useUIStore = create<UIStore>()(
         promptNavigatorEnabled: true,
         showSplitAssistantMessageActions: false,
         allowPromptingSubagentSessions: false,
+        saveImagesForTextOnlyModels: false,
         draftStartersVisible: true,
         isExpandedInput: false,
         reportUsage: true,
@@ -2658,6 +2669,10 @@ export const useUIStore = create<UIStore>()(
           set({ openLinksInBrowserPanel: value });
         },
 
+        setLiveBrowserTabLimit: (value) => {
+          set({ liveBrowserTabLimit: clampLiveBrowserTabs(value) });
+        },
+
         setOpenTrackerLinksOnBoard: (value) => {
           set({ openTrackerLinksOnBoard: value });
         },
@@ -3191,6 +3206,9 @@ export const useUIStore = create<UIStore>()(
         setAgentControlToolEnabled: (value) => {
           set({ agentControlToolEnabled: value });
         },
+        setAgentScheduleToolEnabled: (value) => {
+          set({ agentScheduleToolEnabled: value });
+        },
         setAgentWebToolEnabled: (value) => {
           set({ agentWebToolEnabled: value });
         },
@@ -3313,6 +3331,9 @@ export const useUIStore = create<UIStore>()(
         },
         setAllowPromptingSubagentSessions: (value) => {
           set({ allowPromptingSubagentSessions: value });
+        },
+        setSaveImagesForTextOnlyModels: (value) => {
+          set({ saveImagesForTextOnlyModels: value });
         },
         setReportUsage: (value) => {
           set({ reportUsage: value });
@@ -3672,6 +3693,7 @@ export const useUIStore = create<UIStore>()(
           confirmFileTreeMove: state.confirmFileTreeMove,
           layoutAnimations: state.layoutAnimations,
           openLinksInBrowserPanel: state.openLinksInBrowserPanel,
+          liveBrowserTabLimit: state.liveBrowserTabLimit,
           openTrackerLinksOnBoard: state.openTrackerLinksOnBoard,
           autoDeleteAfterDays: state.autoDeleteAfterDays,
           sessionRetentionAction: state.sessionRetentionAction,
@@ -3727,6 +3749,7 @@ export const useUIStore = create<UIStore>()(
           persistChatDraft: state.persistChatDraft,
           showOpenCodeUpdateNotifications: state.showOpenCodeUpdateNotifications,
           agentControlToolEnabled: state.agentControlToolEnabled,
+          agentScheduleToolEnabled: state.agentScheduleToolEnabled,
           agentWebToolEnabled: state.agentWebToolEnabled,
           messageSearchEnabled: state.messageSearchEnabled,
           messageSearchReasoningEnabled: state.messageSearchReasoningEnabled,
@@ -3761,6 +3784,7 @@ export const useUIStore = create<UIStore>()(
           promptNavigatorEnabled: state.promptNavigatorEnabled,
           showSplitAssistantMessageActions: state.showSplitAssistantMessageActions,
           allowPromptingSubagentSessions: state.allowPromptingSubagentSessions,
+          saveImagesForTextOnlyModels: state.saveImagesForTextOnlyModels,
           draftStartersVisible: state.draftStartersVisible,
           shortcutOverrides: state.shortcutOverrides,
           fileEditorKeymap: state.fileEditorKeymap,
