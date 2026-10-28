@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { createRequire } from 'node:module';
 
 import { isAgentMemoryFeatureAvailable } from '../agent-memory/feature-flag.js';
+import { isWorkflowFeatureAvailable } from '../workflows/feature-flag.js';
 import { isOverviewFeatureAvailable } from '../overview/feature-flag.js';
 import { isPermissionMode } from '../permission-auto-accept/modes.js';
 import { asNonEmptyString } from '../shared/guards.js';
@@ -89,6 +90,7 @@ export const createSettingsHelpers = (dependencies) => {
   const SHORTCUT_OVERRIDE_VALUE_MAX_LENGTH = 128;
   const PWA_ORIENTATION_VALUES = new Set(['system', 'portrait', 'landscape']);
   const MOBILE_KEYBOARD_MODE_VALUES = new Set(['native', 'resize-content']);
+  const UI_FONT_WEIGHT_VALUES = new Set(['regular', 'balanced', 'strong']);
   const TERMINAL_SHELL_VALUES = new Set(['auto', 'bash', 'zsh', 'sh', 'fish', 'pwsh', 'powershell', 'cmd', 'dash', 'ksh', 'nu']);
   const SIDEBAR_PROJECT_DISPLAY_MODE_VALUES = new Set(['all', 'single']);
   const SIDEBAR_VIEW_MODE_VALUES = new Set(['projects', 'timeline']);
@@ -377,6 +379,9 @@ export const createSettingsHelpers = (dependencies) => {
     if (candidate.sidebarDetailedZoneRows === true || candidate.sidebarDetailedZoneRows === false) {
       result.sidebarDetailedZoneRows = candidate.sidebarDetailedZoneRows;
     }
+    if (candidate.sidebarWorktreeNameByBranch === true || candidate.sidebarWorktreeNameByBranch === false) {
+      result.sidebarWorktreeNameByBranch = candidate.sidebarWorktreeNameByBranch;
+    }
 
     if (Array.isArray(candidate.securityScopedBookmarks)) {
       result.securityScopedBookmarks = normalizeStringArray(candidate.securityScopedBookmarks);
@@ -426,6 +431,9 @@ export const createSettingsHelpers = (dependencies) => {
     }
     if (typeof candidate.customMonoFont === 'string') {
       result.customMonoFont = candidate.customMonoFont.slice(0, 100);
+    }
+    if (UI_FONT_WEIGHT_VALUES.has(candidate.uiFontWeight)) {
+      result.uiFontWeight = candidate.uiFontWeight;
     }
     if (typeof candidate.githubClientId === 'string') {
       const trimmed = candidate.githubClientId.trim();
@@ -501,6 +509,12 @@ export const createSettingsHelpers = (dependencies) => {
     }
     if (typeof candidate.sessionTabsEnabled === 'boolean') {
       result.sessionTabsEnabled = candidate.sessionTabsEnabled;
+    }
+    if (candidate.sessionTabsPerWorkspace === true || candidate.sessionTabsPerWorkspace === false) {
+      result.sessionTabsPerWorkspace = candidate.sessionTabsPerWorkspace;
+    }
+    if (candidate.terminalCloseOnExit === true || candidate.terminalCloseOnExit === false) {
+      result.terminalCloseOnExit = candidate.terminalCloseOnExit;
     }
     if (typeof candidate.largeTextPasteBehavior === 'string') {
       const mode = candidate.largeTextPasteBehavior.trim();
@@ -772,11 +786,22 @@ export const createSettingsHelpers = (dependencies) => {
     if (candidate.agentKnowledgeToolEnabled === true || candidate.agentKnowledgeToolEnabled === false) {
       result.agentKnowledgeToolEnabled = candidate.agentKnowledgeToolEnabled;
     }
+    if (candidate.agentWorkflowToolEnabled === true || candidate.agentWorkflowToolEnabled === false) {
+      result.agentWorkflowToolEnabled = candidate.agentWorkflowToolEnabled;
+    }
     if (typeof candidate.agentNotifyToolEnabled === 'boolean') {
       result.agentNotifyToolEnabled = candidate.agentNotifyToolEnabled;
     }
     if (candidate.agentRenderToolEnabled === true || candidate.agentRenderToolEnabled === false) {
       result.agentRenderToolEnabled = candidate.agentRenderToolEnabled;
+    }
+    if (candidate.agentImageToolEnabled === true || candidate.agentImageToolEnabled === false) {
+      result.agentImageToolEnabled = candidate.agentImageToolEnabled;
+    }
+    // `provider/model`; the model id may hold slashes of its own (OpenRouter's `openai/gpt-image-2`).
+    const agentImageModel = asNonEmptyString(candidate.agentImageModel);
+    if (agentImageModel && /^[^/\s]+\/\S+$/.test(agentImageModel)) {
+      result.agentImageModel = agentImageModel;
     }
     if (typeof candidate.agentToolsCodeMode === 'boolean') {
       result.agentToolsCodeMode = candidate.agentToolsCodeMode;
@@ -1143,6 +1168,9 @@ export const createSettingsHelpers = (dependencies) => {
         result.sttLanguage = trimmed;
       }
     }
+    if (candidate.sttCorrectTranscript === true || candidate.sttCorrectTranscript === false) {
+      result.sttCorrectTranscript = candidate.sttCorrectTranscript;
+    }
 
     // The registry is the last word on what a client may persist: a key the
     // code above still names but the registry no longer lists is dropped here,
@@ -1198,6 +1226,8 @@ export const createSettingsHelpers = (dependencies) => {
       // Tells the client whether agent memory exists in this build at all, so
       // its settings row and panel tab can be absent rather than merely off.
       agentMemoryFeatureAvailable: isAgentMemoryFeatureAvailable(),
+      // The same for agent workflows (`OPENCHAMBER_WORKFLOWS_ENABLE`).
+      agentWorkflowFeatureAvailable: isWorkflowFeatureAvailable(),
       // The overview page ships dark until `OPENCHAMBER_OVERVIEW_ENABLED` is set.
       overviewFeatureAvailable: isOverviewFeatureAvailable(),
       // Jev routing needs the OpenChamber server, so it is present here and

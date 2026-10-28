@@ -18,6 +18,9 @@ import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { sessionWarmingI18n } from './session-warming.i18n';
 import { heapSnapshotI18n } from './heap-snapshot.i18n';
+import { consoleBudgetsI18n } from './console-budgets.i18n';
+import { imageToolI18n } from './image-tool.i18n';
+import { snippetsI18n } from './snippets.i18n';
 import { sidebarWorkI18n } from './sidebar-work.i18n';
 import { worktreeArchiveI18n } from './worktree-archive.i18n';
 import { overviewI18n } from './overview.i18n';
@@ -33,6 +36,10 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { markdownGithubI18n } from './markdown-github.i18n';
+import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
+import { workflowsI18n } from './workflows.i18n';
+import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
 
 export const dict: Record<I18nKey, string> = {
@@ -162,6 +169,9 @@ export const dict: Record<I18nKey, string> = {
   ...webSearchI18n.ja,
   ...sessionWarmingI18n.ja,
   ...heapSnapshotI18n.ja,
+  ...consoleBudgetsI18n.ja,
+  ...imageToolI18n.ja,
+  ...snippetsI18n.ja,
   ...sidebarWorkI18n.ja,
   ...worktreeArchiveI18n.ja,
   ...overviewI18n.ja,
@@ -177,6 +187,10 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.ja,
   ...integrationsCatalogI18n['ja'],
   ...diffFindI18n['ja'],
+  ...markdownGithubI18n['ja'],
+  ...autocompleteScopeI18n['ja'],
+  ...workflowsI18n['ja'],
+  ...sessionReferencesI18n['ja'],
   ...guestStatusViewI18n['ja'],
   'terminalView.actions.attachSelection': '選択した出力を添付',
   'terminalView.actions.copySelection': '選択した出力をコピー',
@@ -317,7 +331,6 @@ export const dict: Record<I18nKey, string> = {
   'mobile.menu.files': 'ファイル',
   'mobile.menu.git': 'Git',
   'mobile.menu.terminal': 'ターミナル',
-  'mobile.menu.mcp': 'MCP',
   'mobile.menu.update': '更新',
   'mobile.menu.settings': '設定',
   'mobile.sessions.footer.more': 'その他',
@@ -592,6 +605,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.header.displayMode.showWork': '作業中セクションを表示',
   'sessions.sidebar.header.displayMode.showPinned': 'ピン留めセクションを表示',
   'sessions.sidebar.header.displayMode.detailedZoneRows': '詳細な行',
+  'sessions.sidebar.header.displayMode.worktreeNameByBranch': 'worktree をブランチ名で表示',
   'sessions.sidebar.activity.pinnedTitle': 'ピン留め',
   'sessions.sidebar.header.displayMode.showArchived': 'アーカイブ済みセッションを表示',
   'sessions.sidebar.header.displayMode.collapseAll': 'すべて折りたたむ',
@@ -706,7 +720,6 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.session.work.markDone': '完了にする',
   'sessions.sidebar.session.work.doneSuggested': '完了したようです',
   'sessions.sidebar.session.work.updateFailed': 'セッションを更新できませんでした',
-  'sessions.sidebar.session.work.folderDeleted': 'このセッションのフォルダーは削除されました',
   'sessions.sidebar.session.pin.pinFailed': 'セッションをピン留めできませんでした',
   'sessions.sidebar.session.pin.unpinFailed': 'セッションのピン留めを解除できませんでした',
   'chat.work.doneHint.text': 'この作業は完了したようです。',
@@ -759,6 +772,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.session.status.unread': '未読の更新',
   'sessions.sidebar.session.status.backgroundSubagent': 'サブエージェントがバックグラウンドで実行中',
   'sessions.sidebar.session.status.backgroundCommand': 'コマンドがバックグラウンドで実行中',
+  'sessions.sidebar.session.status.waitingOnPullRequest': 'プルリクエストを待機中',
   'sessions.sidebar.session.status.pinned': 'ピン留めされたセッション',
   'sessions.sidebar.session.status.movingToWorktree': 'セッションを新しいworktreeへ移動中',
   'sessions.sidebar.session.status.permissionRequired': '権限が必要です',
@@ -842,10 +856,10 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.group.empty.noArchivedSessions': 'まだアーカイブ済みセッションはありません。',
   'sessions.sidebar.group.empty.noSessionsInWorkspace': 'このワークスペースにはまだセッションがありません。',
   'sessions.sidebar.group.empty.startSession': 'セッションを開始',
-  'sessions.sidebar.group.showMore': 'さらにセッションを表示',
+  'sessions.sidebar.group.showMore': 'さらに表示',
   'sessions.sidebar.group.showMoreSingle': 'さらに{count}セッションを表示',
   'sessions.sidebar.group.showMorePlural': 'さらに{count}セッションを表示',
-  'sessions.sidebar.group.showFewer': 'セッションを少なく表示',
+  'sessions.sidebar.group.showFewer': '表示を減らす',
   'sessions.sidebar.group.expandAria': '{label}を展開',
   'sessions.sidebar.group.collapseAria': '{label}を折りたたむ',
   'sessions.sidebar.group.actions.deleteArchivedInGroupAria': '{label}のアーカイブ済みセッションを削除',
@@ -1934,6 +1948,20 @@ export const dict: Record<I18nKey, string> = {
   'chat.autoReview.reviewSessionLabel': 'レビューセッション',
   'chat.autoReview.actions.open': '開く',
   'chat.autoReview.actions.stop': '停止',
+  'chat.autoReview.result.clean': 'コードレビュー完了: 修正すべき点はありません',
+  'chat.autoReview.result.disputed': 'コードレビュー停止: 却下された修正にレビュアーが同意していません。判断してください',
+  'chat.autoReview.result.limit': 'ラウンド上限でコードレビューを停止しました。未解決の指摘があります',
+  'chat.autoReview.result.failed': 'コードレビューに失敗しました',
+  'chat.autoReview.result.stopped': 'コードレビューを停止しました：ターンが中断されました',
+  'chat.autoReview.actions.dismiss': '閉じる',
+  'chat.autoReview.toast.removeFailed': 'コードレビューを変更するためにサーバーに接続できませんでした。もう一度お試しください。',
+  'chat.prWatch.title': 'プルリクエスト #{number} を待機中',
+  'chat.prWatch.status.pending': 'チェック実行中',
+  'chat.prWatch.status.passed': 'チェック成功',
+  'chat.prWatch.status.failed': 'チェックが失敗しました',
+  'chat.prWatch.status.waking': 'エージェントを起こしています',
+  'chat.prWatch.actions.stop': '監視をやめる',
+  'chat.prWatch.toast.stopFailed': 'プルリクエストの監視をやめるためにサーバーに接続できませんでした。もう一度お試しください。',
   'chat.draftDirtyNotice.tooltip': 'このブランチにはコミットされていない変更があります。\n新しいセッションの変更と競合する可能性があります。先にコミットするか、別のワークツリーを使うとよいかもしれません。',
   'chat.draftDirtyNotice.indicatorAria': 'このディレクトリに未コミットの変更があります',
   'rightSidebar.contextNotesTodo.plan.defaultTitle': '計画',
@@ -2318,6 +2346,7 @@ export const dict: Record<I18nKey, string> = {
   'session.githubIntegration.validation.branchAlreadyCheckedOut': 'ブランチはすでにワークツリーでチェックアウトされています',
   'session.githubIntegration.validation.failed': '検証に失敗しました',
   'chat.fileAttachment.toast.attachFailed': 'ファイルの添付に失敗しました',
+  'chat.fileAttachment.toast.tooLarge': '{name} は大きすぎるため添付できません（{size} 超）。プロジェクト内のファイルなら @ でメンションしてください。',
   'chat.fileAttachment.toast.someFilesSkipped': '一部のファイルがスキップされました:\n{summary}',
   'chat.fileAttachment.toast.vscodePickFailed': 'VS Codeでのファイル選択に失敗しました',
   'chat.fileAttachment.fileFallback': 'ファイル',
@@ -2433,8 +2462,6 @@ export const dict: Record<I18nKey, string> = {
   'chat.commandAutocomplete.command.btwDescription': 'このチャットを乱さず、一時的な子セッションで脇の質問をする',
   'chat.commandAutocomplete.command.forkDescription': '最後に完了した応答からこのチャットをフォークして続行します。/fork の後のテキストはフォーク先に送信されます。',
   'chat.commandAutocomplete.command.exploreDescription': 'このコードベースに慣れる: アーキテクチャと主要部分の概要ツアー。',
-  'chat.commandAutocomplete.badge.command': 'コマンド',
-  'chat.commandAutocomplete.badge.system': 'システム',
   'chat.commandAutocomplete.empty': 'コマンドが見つかりません',
   'chat.agentMentionAutocomplete.badge.system': 'システム',
   'chat.agentMentionAutocomplete.empty': 'エージェントが見つかりません',
@@ -2578,8 +2605,6 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.actions.sendMessageAria': 'メッセージを送信',
   'chat.chatInput.actions.queueMessageAria': 'メッセージをキュー',
   'chat.chatInput.actions.stopGeneratingAria': '生成を停止',
-  'chat.chatInput.focusMode.toggleAria': 'フォーカスモードの切り替え',
-  'chat.chatInput.focusMode.label': 'フォーカスモード',
   'chat.chatInput.linked.byAuthor': '{author}による',
   'chat.chatInput.linked.issue.openInBrowserAria': 'ブラウザでIssueを開く',
   'chat.chatInput.linked.issue.removeAria': 'リンクされたIssueを削除',
@@ -2603,11 +2628,9 @@ export const dict: Record<I18nKey, string> = {
   'chat.dictation.insertAndSend': '挿入して送信',
   'chat.dictation.retry': '文字起こしを再試行',
   'chat.dictation.discard': '録音を破棄',
-  'chat.snippetAutocomplete.action.addNew': '+ 新しいスニペットを追加',
+  'chat.snippetAutocomplete.action.addNew': '新しいスニペットを追加',
   'chat.snippetAutocomplete.empty': 'スニペットが見つかりません',
   'chat.snippetAutocomplete.footer': '↑↓ 移動 • Enter 選択 • Esc 閉じる',
-  'snippets.source.global': 'グローバル',
-  'snippets.source.project': 'プロジェクト',
   'chat.chatInput.toast.compactFailed': 'セッションの圧縮に失敗しました',
   'chat.chatInput.toast.forkFailed': 'セッションをフォークできませんでした',
   'chat.chatInput.toast.forkNothingToFork': 'まだフォークできません：このセッションで完了した応答がありません',
@@ -2997,6 +3020,20 @@ export const dict: Record<I18nKey, string> = {
   'projects.sharedTrust.actions': 'アクション',
   'projects.sharedTrust.skip': '今回は実行しない',
   'projects.sharedTrust.trust': '信頼して実行',
+  'projects.opencodeTrust.title': 'このフォルダーのコードを OpenCode に実行させますか？',
+  'projects.opencodeTrust.description': 'OpenCode はフォルダーを開いた時点で、{path} の設定にあるプラグインとコマンドを実行します。一度信頼すると、変更があった場合のみ OpenChamber が再度確認します。',
+  'projects.opencodeTrust.plugins': 'プラグイン',
+  'projects.opencodeTrust.commands': 'コマンド',
+  'projects.opencodeTrust.kind.package': '{name}（npm パッケージ）',
+  'projects.opencodeTrust.kind.config': '{path}：OpenChamber が読み取れない設定ファイル',
+  'projects.opencodeTrust.kind.mcp': 'MCP サーバー {name}',
+  'projects.opencodeTrust.kind.lsp': '言語サーバー {name}',
+  'projects.opencodeTrust.kind.formatter': 'フォーマッター {name}',
+  'projects.opencodeTrust.kind.shell': 'シェル',
+  'projects.opencodeTrust.paused': '信頼しない場合、このフォルダーではエージェントは動作しませんが、ファイルと Git の変更は引き続き閲覧できます。',
+  'projects.opencodeTrust.skip': '今回は開かない',
+  'projects.opencodeTrust.trust': '信頼して開く',
+  'projects.opencodeTrust.saveFailed': '回答を保存できませんでした。もう一度お試しください。',
   'projectActions.actions.autoDiscoverTooltip': '開発サーバーを自動的に検出して実行します',
   'projectActions.actions.chooseActionAria': 'プロジェクトアクションを選択',
   'projectActions.actions.openPreview': 'プレビューを開く',
@@ -3472,6 +3509,7 @@ export const dict: Record<I18nKey, string> = {
   'common.duration.minutesSecondsCompact': '{minutes}分{seconds}秒',
   'common.duration.hoursMinutesCompact': '{hours}時間{minutes}分',
   'contextFileOpen.failure.tooLarge': 'ファイルが大きすぎて開けません（>{count}行）',
+  'contextFileOpen.failure.tooLargeSize': 'ファイルが大きすぎるため開けません（{size} 超）',
   'contextFileOpen.failure.missing': 'ファイルが見つかりません',
   'contextFileOpen.failure.unreadable': 'ファイルを開けませんでした',
   'quota.window.5h': '5時間',
@@ -3501,6 +3539,7 @@ export const dict: Record<I18nKey, string> = {
   'quota.window.premiumInteractions': 'AIクレジット',
 
   'chat.workStatus.ariaLabel': '作業状況',
+  'chat.workStatus.mobileEmpty': 'このセッションにはまだ表示する内容がありません',
   'chat.workStatus.context.label': 'コンテキスト',
   'chat.workStatus.cost.breakdown': 'セッション {session} · サブエージェント {subagents}',
   'chat.workStatus.git.changedFileSingle': '{count} 件のファイルを変更',
@@ -3844,6 +3883,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.moveChatToProject.success': 'チャットをプロジェクトへ移動しました',
   'sessions.moveChatToProject.failed': 'チャットを移動できませんでした',
   'chat.worktreeSetup.running': 'worktree を準備中: プロジェクトのセットアップコマンドを実行しています…',
+  'chat.draft.creatingSession': 'セッションを作成中…',
   'desktopHostSwitcher.startup.fellBackToLocal': '接続を開けなかったため、OpenChamber は Local で起動しました。到達できるようになったら、インスタンス切り替えから接続してください。',
   'desktopSafeStart.title': 'OpenChamber が繰り返しクラッシュしました',
   'desktopSafeStart.description': 'パネルを閉じ、フォルダを折りたたみました。',

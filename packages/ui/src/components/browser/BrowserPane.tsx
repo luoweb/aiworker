@@ -112,8 +112,8 @@ const BROWSER_PARTITION = 'persist:openchamber-browser';
  * The mark before the address of a space's tab while it shows a loopback page:
  * `localhost` there means the space, and the sidebar's container icon says so.
  */
-const addressMarkOf = (directory: string, address: string, label: string): { icon: 'box-3'; label: string } | undefined => (
-  spaceIdOfDirectory(directory) !== null && isLoopbackUrl(address) ? { icon: 'box-3', label } : undefined
+const addressMarkOf = (directory: string, address: string, label: string): { icon: 'instance'; label: string } | undefined => (
+  spaceIdOfDirectory(directory) !== null && isLoopbackUrl(address) ? { icon: 'instance', label } : undefined
 );
 
 const browserPartitionOf = (directory: string): string => {
@@ -1006,6 +1006,11 @@ const WebviewBrowser: React.FC<BrowserPaneProps> = ({ initialUrl, directory: tab
             src={initialSrc}
             partition={browserPartitionOf(directory)}
             allowpopups
+            // An agent's tab is mostly out of sight while the agent works it:
+            // a hidden page's timers would run about once a second, and the
+            // app took a minute to start in it. The user's own hidden tabs
+            // stay throttled. Read once, when the view attaches.
+            webpreferences={ownerSessionId !== null ? 'backgroundThrottling=no' : undefined}
             style={layout
               ? {
                 // Laid out at the chosen size and scaled visually: the page must
@@ -1032,7 +1037,7 @@ const WebviewBrowser: React.FC<BrowserPaneProps> = ({ initialUrl, directory: tab
         {tunnelFailedUrl ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background p-6 text-center">
             {spaceIdOfDirectory(directory) !== null ? (
-              <Icon name="box-3" className="size-8 text-muted-foreground opacity-70" aria-hidden="true" />
+              <Icon name="instance" className="size-8 text-muted-foreground opacity-70" aria-hidden="true" />
             ) : null}
             <span className="typography-ui-header text-foreground">{t('contextPanel.browser.tunnelFailed')}</span>
             <span className="typography-micro text-muted-foreground">
@@ -1157,7 +1162,7 @@ const IframeBrowser: React.FC<BrowserPaneProps> = ({ initialUrl, directory: tabs
         {unreachableUrl ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-background p-6 text-center">
             {insideSpace ? (
-              <Icon name="box-3" className="size-8 text-muted-foreground opacity-70" aria-hidden="true" />
+              <Icon name="instance" className="size-8 text-muted-foreground opacity-70" aria-hidden="true" />
             ) : null}
             <span className="typography-ui-header text-foreground">
               {t(insideSpace ? 'contextPanel.browser.spaceLoopback.title' : 'contextPanel.browser.remoteLoopback.title', { url: browserUrlLabel(unreachableUrl) })}

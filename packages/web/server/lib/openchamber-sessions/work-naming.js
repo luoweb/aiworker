@@ -4,8 +4,7 @@
  *
  * A task is what the sidebar lists as one entry: a linked worktree with all
  * its sessions, or a session in the main checkout together with the sessions
- * that grew out of it there (an auto-review, a fork, a session an agent
- * dispatched from it). A worktree's name is its branch description (see
+ * that grew out of it there (an auto-review, a fork). A worktree's name is its branch description (see
  * `setWorktreeTaskTitle` in `lib/git`); a main-checkout task's name is its
  * root session's title, with `metadata.openchamber.workTitle` recording who
  * gave it.
@@ -14,7 +13,8 @@
  * with the current name, so it can stop asking.
  *
  * A worktree whose branch is still OpenChamber's placeholder (Quick worktree's
- * `kinetic-zebra`, never pushed) gets its branch named in the same call: the
+ * `kinetic-zebra`, or an issue's `issue-180-merry-salamander`, which keeps its
+ * number; never pushed) gets its branch named in the same call: the
  * call requires `branch` and renames it. Asked for in prose beside the
  * checkout, weaker models named the task and went on; a call that refuses
  * without the branch, and says why, they answer at once. Any other branch (the
@@ -25,7 +25,7 @@
 import { z } from 'zod';
 
 const TITLE_MAX_LENGTH = 120;
-// Origins chain (a review of a fork of a dispatched session); recorded
+// Origins chain (a review of a fork of a fork); recorded
 // metadata can loop, so the walk to the task's root session is bounded.
 const MAX_ORIGIN_DEPTH = 16;
 
@@ -44,9 +44,7 @@ const originOf = (session) => {
   if (parentID) return parentID;
   const openchamber = openchamberOf(session);
   if (openchamber.kind === 'review' && asText(openchamber.originalSessionID)) return asText(openchamber.originalSessionID);
-  const forkSource = asText(session?.fork?.sessionID);
-  if (forkSource) return forkSource;
-  return asText(openchamber.originSessionID) || null;
+  return asText(session?.fork?.sessionID) || null;
 };
 
 const workTitleSchema = z.object({ title: z.string().trim().min(1), by: z.string().optional() });
@@ -59,7 +57,7 @@ const readWorkTitle = (session) => {
  * @param {object} dependencies
  * @param {(sessionID: string) => Promise<object|null>} dependencies.getSession OpenCode's session record, or null when unknown
  * @param {(directory: string) => Promise<Array<{ path: string }>>} dependencies.listWorktrees the repository's checkouts, the main one first
- * @param {(directory: string, input: { title: string, by: 'agent' }) => Promise<object>} dependencies.setWorktreeTaskTitle
+ * @param {(directory: string, input: { title: string, by: 'agent'|'user' }) => Promise<object>} dependencies.setWorktreeTaskTitle
  * @param {(directory: string) => Promise<string|null>} [dependencies.readPlaceholderBranch] the worktree's branch while it is OpenChamber's unpushed placeholder, else null
  * @param {(directory: string, name: string) => Promise<{ from: string, to: string }|null>} [dependencies.renamePlaceholderBranch]
  * @param {(sessionID: string, title: string, directory: string) => Promise<void>} dependencies.renameSession
@@ -170,5 +168,21 @@ export const createWorkNamer = ({
     return { task: 'session', sessionId: root.id, title, named: true, ...branchKept };
   };
 
-  return { name };
+  /**
+   * A session moved into a new worktree takes its task's name along. The
+   * worktree's row is named by its branch description, which a new branch
+   * does not have, and the agent does not name a task twice, so without this
+   * the row would show the bare branch. Whoever named it keeps the name.
+   */
+  const carryToWorktree = async ({ sessionId, worktree }) => {
+    const session = await getSession(sessionId);
+    const recorded = session ? readWorkTitle(session) : null;
+    if (!recorded) return null;
+    // Renamed by the user after the agent named it: the title is theirs.
+    const current = asText(session.title) || recorded.title;
+    const by = recorded.by === 'agent' && current === recorded.title ? 'agent' : 'user';
+    return setWorktreeTaskTitle(worktree, { title: current, by });
+  };
+
+  return { name, carryToWorktree };
 };

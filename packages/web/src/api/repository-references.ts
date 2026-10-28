@@ -105,6 +105,11 @@ const referenceCommentFields = {
   path: z.string().nullable(),
   line: z.number().nullable(),
   review: z.enum(['approved', 'changes_requested', 'commented', 'dismissed']).nullable(),
+  // Absent from older servers and other hosts; a malformed one only costs the suggestion its base.
+  excerpt: z.object({
+    startLine: z.number().int().positive(),
+    lines: z.array(z.string()).max(200),
+  }).optional().catch(undefined),
 };
 
 const referenceDetailResultSchema = z.discriminatedUnion('connected', [
@@ -169,7 +174,7 @@ const referencesAcrossResultSchema = z.strictObject({
   total: z.number().int().nonnegative(),
   repositories: z.array(z.union([
     z.strictObject({ directory: z.string().min(1), status: z.literal('included'),
-      repo: z.strictObject({ owner: z.string(), repo: z.string(), url: z.string() }),
+      repo: z.strictObject({ owner: z.string(), repo: z.string(), url: z.string(), host: z.string().optional() }),
     }),
     z.strictObject({ directory: z.string().min(1), status: z.enum(['no-repo', 'disconnected', 'invalid-context', 'error']) }),
   ])),
