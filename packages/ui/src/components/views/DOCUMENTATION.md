@@ -210,6 +210,22 @@ one attribute per moved
 control; the menu reads them when it opens and shows a check beside each view
 option that is on.
 
+## Files toolbar
+
+The Files editor's row (`renderFileToolbar`, an `ActionToolbar`) has the actions
+the open file's type allows, the same in every mode: save state, the mode
+toggle, the source tools (find, go to line, symbols, line wrap, read aloud),
+the file's actions, and full screen. A tool the current mode cannot run opens
+the source editor first: go to line from a preview switches to the editor and
+opens the field there. Find in a Markdown preview searches the preview. A
+read-only code file has no editor, so it gets no source tools. Go to line and
+symbols close when a preview replaces the editor.
+
+Save state keeps one slot as wide as its widest text, also in previews, so
+saving moves nothing beside it; a canvas or draw.io preview puts its own save
+button there. Auto-save lives in "More actions" as a setting. HTML annotation
+from the source switches to the preview and starts once the page has loaded.
+
 ## Large text files
 
 The 200,000-character threshold selects an initial code preview, not read-only
@@ -325,6 +341,10 @@ from a file scrolled far down, an editor under the header in the flow sat at
 the file's top, out of view. The trigger is always visible, like
 the header's other actions, and toggles the editor: a second click closes it
 unsaved, so an empty editor never stays stuck open.
+Files view takes the same comment from its toolbar, as a `file` draft beside
+its line comments. Its editor and cards sit between the toolbar and the
+scroller, so they stay on screen at any scroll; the CodeMirror line widgets
+filter those drafts out, and the fullscreen overlay shows them while it is open.
 Changes hands its PR source to walkthrough; walkthrough's Changes action opens
 PR mode with the shared selection. Picking a PR never generates a walkthrough.
 
@@ -434,3 +454,27 @@ after it stops. The check runs on the live `exit` event and on a snapshot that
 reports `exited`, so a tab whose process ended while the panel was closed goes
 away when it is shown. VS Code has neither tabs nor the setting and keeps the
 exited terminal.
+
+In the desktop app Cmd/Ctrl+W closes the shown terminal tab the same way,
+without asking, so a command still running in it ends. It reaches the terminal
+through `lib/closeTabTarget.ts` when the terminal's zone was the place clicked
+or focused last among the surfaces with a tab to close.
+
+## A terminal that cannot connect
+
+The terminal socket (`lib/terminalApi.ts`) retries forever, 0.5 s doubling to
+8 s, and reports each failure as a `reconnecting` event with its attempt
+number. `TerminalView` covers the pane with "Terminal couldn't connect" and a
+Try again button once five attempts in a row have failed, about 8 s, and keeps
+it there until a snapshot arrives. Try again drops the subscription and opens a
+new one, which dials at once; its own failures start the count over without
+hiding the error.
+
+### Why a count of failed attempts and not the retry giving up
+
+The retry never gives up: after a server restart or a dropped network it has to
+come back on its own, so ending it would trade a blank pane for a dead one. A
+browser WebSocket also never sees the upgrade's 401 or 403, so a refused token
+cannot be told apart from a server that is down. Five attempts span a typical
+server restart, so a short outage shows nothing, and an outage that lasts shows
+the error while the retry goes on underneath.

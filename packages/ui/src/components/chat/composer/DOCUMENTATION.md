@@ -55,6 +55,19 @@ oldest pending form and counts the rest in its header. The BTW sheet keeps
 the inline `FormCard` for its child session's forms; both render a field
 through `FormFieldControl`.
 
+### Why answer textareas measure content in one layout pass
+
+`FormFieldControl` resets the textarea height before measuring its content,
+adds the border height and applies the capped height directly. A height-driven
+React effect feeds the border-excluding `scrollHeight` back into a border-box
+height; deleting a long answer then causes repeated shrinking updates and a
+maximum-update-depth crash. Text changes trigger measurement; the measured
+height and overflow never trigger another React update.
+The field wrapper keeps its current minimum height during that measurement,
+then restores its original minimum. This prevents a scrolling form body from
+clamping its offset during the temporary collapse, while allowing genuine
+shrinking after deletion.
+
 `formCardState.ts` decides what both surfaces show and send, mirroring
 OpenCode's `Form.validateAnswer`: fields are evaluated in declaration order,
 a `when` clause reads only the answers of active earlier fields (an
@@ -736,7 +749,19 @@ info mark on every row read as noise. `ui/useAutocompleteSelectionScroll.ts`
 keeps the keyboard's selection in view.
 
 `../AutocompleteRows.test.tsx` mounts the command and skill pickers and covers
-the row's parts and the absent popup on selection.
+the row's parts, the absent popup on selection, and the list height below.
+
+### Why a list placed at the caret skips the phone's height clamp
+
+`useMobileAutocompleteMaxHeight` measures from the list's bottom edge, which
+holds still only while the list hangs above its anchor. The caret placement
+(`useAutocompletePosition`) already sizes the list against the same chat-area
+and keyboard limits, and a list it puts below the line, as it does once the
+phone's keyboard pushes the composer up, grows downward: every clamp moved the
+edge the next clamp measured, and the chat crashed with "Maximum update depth
+exceeded" (#5687). So each picker clamps only while its style carries no
+max-height: on the first frame before the placement is measured, and for
+callers that anchor the list themselves, like the scheduled task editor.
 
 ## Other sessions as context
 
