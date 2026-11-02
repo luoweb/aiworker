@@ -1,5 +1,11 @@
 # Retained context views
 
+Archive session rows apply the shared session-admission directory rule before
+search, counts and grouping. Unregistered host destinations stay hidden without
+removing their records from the global archive cache. Managed chats, live spaces
+and catalogued read-only space archives retain their existing ownership. Opening
+an archive row still passes through the shared session-selection gate.
+
 `ContextPanel` keeps file, diff and walkthrough views mounted to preserve
 navigation, expanded sections and editor state. Its `visible` prop combines
 the panel's open state with the selected tab. Hiding via CSS alone does not
@@ -122,8 +128,15 @@ is one `dir/` row in the parent's status; its diff read answers
 and lists its changed files, each diff read from that repository when the row
 opens, read-only: no stage, discard or hunk actions. "Open as project" adds the
 folder as a project and opens a new session draft in it, where the Git panel
-commits. The listing reads again when the entry's `contentRevision` moves.
-Mobile Changes still shows only the note for such a row.
+commits. A repository row inside that listing keeps the separate-repository
+note without recursively reading its changes. The listing reads again when
+the entry's `contentRevision` moves. Mobile Changes still shows
+only the note for such a row.
+
+Git, Changes, Walkthrough, pull requests and mobile Changes use the shared
+repository picker. Selection, discovery refresh and persistence belong to
+[`useGitStore`](../../stores/DOCUMENTATION.md#usegitstorets) and
+`useNestedGitDirectory`; diff rows do not change that selection.
 
 ## Find in changes
 
@@ -213,9 +226,12 @@ option that is on.
 ## Files toolbar
 
 The Files editor's row (`renderFileToolbar`, an `ActionToolbar`) has the actions
-the open file's type allows, the same in every mode: save state, the mode
-toggle, the source tools (find, go to line, symbols, line wrap, read aloud),
-the file's actions, and full screen. A tool the current mode cannot run opens
+the open file's type allows, the same in every mode. The row itself keeps save
+state, the mode toggle (and HTML annotation), find, comment on the file and
+full screen; go to line, symbols, line wrap, read aloud, the file's own actions
+(open in app, copy contents, copy path, download) and auto-save live in "More
+actions". With every action on the row it ran to a dozen icons, most of them
+rarely used (maintainer, 2026-10-28). A tool the current mode cannot run opens
 the source editor first: go to line from a preview switches to the editor and
 opens the field there. Find in a Markdown preview searches the preview. A
 read-only code file has no editor, so it gets no source tools. Go to line and
@@ -223,7 +239,7 @@ symbols close when a preview replaces the editor.
 
 Save state keeps one slot as wide as its widest text, also in previews, so
 saving moves nothing beside it; a canvas or draw.io preview puts its own save
-button there. Auto-save lives in "More actions" as a setting. HTML annotation
+button there. HTML annotation
 from the source switches to the preview and starts once the page has loaded.
 
 ## Large text files
@@ -434,6 +450,10 @@ folder is gone without an archive still moves to the project root. Restores of o
 joined, not repeated: a session's subsessions come back one by one, and each
 would start it. Deleting an archive for good deletes only its sessions still in
 the archive that no other archive of the project holds.
+
+A right-click on a desktop row opens a menu of three items named as in the
+sidebar: Copy session ID, Restore where the row offers it, and Delete. The
+session ID is otherwise reachable only by opening the session.
 
 The phone shows the same page in one column: the groups are a row of chips
 that scrolls sideways (hidden while searching, since a search spans them
