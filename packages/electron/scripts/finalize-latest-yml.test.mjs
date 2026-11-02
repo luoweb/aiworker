@@ -21,7 +21,7 @@ const writeManifest = (artifacts, target, filename, content) => {
   fs.writeFileSync(path.join(artifacts, `latest-yml-${target}`, filename), content);
 };
 
-const createFixture = ({ includeWindowsArm64 = true, includeMacArm64 = true } = {}) => {
+const createFixture = ({ includeWindowsArm64 = true, includeMac = true, includeMacArm64 = true } = {}) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'openchamber-latest-yml-'));
   const artifacts = path.join(root, 'artifacts');
   const output = path.join(root, 'output');
@@ -29,9 +29,11 @@ const createFixture = ({ includeWindowsArm64 = true, includeMacArm64 = true } = 
   if (includeWindowsArm64) {
     writeManifest(artifacts, 'aarch64-pc-windows-msvc', 'latest.yml', manifest('win', 'arm64', 'exe'));
   }
-  writeManifest(artifacts, 'x86_64-apple-darwin', 'latest-mac.yml', manifest('mac', 'x64', 'zip'));
-  if (includeMacArm64) {
-    writeManifest(artifacts, 'aarch64-apple-darwin', 'latest-mac.yml', manifest('mac', 'arm64', 'zip'));
+  if (includeMac) {
+    writeManifest(artifacts, 'x86_64-apple-darwin', 'latest-mac.yml', manifest('mac', 'x64', 'zip'));
+    if (includeMacArm64) {
+      writeManifest(artifacts, 'aarch64-apple-darwin', 'latest-mac.yml', manifest('mac', 'arm64', 'zip'));
+    }
   }
   fs.mkdirSync(output);
   return { root, artifacts, output };
@@ -101,4 +103,19 @@ test('fails instead of publishing a Mac manifest without the arm64 build', (cont
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Both x64 and arm64 macOS update manifests are required/);
   assert.equal(fs.existsSync(path.join(fixture.output, 'latest-mac.yml')), false);
+});
+
+// This fork's macOS job is a placeholder that uploads no manifests, so the
+// combined feed ships Windows-only instead of failing the release.
+test('skips latest-mac.yml when no macOS manifests exist', (context) => {
+  const fixture = createFixture({ includeMac: false });
+  context.after(() => fs.rmSync(fixture.root, { recursive: true, force: true }));
+
+  const result = spawnSync(process.execPath, [script], { env: environment(fixture), encoding: 'utf8' });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /skipping latest-mac\.yml/);
+  assert.equal(fs.existsSync(path.join(fixture.output, 'latest-mac.yml')), false);
+  assert.equal(fs.existsSync(path.join(fixture.output, 'latest.yml')), true);
+  assert.equal(fs.existsSync(path.join(fixture.output, 'latest-arm64.yml')), true);
 });

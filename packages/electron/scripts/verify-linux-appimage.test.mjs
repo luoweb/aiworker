@@ -6,6 +6,17 @@ import test from 'node:test';
 
 import { linuxAppImageArchSuffix, readElfArchitecture, verifyExtractedPayload } from './verify-linux-appimage.mjs';
 
+// Desktop identity and icon file names mirror packages/electron/package.json
+// (build.linux.executableName and desktop.entry). Derive every occurrence from
+// this one constant: the CI brand rename (packages/abc.sh) rewrites
+// `openchamber` → `aiworker`, but its filter pass restores `/aiworker` path
+// segments back to `/openchamber` because it protects import paths, API routes
+// and config dirs. A joined literal like
+// 'usr/share/icons/hicolor/512x512/apps/openchamber.png' would revert while
+// `Icon=openchamber` renames, desynchronizing this fixture from the renamed
+// verifier so the theme icon never resolves. Keep both derived from ICON_NAME.
+const ICON_NAME = 'openchamber';
+
 const writeElf = (filePath, architecture) => {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   const header = Buffer.alloc(20);
@@ -23,16 +34,16 @@ const writeIcon = (root, relativePath) => {
 
 const createPayload = () => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'openchamber-payload-test-'));
-  fs.writeFileSync(path.join(root, 'openchamber.desktop'), [
-    '[Desktop Entry]', 'Name=OpenChamber', 'Exec=AppRun --no-sandbox %U', 'Icon=openchamber', 'StartupWMClass=openchamber', '',
+  fs.writeFileSync(path.join(root, `${ICON_NAME}.desktop`), [
+    '[Desktop Entry]', 'Name=OpenChamber', 'Exec=AppRun --no-sandbox %U', `Icon=${ICON_NAME}`, `StartupWMClass=${ICON_NAME}`, '',
   ].join('\n'));
-  writeElf(path.join(root, 'openchamber'), 'x64');
+  writeElf(path.join(root, ICON_NAME), 'x64');
   writeElf(path.join(root, 'resources/opencode-cli/opencode'), 'x64');
   writeElf(path.join(root, 'resources/ripgrep/rg'), 'x64');
   for (const name of ['pty.node', 'sherpa-onnx.node']) {
     writeElf(path.join(root, 'resources/app.asar.unpacked/node_modules', name), 'x64');
   }
-  writeIcon(root, 'usr/share/icons/hicolor/512x512/apps/openchamber.png');
+  writeIcon(root, `usr/share/icons/hicolor/512x512/apps/${ICON_NAME}.png`);
   return root;
 };
 
@@ -115,7 +126,7 @@ test('accepts a scalable theme icon', () => {
   const root = createPayload();
   try {
     fs.rmSync(path.join(root, 'usr/share/icons/hicolor/512x512'), { recursive: true });
-    writeIcon(root, 'usr/share/icons/hicolor/scalable/apps/openchamber.svg');
+    writeIcon(root, `usr/share/icons/hicolor/scalable/apps/${ICON_NAME}.svg`);
     assert.equal(verify(root).nativeModuleCount, 2);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });
@@ -124,8 +135,8 @@ test('accepts a scalable theme icon', () => {
 
 test('fails when the theme cannot resolve Icon=openchamber', () => {
   for (const relativePath of [
-    'usr/share/icons/hicolor/scalable/openchamber.svg',
-    'usr/share/icons/hicolor/1024x1024/apps/openchamber.png',
+    `usr/share/icons/hicolor/scalable/${ICON_NAME}.svg`,
+    `usr/share/icons/hicolor/1024x1024/apps/${ICON_NAME}.png`,
   ]) {
     const root = createPayload();
     try {
@@ -142,7 +153,7 @@ test('fails when .DirIcon is dangling', () => {
   const root = createPayload();
   try {
     fs.rmSync(path.join(root, '.DirIcon'));
-    fs.symlinkSync('usr/share/icons/hicolor/scalable/openchamber.svg', path.join(root, '.DirIcon'));
+    fs.symlinkSync(`usr/share/icons/hicolor/scalable/${ICON_NAME}.svg`, path.join(root, '.DirIcon'));
     assert.throws(() => verify(root), /\.DirIcon does not resolve/);
   } finally {
     fs.rmSync(root, { recursive: true, force: true });

@@ -1224,11 +1224,13 @@ export function ScheduledTaskEditorDialog(props: {
           </div>
         </header>
 
-        <ScrollableOverlay
-          outerClassName="flex-1 min-h-0"
-          useScrollShadow
-          scrollShadowSize={64}
-          hideTopScrollShadow
+        {/* No scroll fades here: mask-image rasterizes as a solid black block
+            in software-rendered environments (remote desktop, older GPUs), and
+            the fixed footer already bounds the form visually. */}
+        <ScrollShadow
+          className="flex-1 min-h-0 overflow-auto [scrollbar-gutter:stable_both-edges]"
+          hideTopShadow
+          hideBottomShadow
         >
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 pb-5">{formBody}</div>
         </ScrollableOverlay>
