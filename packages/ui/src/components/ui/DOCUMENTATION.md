@@ -21,6 +21,19 @@ This folder owns runtime-independent controls and their Base UI integration, inc
 
 ## Decisions
 
+### Which tooltip a control takes
+
+`Tooltip` is the base, for anything that is not a plain button, such as a whole row or a label. `ButtonTooltip` (`action-toolbar.tsx`) is one button that sits alone, disabled or not: its span takes the hover a disabled button refuses, and a menu trigger goes inside it. `HoverTooltip` (`row-tooltip.tsx`) is a button repeated in a list that mounts and unmounts rows, such as the transcript: it mounts a root only while hovered, adds no DOM, and needs no provider. `DelegatedTooltip` (`row-tooltip.tsx`) is the buttons of a list that keeps its rows mounted: controls carry `data-row-tooltip`, and one tooltip listens on the list. A `Tooltip` per row in either list would keep thousands of roots for a label that shows at most once.
+
+`HoverTooltip` and `DelegatedTooltip` run their own delay, 300 ms as in the app's `TooltipProvider`, because a tooltip with no trigger of its own never reads the provider.
+
+### Why KeepAlive snapshots before hiding
+
+`onBeforeHide` runs for the outgoing non-null key in React's before-mutation
+snapshot phase. Consumers can capture measurable DOM before Activity or a
+placeholder host hides it. Layout-effect cleanup can already see hidden nodes,
+so it cannot provide the same capture guarantee. Same-key updates do not capture.
+
 ### Why the toolbar folds by trying, not by arithmetic
 
 `ActionToolbar` hides actions from the end of the row through a `data-folded` attribute set on the DOM until the row stops overflowing, then renders the menu from what it hid. Counting fixed 24px slots, as the Files toolbar did before, breaks on anything that is not a button: the save status, the inline go-to-line field, labels in other languages. React never renders `data-folded`, so a render keeps the fit until the next one runs on a resize or a changed set of actions.

@@ -25,6 +25,7 @@ import { heapSnapshotI18n } from './heap-snapshot.i18n';
 import { consoleBudgetsI18n } from './console-budgets.i18n';
 import { imageToolI18n } from './image-tool.i18n';
 import { agentStatusI18n } from './agent-status.i18n';
+import { selectionApprovalI18n } from './selection-approval.i18n';
 import { snippetsI18n } from './snippets.i18n';
 import { sidebarWorkI18n } from './sidebar-work.i18n';
 import { sidebarSectionsI18n } from './sidebar-sections.i18n';
@@ -33,6 +34,7 @@ import { overviewI18n } from './overview.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { stacksI18n } from './stacks.i18n';
+import { prReviewI18n } from './pr-review.i18n';
 import { changeReviewI18n } from './change-review.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
 import { gitIdentityEditorI18n } from './git-identity-editor.i18n';
@@ -47,6 +49,15 @@ import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
+import { tooltipsDiffI18n } from './tooltips-diff.i18n';
+import { tooltipsFilesI18n } from './tooltips-files.i18n';
+import { tooltipsGitI18n } from './tooltips-git.i18n';
+import { tooltipsTrackerI18n } from './tooltips-tracker.i18n';
+import { tooltipsWalkthroughI18n } from './tooltips-walkthrough.i18n';
+import { tooltipsTerminalBrowserI18n } from './tooltips-terminal-browser.i18n';
+import { tooltipsWorkspaceI18n } from './tooltips-workspace.i18n';
+import { tooltipsPanelI18n } from './tooltips-panel.i18n';
+import { tooltipsChatI18n } from './tooltips-chat.i18n';
 
 export const dict = {
   'quota.family.zen': 'מודלי Zen',
@@ -54,10 +65,6 @@ export const dict = {
   'quota.value.spent': 'נוצלו {spent}',
   'mobile.connect.headers.hint': 'חל רק על כתובת זו. הכותרת Authorization שמורה לאסימון הלקוח.',
   'mobile.connect.headers.error': 'לא ניתן לקרוא או לשמור את כותרות החיבור. יש לנסות שוב.',
-  'directoryExplorerDialog.import.title': 'הוספת פרויקטים מ-OpenCode',
-  'directoryExplorerDialog.import.count': 'פרויקטים זמינים: {count}',
-  'directoryExplorerDialog.import.dismiss': 'לא להציע שוב',
-  'directoryExplorerDialog.import.failed': 'לא ניתן לשמור את השינויים. נסו שוב.',
   'opencodeCompatibility.bundled': 'OpenCode מגיע יחד עם OpenChamber. יש לעדכן את OpenChamber כדי לקבל את OpenCode v2.',
   'opencodeCompatibility.title': 'נדרש OpenCode v2',
   'opencodeCompatibility.outdatedTitle': 'עדכן את OpenCode',
@@ -572,6 +579,7 @@ export const dict = {
   'sessions.sidebar.header.actions.more': 'עוד',
   'sessions.sidebar.header.actions.exitSelection': 'צא ממצב בחירה',
   'sessions.sidebar.header.actions.selectSessions': 'בחר הפעלות',
+  'sessions.sidebar.header.actions.markAllRead': 'סמן הכול כנקרא',
   'sessions.sidebar.header.actions.sortProjects': 'מיון פרויקטים',
   'sessions.sidebar.header.actions.sessionDisplayMode': 'מצב תצוגת הפעלות',
   'sessions.sidebar.header.displayMode.label': 'מצב תצוגה',
@@ -745,7 +753,7 @@ export const dict = {
   'sessions.sidebar.session.status.unread': 'עדכונים שלא נקראו',
   'sessions.sidebar.session.status.backgroundSubagent': 'סוכן משנה פועל ברקע',
   'sessions.sidebar.session.status.backgroundCommand': 'פקודה פועלת ברקע',
-  'sessions.sidebar.session.status.waitingOnPullRequest': 'ממתין לבקשת משיכה',
+  'sessions.sidebar.session.status.waitingOnPullRequest': 'ממתין לבדיקות או לסקירה',
   'sessions.sidebar.session.status.pinned': 'הפעלה מוצמדת',
   'sessions.sidebar.session.status.movingToWorktree': 'ההפעלה מועברת לעץ עבודה חדש',
   'sessions.sidebar.session.status.permissionRequired': 'נדרשת הרשאה',
@@ -1634,7 +1642,6 @@ export const dict = {
   'sidebarFilesTree.actions.uploadFilesTitle': 'העלה קבצים',
   'sidebarFilesTree.actions.refreshTitle': 'רענן',
   'sidebarFilesTree.actions.collapseAllTitle': 'כווץ את כל התיקיות',
-  'sidebarFilesTree.actions.fileMenuTitle': 'תפריט קובץ',
   'sidebarFilesTree.state.searching': 'מחפש…',
   'sidebarFilesTree.state.loading': 'טוען…',
   'sidebarFilesTree.dialog.createFile.title': 'יצירת קובץ',
@@ -1723,6 +1730,8 @@ export const dict = {
   'filesView.error.switchToEditMode': 'יש לעבור למצב עריכה כדי לתקן את הבעיה.',
   'filesView.error.readFileFailed': 'קריאת הקובץ נכשלה',
   'filesView.editor.htmlPreviewTitle': 'תצוגה מקדימה של HTML',
+  'filesView.editor.htmlPreviewRelayUnavailable': 'תצוגה מקדימה של HTML אינה זמינה דרך הממסר',
+  'filesView.editor.htmlPreviewShowCode': 'הצג קוד',
   'filesView.editor.htmlAnnotate.intro': 'זוהי בחירה עם הערות מתצוגה מקדימה של קובץ HTML.',
   'filesView.diagram.closeDiagramView': 'סגור את תצוגת התרשים',
   'filesView.diagram.saveDiagram': 'שמור תרשים',
@@ -1886,12 +1895,14 @@ export const dict = {
   'chat.autoReview.actions.dismiss': 'סגירה',
   'chat.autoReview.toast.removeFailed': 'לא ניתן היה להגיע לשרת כדי לשנות את סקירת הקוד. נסו שוב.',
   'chat.prWatch.title': 'ממתין לבקשת המשיכה #{number}',
+  'chat.prWatch.mr.title': 'ממתין לבקשת המיזוג !{number}',
+  'chat.prWatch.change.title': 'ממתין לשינוי #{number}',
   'chat.prWatch.status.pending': 'הבדיקות רצות',
   'chat.prWatch.status.passed': 'הבדיקות עברו',
   'chat.prWatch.status.failed': 'בדיקה נכשלה',
   'chat.prWatch.status.waking': 'מעיר את הסוכן',
   'chat.prWatch.actions.stop': 'הפסקת מעקב',
-  'chat.prWatch.toast.stopFailed': 'לא ניתן היה להגיע לשרת כדי להפסיק לעקוב אחרי בקשת המשיכה. נסו שוב.',
+  'chat.prWatch.toast.stopFailed': 'לא ניתן להגיע לשרת כדי להפסיק את המעקב. נסה שוב.',
   'chat.draftDirtyNotice.tooltip': "יש שינויים שלא בוצע להם קומיט בענף הזה.\nהפעלה חדשה עלולה להתנגש איתם. כדאי לבצע להם קומיט קודם או להשתמש בעץ עבודה (worktree) אחר.",
   'chat.draftDirtyNotice.indicatorAria': 'שינויים שלא בוצע להם קומיט בתיקייה הזו',
   'diffView.hunk.label': 'קטעים',
@@ -2038,6 +2049,11 @@ export const dict = {
   'chat.goal.status.blocked': 'חסום',
   'chat.goal.status.budgetLimited': 'התקציב נוצל',
   'chat.goal.status.complete': 'הושלם',
+  'chat.goal.mark.active': 'היעד פעיל',
+  'chat.goal.mark.paused': 'היעד מושהה',
+  'chat.goal.mark.blocked': 'היעד חסום',
+  'chat.goal.mark.budgetLimited': 'תקציב היעד נוצל',
+  'chat.goal.mark.complete': 'היעד הושלם',
   'chat.goal.usage.tokens': '{used} טוקנים',
   'chat.goal.usage.tokensWithBudget': '{used}/{budget} טוקנים',
   'chat.goal.usage.turns': '{turns} המשכים',
@@ -2103,7 +2119,6 @@ export const dict = {
   'terminalView.tabs.renameDialog.save': 'שנה שם',
   'terminalView.viewport.inputAria': 'קלט המסוף',
   'terminalView.viewport.scrollbarAria': 'היסטוריית הגלילה של המסוף',
-  'directoryExplorerDialog.title': 'הוספת תיקיית פרויקט',
   'directoryExplorerDialog.description': 'יש לבחור תיקייה להוספה כפרויקט.',
   'directoryExplorerDialog.toggle.showHidden': 'הצג מוסתרים',
   'directoryExplorerDialog.pathInput.placeholder': 'הזינו נתיב או בחרו מהעץ…',
@@ -2111,21 +2126,26 @@ export const dict = {
   'directoryExplorerDialog.actions.openInFinder': 'פתח ב-Finder',
   'directoryExplorerDialog.actions.adding': 'מוסיף…',
   'directoryExplorerDialog.actions.addProject': 'הוסף פרויקט',
-  'directoryExplorerDialog.actions.addSelected': 'הוסף את הנבחרים',
-  'directoryExplorerDialog.actions.addLocalProject': 'הוסף פרויקט מקומי',
+  'directoryExplorerDialog.actions.addSelected': 'הוסף את הנבחרים ({count})',
   'directoryExplorerDialog.actions.cloneRepository': 'שכפל מאגר',
   'directoryExplorerDialog.actions.cloneAndAdd': 'שכפל והוסף',
   'directoryExplorerDialog.actions.cloning': 'משכפל…',
-  'directoryExplorerDialog.actions.createAndAdd': 'צור והוסף',
   'directoryExplorerDialog.actions.alreadyAdded': 'כבר נוסף',
   'directoryExplorerDialog.clone.remoteUrlPlaceholder': 'כתובת URL של המאגר (HTTPS או SSH)',
   'directoryExplorerDialog.clone.setupRequired': 'המאגר שוכפל ונוסף. יש להשלים את הגדרת הגישה בחלונית Git; אין צורך לשכפל שוב.',
   'directoryExplorerDialog.clone.identityMismatch': 'הזהות הזו לא יכולה להגיע לכתובת הזו. יש לבחור זהות שמשתמשת באותו סוג כתובת (HTTPS או SSH).',
-  'directoryExplorerDialog.clone.unsupported': 'שכפול אינו נתמך בסביבת VS Code.',
   'directoryExplorerDialog.existing.bindFailed': 'הפרויקט נוסף, אבל לא ניתן היה לקבוע את החשבון שלו. אפשר לבחור אותו בחלונית Git.',
-  'directoryExplorerDialog.browse.directories': 'תיקיות',
   'directoryExplorerDialog.browse.loading': 'טוען תיקיות…',
   'directoryExplorerDialog.browse.empty': 'אין תיקיות תואמות.',
+  'directoryExplorerDialog.actions.addNamed': "הוספת \"{name}\"",
+  'directoryExplorerDialog.actions.createNamed': "יצירת \"{name}\" והוספה",
+  'directoryExplorerDialog.browse.home': "בית",
+  'directoryExplorerDialog.browse.willCreate': "אין תיקייה בשם {name}. היא תיווצר.",
+  'directoryExplorerDialog.opencode.title': "מ-OpenCode",
+  'directoryExplorerDialog.opencode.caption': "מאגרים שפתחת ב-OpenCode",
+  'directoryExplorerDialog.clone.into': "שכפול אל",
+  'directoryExplorerDialog.footer.open': "פתיחה",
+  'directoryExplorerDialog.shortcut.space': "רווח",
   'directoryExplorerDialog.browse.permissionDenied': 'OpenChamber צריך גישה לתיקייה הזו.',
   'directoryExplorerDialog.browse.loadFailed': 'לא ניתן היה לטעון את התיקייה הזו.',
   'directoryExplorerDialog.browse.grantAccess': 'הענק גישה',
@@ -3421,6 +3441,13 @@ export const dict = {
   'markdownRenderer.code.proposal': 'הצעה',
   'markdownRenderer.code.actions.copyTitle': 'העתק קוד',
   'markdownRenderer.code.actions.copiedTitle': 'הועתק',
+  'markdownRenderer.code.actions.runTitle': 'הרצת הפקודה. הסוכן ימשיך מהפלט שלה',
+  'markdownRenderer.code.actions.stopTitle': 'עצירת הפקודה',
+  'markdownRenderer.code.run.startFailed': 'לא ניתן היה להפעיל את הפקודה',
+  'markdownRenderer.code.run.running': 'פועלת',
+  'markdownRenderer.code.run.finished': 'הסתיימה',
+  'markdownRenderer.code.run.failed': 'קוד יציאה {code}',
+  'markdownRenderer.code.run.stopped': 'נעצרה',
   'markdownRenderer.table.actions.copyTitle': 'העתק טבלה',
   'markdownRenderer.code.actions.enableWrapTitle': 'הפעל גלישת שורות',
   'markdownRenderer.code.actions.disableWrapTitle': 'השבת גלישת שורות',
@@ -3649,6 +3676,9 @@ export const dict = {
   'chat.dispatchedSession.showAnswer': 'הצג תשובה',
   'chat.dispatchedSession.hideAnswer': 'הסתר תשובה',
   'chat.dispatchedSession.open': 'פתח הפעלה',
+  'chat.fileOpenRequest.toast.description': 'מוצג בהפעלה {session}',
+  'chat.fileOpenRequest.toast.descriptionUntitled': 'מוצג בהפעלה אחרת',
+  'chat.fileOpenRequest.toast.openSession': 'פתח הפעלה',
   'chat.revertPopover.staged': 'בוטלו: {count}',
   'chat.workStatus.mcp.needsAuthHint': 'אפשר להתחבר לשרת ה-MCP הזה דרך הגדרות → MCP.',
   'mcpDropdown.toast.authorizeOpenFailed': 'לא ניתן היה לפתוח את דף ההרשאה',
@@ -3824,12 +3854,16 @@ export const dict = {
   'sessions.scheduledTasks.editor.worktree.cleanup.keepHint': 'ה-worktree והענף שלו נשארים לאחר ההרצה כדי שתוכל לבדוק את התוצאה.',
   'sessions.scheduledTasks.editor.worktree.notRepo': 'תיקיית הפרויקט אינה מאגר git; ההרצות ישתמשו ב-checkout הקיים כמות שהוא.',
   'sessions.scheduledTasks.dialog.usesDefaults': 'ברירות המחדל של ההפעלה',
-  'sessions.moveChatToProject.menu': 'העבר לפרויקט…',
-  'sessions.moveChatToProject.hint': 'המשך את השיחה הזו בתוך פרויקט',
-  'sessions.moveChatToProject.title': 'העברת הצ\'אט לפרויקט',
-  'sessions.moveChatToProject.description': 'השיחה תימשך בתיקיית הפרויקט. קבצים שהצ\'אט יצר יישארו במקומם.',
-  'sessions.moveChatToProject.success': 'הצ\'אט הועבר לפרויקט',
-  'sessions.moveChatToProject.failed': 'לא ניתן היה להעביר את הצ\'אט',
+  'sessions.moveSession.menu': 'העברת הסשן…',
+  'sessions.moveSession.hint': 'הקבצים נשארים בתיקייה הישנה',
+  'sessions.moveSession.title': 'העברת הסשן',
+  'sessions.moveSession.description': 'הסשן ימשיך בתיקייה שנבחרה. הקבצים נשארים במקומם.',
+  'sessions.moveSession.chooseFolder': 'בחירת תיקייה…',
+  'sessions.moveSession.current': 'התיקייה הנוכחית',
+  'sessions.moveSession.success': 'הסשן הועבר',
+  'sessions.moveSession.failed': 'לא ניתן להעביר את הסשן',
+  'chat.folderMissing.text': 'התיקייה {name} כבר לא קיימת',
+  'chat.folderMissing.action': 'העברת הסשן',
   'chat.worktreeSetup.running': 'מכין את עץ העבודה: מריץ את פקודות ההכנה של הפרויקט…',
   'chat.draft.creatingSession': 'יוצר הפעלה…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'החיבור אליו לא נפתח, ולכן OpenChamber הופעל על המופע המקומי. אפשר להתחבר אליו ממחליף המופעים כשהוא יהיה זמין.',
@@ -3844,6 +3878,7 @@ export const dict = {
   'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'המשימה הזו כבר ממתינה בתור ההמתנה ותרוץ כשיתפנה מקום',
   'chat.modelControls.agentFavoriteAdd': 'הוסף למועדפים. כשיש מועדפים, Tab עובר רק ביניהם',
   ...settingsDict,
+  ...selectionApprovalI18n.he,
   ...linearIssuePickerI18n.he,
   ...referencePickerI18n.he,
   ...repositoryDiscussionsI18n.he,
@@ -3878,6 +3913,7 @@ export const dict = {
   ...isolatedSpacesI18n.he,
   ...sourceBoardI18n.he,
   ...stacksI18n.he,
+  ...prReviewI18n.he,
   ...changeReviewI18n.he,
   ...projectActionsI18n.he,
   ...gitIdentityEditorI18n.he,
@@ -3892,6 +3928,15 @@ export const dict = {
   ...workflowsI18n['he'],
   ...sessionReferencesI18n['he'],
   ...guestStatusViewI18n['he'],
+  ...tooltipsDiffI18n['he'],
+  ...tooltipsFilesI18n['he'],
+  ...tooltipsGitI18n['he'],
+  ...tooltipsTrackerI18n['he'],
+  ...tooltipsWalkthroughI18n['he'],
+  ...tooltipsTerminalBrowserI18n['he'],
+  ...tooltipsWorkspaceI18n['he'],
+  ...tooltipsPanelI18n['he'],
+  ...tooltipsChatI18n['he'],
   'settings.usage.page.state.claudeSignedOutTitle': 'לא מחובר ל-Claude Code',
   'settings.usage.page.state.claudeSignInCommand': 'יש להריץ את הפקודה הזו במסוף:',
   'settings.openchamber.visual.field.confirmFileTreeMove': 'אישור לפני העברת קבצים',

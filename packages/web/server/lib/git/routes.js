@@ -3,7 +3,7 @@ import { isPlainObject, isString } from '../shared/guards.js';
 import { OpenCode } from '@opencode/client';
 import { createGitRedactor, redactGitText } from './redaction.js';
 import { runAsUserAction } from '../environment/refresh-scope.js';
-import { redactRemoteUrl } from '../source-control/url-redaction.js';
+import { isDiskPathRemoteUrl, redactRemoteUrl } from '../source-control/url-redaction.js';
 import { parsePublicGitIdentityProfile, toPublicGitIdentityProfile } from './identity-storage.js';
 import { WorktreeCreationError, createWorktreeCreation, hasClientContributorAuthority } from './worktree-creation.js';
 
@@ -70,7 +70,7 @@ export const createWorktreeInstanceDisposer = ({ buildOpenCodeUrl, getOpenCodeAu
 // Actions the user starts here may run a project's environment command, so
 // hooks find the project's tools; reads the UI repeats on its own may not
 // (lib/environment/refresh-scope.js).
-const worktreeTitleBodySchema = z.object({ title: z.string() });
+const worktreeTitleBodySchema = z.object({ title: z.string(), by: z.enum(['user', 'agent']).default('user') });
 const worktreePinBodySchema = z.object({ pinned: z.boolean(), list: z.string().nullable().optional() });
 
 const userAction = (handler) => (req, res, next) => runAsUserAction(() => handler(req, res, next));
@@ -1252,15 +1252,21 @@ export function registerGitRoutes(app, {
   });
 
   app.get('/api/git/remotes', async (req, res) => {
-    const { getRemotes } = await getGitLibraries();
+    const { getRemotes, getRepositoryRemoteUrls } = await getGitLibraries();
     try {
       const directory = req.query.directory;
       if (!directory) {
         return res.status(400).json({ error: 'directory parameter is required' });
       }
 
-      const remotes = await getRemotes(directory);
-      res.json(remotes.map(toGitRemoteSummary));
+      const [remotes, addresses] = await Promise.all([getRemotes(directory), getRepositoryRemoteUrls(directory)]);
+      // Git operations here cannot use a remote on disk, so it is not offered.
+      // `getRemotes` reads an address with a space as empty, so the addresses
+      // that decide this come from the reader repository identity uses.
+      const onDisk = new Set(addresses
+        .filter((remote) => isDiskPathRemoteUrl(remote.fetchUrl) || isDiskPathRemoteUrl(remote.pushUrl))
+        .map((remote) => remote.name));
+      res.json(remotes.filter((remote) => !onDisk.has(remote.name)).map(toGitRemoteSummary));
     } catch (error) {
       console.error('Failed to get remotes:', error);
       res.status(500).json({ error: error.message || 'Failed to get remotes' });
@@ -1451,8 +1457,8 @@ export function registerGitRoutes(app, {
         return res.status(400).json({ error: 'directory parameter is required' });
       }
 
-      // `remote=local` skips asking every remote over the network.
-      const branches = await getBranches(directory, { remote: req.query.remote === 'local' ? 'local' : 'live' });
+      // Only `remote=live` asks every remote over the network.
+      const branches = await getBranches(directory, { remote: req.query.remote === 'live' ? 'live' : 'local' });
       res.json(branches);
     } catch (error) {
       console.error('Failed to get branches:', error);
@@ -1678,8 +1684,8 @@ export function registerGitRoutes(app, {
     }
   });
 
-  // The user renaming a worktree's task: always written, and from then on the
-  // agent keeps it (see `setWorktreeTaskTitle`). An empty title clears it.
+  // User renames win. A session move seeds an agent-owned title unless the
+  // session's title was explicitly given by the user.
   app.put('/api/git/worktrees/title', userAction(async (req, res) => {
     const { setWorktreeTaskTitle } = await getGitLibraries();
     try {
@@ -1691,7 +1697,7 @@ export function registerGitRoutes(app, {
       if (!body.success) {
         return res.status(400).json({ error: 'title must be a string' });
       }
-      res.json(await setWorktreeTaskTitle(directory, { title: body.data.title, by: 'user' }));
+      res.json(await setWorktreeTaskTitle(directory, body.data));
     } catch (error) {
       console.error('Failed to set the worktree task title:', error);
       res.status(Number.isInteger(error?.status) ? error.status : 500).json({ error: error.message || 'Failed to set the task title' });

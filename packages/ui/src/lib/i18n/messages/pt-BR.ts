@@ -26,6 +26,7 @@ import { heapSnapshotI18n } from './heap-snapshot.i18n';
 import { consoleBudgetsI18n } from './console-budgets.i18n';
 import { imageToolI18n } from './image-tool.i18n';
 import { agentStatusI18n } from './agent-status.i18n';
+import { selectionApprovalI18n } from './selection-approval.i18n';
 import { snippetsI18n } from './snippets.i18n';
 import { sidebarWorkI18n } from './sidebar-work.i18n';
 import { sidebarSectionsI18n } from './sidebar-sections.i18n';
@@ -34,6 +35,7 @@ import { overviewI18n } from './overview.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { stacksI18n } from './stacks.i18n';
+import { prReviewI18n } from './pr-review.i18n';
 import { changeReviewI18n } from './change-review.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
 import { gitIdentityEditorI18n } from './git-identity-editor.i18n';
@@ -48,6 +50,15 @@ import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
+import { tooltipsDiffI18n } from './tooltips-diff.i18n';
+import { tooltipsFilesI18n } from './tooltips-files.i18n';
+import { tooltipsGitI18n } from './tooltips-git.i18n';
+import { tooltipsTrackerI18n } from './tooltips-tracker.i18n';
+import { tooltipsWalkthroughI18n } from './tooltips-walkthrough.i18n';
+import { tooltipsTerminalBrowserI18n } from './tooltips-terminal-browser.i18n';
+import { tooltipsWorkspaceI18n } from './tooltips-workspace.i18n';
+import { tooltipsPanelI18n } from './tooltips-panel.i18n';
+import { tooltipsChatI18n } from './tooltips-chat.i18n';
 
 export const dict: Record<I18nKey, string> = {
   'quota.family.zen': 'Modelos Zen',
@@ -55,10 +66,6 @@ export const dict: Record<I18nKey, string> = {
   'quota.value.spent': '{spent} gastos',
   'mobile.connect.headers.hint': 'Aplica-se apenas a este endereço. Authorization é reservado para o token do cliente.',
   'mobile.connect.headers.error': 'Não foi possível ler ou salvar os cabeçalhos da conexão. Tente novamente.',
-  'directoryExplorerDialog.import.title': 'Adicionar projetos do OpenCode',
-  'directoryExplorerDialog.import.count': 'Projetos disponíveis: {count}',
-  'directoryExplorerDialog.import.dismiss': 'Não sugerir novamente',
-  'directoryExplorerDialog.import.failed': 'Não foi possível salvar as alterações. Tente novamente.',
   "opencodeCompatibility.bundled": "O OpenCode está incluído no OpenChamber. Atualize o OpenChamber para obter o OpenCode v2.",
   "opencodeCompatibility.title": "OpenCode v2 necessário",
   "opencodeCompatibility.outdatedTitle": "Atualize o OpenCode",
@@ -106,6 +113,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.liveActivity.usedSubagents': '{count} subagentes utilizados',
   'sessions.sidebar.projectAction.active': 'Ação do projeto em execução',
   ...settingsDict,
+  ...selectionApprovalI18n['pt-BR'],
   'gitView.context.configure': 'Configurar repositório',
   'gitView.context.description': 'Remotos que a identidade do repositório não alcança e acesso para submódulos e Git LFS. As identidades ficam nas configurações do Git.',
   'gitView.context.needsAttention': 'Requer atenção',
@@ -211,6 +219,7 @@ export const dict: Record<I18nKey, string> = {
   ...isolatedSpacesI18n['pt-BR'],
   ...sourceBoardI18n['pt-BR'],
   ...stacksI18n['pt-BR'],
+  ...prReviewI18n['pt-BR'],
   ...changeReviewI18n['pt-BR'],
   ...projectActionsI18n['pt-BR'],
   ...gitIdentityEditorI18n['pt-BR'],
@@ -225,6 +234,15 @@ export const dict: Record<I18nKey, string> = {
   ...workflowsI18n['pt-BR'],
   ...sessionReferencesI18n['pt-BR'],
   ...guestStatusViewI18n['pt-BR'],
+  ...tooltipsDiffI18n['pt-BR'],
+  ...tooltipsFilesI18n['pt-BR'],
+  ...tooltipsGitI18n['pt-BR'],
+  ...tooltipsTrackerI18n['pt-BR'],
+  ...tooltipsWalkthroughI18n['pt-BR'],
+  ...tooltipsTerminalBrowserI18n['pt-BR'],
+  ...tooltipsWorkspaceI18n['pt-BR'],
+  ...tooltipsPanelI18n['pt-BR'],
+  ...tooltipsChatI18n['pt-BR'],
   'terminalView.actions.attachSelection': 'Anexar saída selecionada',
   'terminalView.actions.copySelection': 'Copiar saída selecionada',
   'terminalView.toast.selectionCopied': 'Saída copiada',
@@ -635,6 +653,7 @@ export const dict: Record<I18nKey, string> = {
   "sessions.sidebar.header.actions.more": "Mais",
   "sessions.sidebar.header.actions.exitSelection": "Sair da seleção",
   "sessions.sidebar.header.actions.selectSessions": "Selecionar sessões",
+  "sessions.sidebar.header.actions.markAllRead": "Marcar tudo como lido",
   "sessions.sidebar.header.actions.sortProjects": "Ordenar projetos",
   "sessions.sidebar.header.actions.sessionDisplayMode": "Modo de visualização da sessão",
   "sessions.sidebar.header.displayMode.label": "Modo de visualização",
@@ -804,7 +823,7 @@ export const dict: Record<I18nKey, string> = {
   "sessions.sidebar.session.status.unread": "Atualizações não lidas",
   "sessions.sidebar.session.status.backgroundSubagent": "Subagente em execução em segundo plano",
   "sessions.sidebar.session.status.backgroundCommand": "Comando em execução em segundo plano",
-  "sessions.sidebar.session.status.waitingOnPullRequest": "Aguardando um pull request",
+  'sessions.sidebar.session.status.waitingOnPullRequest': 'Aguardando verificações ou uma revisão',
   "sessions.sidebar.session.status.pinned": "Sessão fixada",
   "sessions.sidebar.session.status.movingToWorktree": "Movendo a sessão para um novo worktree",
   "sessions.sidebar.session.status.permissionRequired": "Permissão obrigatória",
@@ -1656,7 +1675,6 @@ export const dict: Record<I18nKey, string> = {
   "sidebarFilesTree.actions.addMenuTitle": "Novo arquivo, pasta ou envio",
   "sidebarFilesTree.actions.refreshTitle": "Atualizar",
   "sidebarFilesTree.actions.collapseAllTitle": "Recolher todas as pastas",
-  "sidebarFilesTree.actions.fileMenuTitle": "Menu do arquivo",
   "sidebarFilesTree.state.searching": "Buscando...",
   "sidebarFilesTree.state.loading": "Carregando...",
   "sidebarFilesTree.dialog.createFile.title": "Criar arquivo",
@@ -1750,6 +1768,8 @@ export const dict: Record<I18nKey, string> = {
   "filesView.error.switchToEditMode": "Alterne para o modo de edição para resolver o problema.",
   "filesView.error.readFileFailed": "Não foi possível ler o arquivo",
   "filesView.editor.htmlPreviewTitle": "Pré-visualização HTML",
+  "filesView.editor.htmlPreviewRelayUnavailable": "A pré-visualização HTML não está disponível pelo relay",
+  "filesView.editor.htmlPreviewShowCode": "Mostrar código",
   "filesView.editor.htmlAnnotate.intro": "Esta é uma seleção anotada da pré-visualização de um arquivo HTML.",
   "filesView.diagram.closeDiagramView": "Fechar visualização de diagrama",
   "filesView.diagram.saveDiagram": "Salvar diagrama",
@@ -1930,12 +1950,14 @@ export const dict: Record<I18nKey, string> = {
   'chat.autoReview.actions.dismiss': 'Dispensar',
   'chat.autoReview.toast.removeFailed': 'Não foi possível contatar o servidor para alterar a revisão de código. Tente novamente.',
   'chat.prWatch.title': 'Aguardando o pull request #{number}',
+  'chat.prWatch.mr.title': 'Aguardando o merge request !{number}',
+  'chat.prWatch.change.title': 'Aguardando a alteração #{number}',
   'chat.prWatch.status.pending': 'verificações em andamento',
   'chat.prWatch.status.passed': 'verificações aprovadas',
   'chat.prWatch.status.failed': 'uma verificação falhou',
   'chat.prWatch.status.waking': 'acordando o agente',
   'chat.prWatch.actions.stop': 'Parar de acompanhar',
-  'chat.prWatch.toast.stopFailed': 'Não foi possível contatar o servidor para parar de acompanhar o pull request. Tente novamente.',
+  'chat.prWatch.toast.stopFailed': 'Não foi possível contatar o servidor para parar de acompanhar. Tente novamente.',
   'chat.draftDirtyNotice.tooltip': 'Você tem alterações sem commit nesta branch.\nUma nova sessão pode entrar em conflito com elas. Talvez seja melhor fazer commit delas primeiro ou usar outro worktree.',
   'chat.draftDirtyNotice.indicatorAria': 'Alterações sem commit neste diretório',
   "diffView.hunk.label": "Trechos",
@@ -2082,6 +2104,11 @@ export const dict: Record<I18nKey, string> = {
   "chat.goal.status.blocked": "Bloqueado",
   "chat.goal.status.budgetLimited": "Orçamento atingido",
   "chat.goal.status.complete": "Concluído",
+  "chat.goal.mark.active": "Objetivo ativo",
+  "chat.goal.mark.paused": "Objetivo pausado",
+  "chat.goal.mark.blocked": "Objetivo bloqueado",
+  "chat.goal.mark.budgetLimited": "Orçamento do objetivo atingido",
+  "chat.goal.mark.complete": "Objetivo concluído",
   "chat.goal.usage.tokens": "{used} tokens",
   "chat.goal.usage.tokensWithBudget": "{used}/{budget} tokens",
   "chat.goal.usage.turns": "{turns} continuações",
@@ -2147,7 +2174,6 @@ export const dict: Record<I18nKey, string> = {
   "terminalView.tabs.renameDialog.save": "Renomear",
   "terminalView.viewport.inputAria": "Entrada de terminal",
   "terminalView.viewport.scrollbarAria": "Histórico do terminal",
-  "directoryExplorerDialog.title": "Adicionar diretório de projeto",
   "directoryExplorerDialog.description": "Escolha uma pasta para adicionar como projeto.",
   "directoryExplorerDialog.toggle.showHidden": "Mostrar ocultos",
   "directoryExplorerDialog.pathInput.placeholder": "Digite o caminho ou selecione na árvore...",
@@ -2155,21 +2181,26 @@ export const dict: Record<I18nKey, string> = {
   "directoryExplorerDialog.actions.openInFinder": "Abrir no Finder",
   "directoryExplorerDialog.actions.adding": "Adicionando...",
   "directoryExplorerDialog.actions.addProject": "Adicionar projeto",
-  "directoryExplorerDialog.actions.addSelected": "Adicionar selecionados",
-  "directoryExplorerDialog.actions.addLocalProject": "Adicionar projeto local",
+  "directoryExplorerDialog.actions.addSelected": "Adicionar selecionados ({count})",
   "directoryExplorerDialog.actions.cloneRepository": "Clonar repositório",
   "directoryExplorerDialog.actions.cloneAndAdd": "Clonar e adicionar",
   "directoryExplorerDialog.actions.cloning": "Clonando...",
-  "directoryExplorerDialog.actions.createAndAdd": "Criar e adicionar",
   "directoryExplorerDialog.actions.alreadyAdded": "Já adicionado",
   "directoryExplorerDialog.clone.remoteUrlPlaceholder": "URL do repositório (HTTPS ou SSH)",
   'directoryExplorerDialog.clone.setupRequired': 'Clonado e adicionado. Termine de configurar o acesso no painel do Git; não precisa clonar de novo.',
   'directoryExplorerDialog.clone.identityMismatch': 'Esta identidade não alcança esse endereço. Escolha uma que use o mesmo tipo de endereço (HTTPS ou SSH).',
-  "directoryExplorerDialog.clone.unsupported": "A clonagem não é compatível com o ambiente do VS Code.",
   'directoryExplorerDialog.existing.bindFailed': 'Projeto adicionado, mas não foi possível definir a conta dele. Escolha-a no painel do Git.',
-  "directoryExplorerDialog.browse.directories": "Diretórios",
   "directoryExplorerDialog.browse.loading": "Carregando diretórios...",
   "directoryExplorerDialog.browse.empty": "Nenhum diretório correspondente.",
+  "directoryExplorerDialog.actions.addNamed": "Adicionar \"{name}\"",
+  "directoryExplorerDialog.actions.createNamed": "Criar \"{name}\" e adicionar",
+  "directoryExplorerDialog.browse.home": "Início",
+  "directoryExplorerDialog.browse.willCreate": "Não há pasta chamada {name}. Ela será criada.",
+  "directoryExplorerDialog.opencode.title": "Do OpenCode",
+  "directoryExplorerDialog.opencode.caption": "Repositórios que você abriu no OpenCode",
+  "directoryExplorerDialog.clone.into": "Clonar em",
+  "directoryExplorerDialog.footer.open": "Abrir",
+  "directoryExplorerDialog.shortcut.space": "Espaço",
   "directoryExplorerDialog.browse.permissionDenied": "OpenChamber precisa acessar esta pasta.",
   "directoryExplorerDialog.browse.loadFailed": "Não foi possível carregar esta pasta.",
   "directoryExplorerDialog.browse.grantAccess": "Conceder acesso",
@@ -2456,7 +2487,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.fileMentionAutocomplete.empty": "Nenhuma correspondência encontrada",
   "chat.queuedMessage.attachments": "+{count} arquivo(s)",
   "chat.queuedMessage.empty": "(vazio)",
-  "chat.queuedMessage.title": "Queued messages",
+  "chat.queuedMessage.title": "Mensagens na fila",
   "chat.queuedMessage.edit": "edit",
   "chat.queuedMessage.send": "send",
   "chat.queuedMessage.removeAria": "Excluir da fila",
@@ -3450,6 +3481,13 @@ export const dict: Record<I18nKey, string> = {
   "markdownRenderer.code.proposal": "Proposta",
   "markdownRenderer.code.actions.copyTitle": "Copiar código",
   "markdownRenderer.code.actions.copiedTitle": "Copiado",
+  "markdownRenderer.code.actions.runTitle": "Executar comando. O agente continua a partir da saída",
+  "markdownRenderer.code.actions.stopTitle": "Parar comando",
+  "markdownRenderer.code.run.startFailed": "Não foi possível iniciar o comando",
+  "markdownRenderer.code.run.running": "Em execução",
+  "markdownRenderer.code.run.finished": "Concluído",
+  "markdownRenderer.code.run.failed": "Código de saída {code}",
+  "markdownRenderer.code.run.stopped": "Parado",
   "markdownRenderer.table.actions.copyTitle": "Copiar tabela",
   "markdownRenderer.code.actions.enableWrapTitle": "Ativar quebra de linha",
   "markdownRenderer.code.actions.disableWrapTitle": "Desativar quebra de linha",
@@ -3747,6 +3785,9 @@ export const dict: Record<I18nKey, string> = {
   'chat.dispatchedSession.showAnswer': 'Mostrar resposta',
   'chat.dispatchedSession.hideAnswer': 'Ocultar resposta',
   'chat.dispatchedSession.open': 'Abrir sessão',
+  'chat.fileOpenRequest.toast.description': 'Exibido em {session}',
+  'chat.fileOpenRequest.toast.descriptionUntitled': 'Exibido em outra sessão',
+  'chat.fileOpenRequest.toast.openSession': 'Abrir sessão',
   'chat.revertPopover.staged': 'Revertidas: {count}',
   "chat.revertPopover.toast.restoreFailed": "Não foi possível restaurar as mensagens revertidas",
   'chat.workStatus.mcp.needsAuthHint': 'Entre neste servidor MCP em Configurações → MCP.',
@@ -3902,12 +3943,16 @@ export const dict: Record<I18nKey, string> = {
   'sessions.scheduledTasks.editor.worktree.cleanup.keepHint': 'O worktree e seu branch permanecem após a execução para você revisar o resultado.',
   'sessions.scheduledTasks.editor.worktree.notRepo': 'A pasta do projeto não é um repositório git; as execuções usarão o checkout como está.',
   'sessions.scheduledTasks.dialog.usesDefaults': 'Padrões de sessão',
-  'sessions.moveChatToProject.menu': 'Mover para um projeto…',
-  'sessions.moveChatToProject.hint': 'Continuar esta conversa dentro de um projeto',
-  'sessions.moveChatToProject.title': 'Mover o chat para um projeto',
-  'sessions.moveChatToProject.description': 'A conversa continua na pasta do projeto. Os arquivos que o chat criou ficam onde estão.',
-  'sessions.moveChatToProject.success': 'Chat movido para o projeto',
-  'sessions.moveChatToProject.failed': 'Não foi possível mover o chat',
+  'sessions.moveSession.menu': 'Mover sessão…',
+  'sessions.moveSession.hint': 'Os arquivos ficam na pasta antiga',
+  'sessions.moveSession.title': 'Mover sessão',
+  'sessions.moveSession.description': 'A sessão continua na pasta escolhida. Os arquivos ficam onde estão.',
+  'sessions.moveSession.chooseFolder': 'Escolher pasta…',
+  'sessions.moveSession.current': 'Pasta atual',
+  'sessions.moveSession.success': 'Sessão movida',
+  'sessions.moveSession.failed': 'Não foi possível mover a sessão',
+  'chat.folderMissing.text': 'A pasta {name} não existe mais',
+  'chat.folderMissing.action': 'Mover sessão',
   'chat.worktreeSetup.running': 'Preparando o worktree: executando os comandos de configuração do projeto…',
   'chat.draft.creatingSession': 'Criando a sessão…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'A conexão não abriu, então o OpenChamber iniciou no Local. Conecte-a pelo seletor de instâncias quando estiver acessível.',

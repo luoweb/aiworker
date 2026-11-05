@@ -22,9 +22,19 @@ other.
   change, the id and run state stay, and a task driven by a loop file is
   refused (the file is its source).
   `schedule.create` and `schedule.update` accept `targetSessionId`, validated
-  by the scheduled-task service. An empty update clears the target. Create
+  by the scheduled-task service. An empty `targetSessionId` on update clears
+  the target. Create
   without a model inherits the target selection; an explicit agent overrides
-  it. A task without a target still requires a model.
+  it. A task without a target still requires a model. When a call names a
+  model, it is checked against the execution directory's catalog first. The
+  scheduled-task service resolves the project checkout or Chats root through
+  its storage/public ID mapping. A target task uses the target session's own
+  directory, including a stored target omitted from an update. Clearing a target
+  returns to the project catalog. An unknown id is a 400; an empty catalog
+  stands down because a cold location's first read is not evidence of absence.
+  Only the model the call names is checked, so an update that names no model
+  validates nothing. This server runs for web, Electron, hosted mobile and
+  Capacitor clients; the VS Code extension does not run it.
 - `project-knowledge.js` runs the `knowledge.*` actions of the
   `openchamber_knowledge` agent tool (`list`, `save`, `delete`, `show`;
   `kind` names note, todo or plan) against
@@ -81,6 +91,10 @@ other.
   (`trackWaitingPage` in `../opencode/session-runtime.js`), broadcasts
   `openchamber:page-waiting` / `openchamber:page-settled` to the clients, and
   sends the same "Input needed" notification a form gets.
+  A turn that ends (`session.idle`, `session.error` in `index.js`) releases
+  the session's waits through `releaseAnswerWaits`: they leave the pending
+  list, and a late answer is a `404`. See *Why a released page keeps its
+  request open*.
   `renderPageImageSources` lists the local images a page names by absolute
   path (in quotes or a CSS `url()`, PNG, JPEG, GIF or WebP), every one of them.
   The image grant route (`../markdown-image-grants/`) allows exactly those, and
@@ -138,9 +152,23 @@ other.
   session, a failed prompt keeps its directory. Chats cannot request a worktree.
 - Session status and messages come from official directory-scoped OpenCode
   APIs. Message output includes only ordered `text` parts.
+- `session.status` and `session.messages` ask OpenCode's `session.get` first,
+  because the active-session map names only running sessions: a session it
+  does not name is idle or does not exist. An unknown id is a 404. A lookup
+  that fails is a 503 with its own message, never a 404 or an idle status.
+- A session status is `busy`, `idle`, or `waiting`: a running session with an
+  open permission, form, secret card or page (`readPendingRequests`). A
+  permission the server answers by itself does not count
+  (`isPermissionAutoAnswered`, the rule notifications use; in `safety` mode the
+  read waits for the verdict). Each session answers for itself: a parent whose
+  child waits stays `busy`. The pending list comes from this server's event
+  stream, so a request opened before this server connected to OpenCode reads as
+  `busy`. `session.list` with `withStatus` uses the same rule.
 - Wait (CLI only; the agent tool refuses it) never treats an initial idle
   response as completion after dispatch. It requires observed activity or a
-  newly completed assistant message.
+  newly completed assistant message. A `waiting` session ends the wait at once
+  with that status, because the user may never answer; the CLI then exits
+  non-zero, so a script does not read it as finished.
 - Timeout and cancellation are failures, never authoritative idle results.
 - `returnResult` on create/send/fork hands the dispatched session's final
   answer back to the calling session (`options.contextSessionId`) through
@@ -277,12 +305,14 @@ other.
 - `work.name` names the task the session (default: the calling one) works on
   (`../openchamber-sessions/work-naming.js`, wired through the `workNaming`
   dependency; without it the action answers 503). In a linked worktree it sets
-  the branch description (`setWorktreeTaskTitle` in `../git`); in the main
-  checkout it renames the task's root session, found through the same lineage
-  the sidebar nests by, and records `metadata.openchamber.workTitle`. Explicit
-  creation titles from the shared UI and `POST /api/openchamber/sessions`
-  carry `by: 'user'` in that same creation request. The agent's `session.create`
-  does not claim user ownership, so the agent can still rename its own tasks. A name
+  the branch description (`setWorktreeTaskTitle` in `../git`). It never changes
+  a session title or its metadata. In the main checkout or a plain folder it
+  answers `named: false`: those tasks use their session titles and need no naming.
+  Inside an isolated space the call persists an agent proposal and publishes it
+  on that server's control stream. The host owns the displayed space title;
+  see `../spaces/DOCUMENTATION.md`, "Task titles". A copied user title inside
+  makes the call answer `named: false` with that title.
+  A name
   the user gave stays: the call changes nothing and answers `named: false`
   with the current name. When to call it is in the session context, next to
   the linking guidance (`WORK_NAME_GUIDANCE`). Both that guidance and the
@@ -297,6 +327,11 @@ other.
   checkout, is not renamed: a `branch` passed there answers
   `branchRenamed: false` with a note, so the agent does not take the call for
   a rename.
+
+  Moving a session into a new worktree carries its current title to the branch
+  description as agent-owned. Existing `metadata.openchamber.workTitle` with
+  `by: 'user'` makes the carried title user-owned. Explicit creation titles and
+  UI renames still record that marker; no metadata migration runs.
 - `pr.watch` and `pr.unwatch` let the calling session wait on its pull
   request without polling: `pr.watch` takes the address in the control tool's
   own `url` input and hands it to `prWatch` (`../pr-watch/DOCUMENTATION.md`),
@@ -355,6 +390,43 @@ other.
 
 ## Decisions
 
+### Why a background message waits behind a page and does not end it
+
+A dispatched session's result, a pull request wake, a workflow report or a
+restart resume can arrive while a page or a secret card waits. OpenCode keeps it
+in the session's inbox until the waiting call returns, and the agent reads it at
+the next step, right after the user's answer. The alternative, ending the wait
+so the agent reads the message at once and asks again, loses the question the
+user was reading. A message the user writes in the chat still ends the wait, and
+`hasUnreadChat` counts only those. The chat keeps such a message out of the
+transcript while the wait lasts (`holdPendingSynthetic` in `packages/ui`, read
+through `SyntheticMessage.pending`): drawn as a new turn, it took the question
+out of the chat.
+
+### Why a released page keeps its request open
+
+In one OpenCode no call outlives its turn, so `releaseAnswerWaits` finds
+nothing there. It exists for a second OpenCode on the same database. An
+`opencode` CLI command, an agent's shell included, can start
+`opencode serve --service`. At start it takes over every turn with an open
+execution claim, also one alive in the OpenCode this server runs, and it
+inherits the callback URL and token through the shell's environment. Its page
+call reaches this server, but a chat message goes to this server's OpenCode,
+whose prompt hook has no such call. That turn runs and ends, and the page stayed
+listed until the server restarted: the question mark in the sidebar, background
+messages held out of the chat. Aborting the request cleared that too, but the
+other OpenCode's turn then woke up and answered the same message, so the chat
+had two replies and, with a real model, two agents in one session. The release
+takes the page off the list and leaves that call parked until its request
+ends: that OpenCode exits, this server restarts, or the user stops a turn in
+the session (`abortSession`).
+
+### Why work.name leaves session titles alone
+
+Session titles belong to OpenCode or the user. A metadata ownership marker
+cannot distinguish a generated title from a user rename made in another
+client or an older release, so `work.name` has no session-title write path.
+
 ### Why selection is checked before creating a session
 
 The target directory's agent snapshot determines its model bindings. Missing
@@ -377,3 +449,21 @@ them, where it says who sent which message.
 The existing `openchamber:chats` id lets agents choose from `projects.list`
 without changing the current-directory default or treating a reserved word as
 a filesystem path. Chats remains outside the registered project list on disk.
+
+### Why schedule create and update check the named model against the catalog
+
+A dead model id otherwise saves successfully and fails only when the task
+fires. Validation runs before storage using the scheduled-task service's scope
+resolution and `existing-session.js` target validation. Worktree and Chats
+catalogs can differ from the caller's catalog.
+
+An empty catalog stands down under the same rule as session selection checks.
+Only a newly named model is checked, so tasks with removed models remain
+editable and disableable. The matcher accepts the catalog `id` and upstream
+`modelID`, which can differ for display overrides. Catalog read failures still
+fail the action. Partial catalogs retain the same risk as session selection
+validation.
+
+This check covers the control actions only. Agent and variant validation,
+the UI editor, loop-file validation and changes to target-session pinning
+remain outside this fix for #5950.

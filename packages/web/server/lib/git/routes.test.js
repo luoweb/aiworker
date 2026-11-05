@@ -11,6 +11,7 @@ const gitLibraries = {
   getStatus: vi.fn(),
   createWorktree: vi.fn(),
   seedBranchTaskTitle: vi.fn(),
+  setWorktreeTaskTitle: vi.fn(),
   markGeneratedBranchName: vi.fn(),
   validateWorktreeCreate: vi.fn(),
   getWorktrees: vi.fn(),
@@ -45,6 +46,7 @@ vi.mock('./index.js', () => ({
   getStatus: gitLibraries.getStatus,
   createWorktree: gitLibraries.createWorktree,
   seedBranchTaskTitle: gitLibraries.seedBranchTaskTitle,
+  setWorktreeTaskTitle: gitLibraries.setWorktreeTaskTitle,
   markGeneratedBranchName: gitLibraries.markGeneratedBranchName,
   validateWorktreeCreate: gitLibraries.validateWorktreeCreate,
   getWorktrees: gitLibraries.getWorktrees,
@@ -118,6 +120,28 @@ const createMockResponse = () => {
   };
 };
 
+describe('worktree title ownership', () => {
+  it.each([[undefined, 'user'], ['user', 'user'], ['agent', 'agent']])('accepts %s ownership as %s', async (by, expected) => {
+    const { app, getRoute } = createRouteRegistry();
+    registerGitRoutes(app);
+    gitLibraries.setWorktreeTaskTitle.mockResolvedValueOnce({ title: 'Task', branch: 'fix/task', applied: true });
+    const response = createMockResponse();
+    await getRoute('PUT', '/api/git/worktrees/title')({ query: { directory: '/wt' }, body: { title: 'Task', by } }, response);
+    expect(response.statusCode).toBe(200);
+    expect(gitLibraries.setWorktreeTaskTitle).toHaveBeenLastCalledWith('/wt', { title: 'Task', by: expected });
+  });
+
+  it('refuses unknown ownership', async () => {
+    const { app, getRoute } = createRouteRegistry();
+    registerGitRoutes(app);
+    const response = createMockResponse();
+    const calls = gitLibraries.setWorktreeTaskTitle.mock.calls.length;
+    await getRoute('PUT', '/api/git/worktrees/title')({ query: { directory: '/wt' }, body: { title: 'Task', by: 'unknown' } }, response);
+    expect(response.statusCode).toBe(400);
+    expect(gitLibraries.setWorktreeTaskTitle.mock.calls.length).toBe(calls);
+  });
+});
+
 describe('git diff failures', () => {
   it.each([
     ['GET', 'diff', 'getPathDiff'],
@@ -158,6 +182,8 @@ describe('git route renderer DTOs', () => {
     gitLibraries.getCurrentIdentity.mockReset();
     gitLibraries.getRemoteUrl.mockReset();
     gitLibraries.getRemotes.mockReset();
+    gitLibraries.getRepositoryRemoteUrls.mockReset();
+    gitLibraries.getRepositoryRemoteUrls.mockResolvedValue([]);
     gitLibraries.getProfiles.mockReset();
     gitLibraries.createProfile.mockReset();
     gitLibraries.updateProfile.mockReset();
@@ -217,6 +243,29 @@ describe('git route renderer DTOs', () => {
 
     expect(urlResponse.body).toEqual({ url: null });
     expect(remotesResponse.body).toEqual([{ name: 'origin', fetchUrl: '', pushUrl: '' }]);
+  });
+
+  it('does not offer a remote that is a path on disk', async () => {
+    gitLibraries.getRemotes.mockResolvedValue([
+      // A path with a space reads as empty here, the way simple-git splits it.
+      { name: 'backup', fetchUrl: '', pushUrl: '' },
+      { name: 'mirror', fetchUrl: 'https://example.com/team/mirror.git', pushUrl: 'file:///srv/git/mirror.git' },
+      { name: 'origin', fetchUrl: 'git@example.com:team/repo.git', pushUrl: 'git@example.com:team/repo.git' },
+    ]);
+    gitLibraries.getRepositoryRemoteUrls.mockResolvedValue([
+      { name: 'backup', fetchUrl: '/srv/My Drive/project.git', pushUrl: '/srv/My Drive/project.git' },
+      { name: 'mirror', fetchUrl: 'https://example.com/team/mirror.git', pushUrl: 'file:///srv/git/mirror.git' },
+      { name: 'origin', fetchUrl: 'git@example.com:team/repo.git', pushUrl: 'git@example.com:team/repo.git' },
+    ]);
+    const { app, getRoute } = createRouteRegistry();
+    registerGitRoutes(app);
+    const response = createMockResponse();
+
+    await getRoute('GET', '/api/git/remotes')({ query: { directory: '/repo' } }, response);
+
+    expect(response.body).toEqual([
+      { name: 'origin', fetchUrl: 'git@example.com:team/repo.git', pushUrl: 'git@example.com:team/repo.git' },
+    ]);
   });
 
   it('projects stored profiles to the public author DTO', async () => {

@@ -25,6 +25,7 @@ import { heapSnapshotI18n } from './heap-snapshot.i18n';
 import { consoleBudgetsI18n } from './console-budgets.i18n';
 import { imageToolI18n } from './image-tool.i18n';
 import { agentStatusI18n } from './agent-status.i18n';
+import { selectionApprovalI18n } from './selection-approval.i18n';
 import { snippetsI18n } from './snippets.i18n';
 import { sidebarWorkI18n } from './sidebar-work.i18n';
 import { sidebarSectionsI18n } from './sidebar-sections.i18n';
@@ -33,6 +34,7 @@ import { overviewI18n } from './overview.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { stacksI18n } from './stacks.i18n';
+import { prReviewI18n } from './pr-review.i18n';
 import { changeReviewI18n } from './change-review.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
 import { gitIdentityEditorI18n } from './git-identity-editor.i18n';
@@ -47,6 +49,15 @@ import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
+import { tooltipsDiffI18n } from './tooltips-diff.i18n';
+import { tooltipsFilesI18n } from './tooltips-files.i18n';
+import { tooltipsGitI18n } from './tooltips-git.i18n';
+import { tooltipsTrackerI18n } from './tooltips-tracker.i18n';
+import { tooltipsWalkthroughI18n } from './tooltips-walkthrough.i18n';
+import { tooltipsTerminalBrowserI18n } from './tooltips-terminal-browser.i18n';
+import { tooltipsWorkspaceI18n } from './tooltips-workspace.i18n';
+import { tooltipsPanelI18n } from './tooltips-panel.i18n';
+import { tooltipsChatI18n } from './tooltips-chat.i18n';
 
 export const dict = {
   'quota.family.zen': 'Zen-modellen',
@@ -54,10 +65,6 @@ export const dict = {
   'quota.value.spent': '{spent} besteed',
   'mobile.connect.headers.hint': 'Geldt alleen voor dit adres. Authorization is gereserveerd voor het clienttoken.',
   'mobile.connect.headers.error': 'De verbindingsheaders konden niet worden gelezen of opgeslagen. Probeer het opnieuw.',
-  'directoryExplorerDialog.import.title': 'Projecten uit OpenCode toevoegen',
-  'directoryExplorerDialog.import.count': 'Beschikbare projecten: {count}',
-  'directoryExplorerDialog.import.dismiss': 'Niet opnieuw voorstellen',
-  'directoryExplorerDialog.import.failed': 'Wijzigingen konden niet worden opgeslagen. Probeer het opnieuw.',
   "opencodeCompatibility.bundled": "OpenCode is inbegrepen bij OpenChamber. Werk OpenChamber bij om OpenCode v2 te krijgen.",
   "opencodeCompatibility.title": "OpenCode v2 vereist",
   "opencodeCompatibility.outdatedTitle": "OpenCode bijwerken",
@@ -166,6 +173,7 @@ export const dict = {
   'gitView.publish.cancelled': 'Push geannuleerd. Er is niets verzonden.',
   'gitView.publish.succeeded': 'Gepusht',
   ...settingsDict,
+  ...selectionApprovalI18n.nl,
   ...linearIssuePickerI18n.nl,
   ...referencePickerI18n.nl,
   ...repositoryDiscussionsI18n.nl,
@@ -200,6 +208,7 @@ export const dict = {
   ...isolatedSpacesI18n.nl,
   ...sourceBoardI18n.nl,
   ...stacksI18n.nl,
+  ...prReviewI18n.nl,
   ...changeReviewI18n.nl,
   ...projectActionsI18n.nl,
   ...gitIdentityEditorI18n.nl,
@@ -214,6 +223,15 @@ export const dict = {
   ...workflowsI18n['nl'],
   ...sessionReferencesI18n['nl'],
   ...guestStatusViewI18n['nl'],
+  ...tooltipsDiffI18n['nl'],
+  ...tooltipsFilesI18n['nl'],
+  ...tooltipsGitI18n['nl'],
+  ...tooltipsTrackerI18n['nl'],
+  ...tooltipsWalkthroughI18n['nl'],
+  ...tooltipsTerminalBrowserI18n['nl'],
+  ...tooltipsWorkspaceI18n['nl'],
+  ...tooltipsPanelI18n['nl'],
+  ...tooltipsChatI18n['nl'],
   'terminalView.actions.attachSelection': 'Geselecteerde uitvoer toevoegen',
   'terminalView.actions.copySelection': 'Geselecteerde uitvoer kopiëren',
   'terminalView.toast.selectionCopied': 'Uitvoer gekopieerd',
@@ -625,6 +643,7 @@ export const dict = {
   'sessions.sidebar.header.actions.more': 'Meer',
   'sessions.sidebar.header.actions.exitSelection': 'Selectie verlaten',
   'sessions.sidebar.header.actions.selectSessions': 'Sessies selecteren',
+  'sessions.sidebar.header.actions.markAllRead': 'Alles als gelezen markeren',
   'sessions.sidebar.header.actions.sortProjects': 'Projecten sorteren',
   'sessions.sidebar.header.actions.sessionDisplayMode': 'Weergavemodus sessies',
   'sessions.sidebar.header.displayMode.label': 'Weergavemodus',
@@ -794,7 +813,7 @@ export const dict = {
   'sessions.sidebar.session.status.unread': 'Ongelezen updates',
   'sessions.sidebar.session.status.backgroundSubagent': 'Subagent draait op de achtergrond',
   'sessions.sidebar.session.status.backgroundCommand': 'Opdracht draait op de achtergrond',
-  'sessions.sidebar.session.status.waitingOnPullRequest': 'Wacht op een pull request',
+  'sessions.sidebar.session.status.waitingOnPullRequest': 'Wacht op controles of een review',
   'sessions.sidebar.session.status.pinned': 'Vastgezette sessie',
   'sessions.sidebar.session.status.movingToWorktree': 'Sessie wordt verplaatst naar een nieuwe worktree',
   'sessions.sidebar.session.status.permissionRequired': 'Toestemming vereist',
@@ -1694,7 +1713,6 @@ export const dict = {
   'sidebarFilesTree.actions.addMenuTitle': 'Nieuw bestand, map of uploaden',
   'sidebarFilesTree.actions.refreshTitle': 'Vernieuwen',
   'sidebarFilesTree.actions.collapseAllTitle': 'Alle mappen inklappen',
-  'sidebarFilesTree.actions.fileMenuTitle': 'Bestandsmenu',
   'sidebarFilesTree.state.searching': 'Zoeken...',
   'sidebarFilesTree.state.loading': 'Laden...',
   'sidebarFilesTree.dialog.createFile.title': 'Bestand aanmaken',
@@ -1788,6 +1806,8 @@ export const dict = {
   'filesView.error.switchToEditMode': 'Schakel over naar bewerkmodus om het probleem op te lossen.',
   'filesView.error.readFileFailed': 'Kan bestand niet lezen',
   'filesView.editor.htmlPreviewTitle': 'HTML-preview',
+  'filesView.editor.htmlPreviewRelayUnavailable': 'HTML-preview is niet beschikbaar via de relay',
+  'filesView.editor.htmlPreviewShowCode': 'Code tonen',
   'filesView.editor.htmlAnnotate.intro': 'Dit is een geannoteerde selectie uit de preview van een HTML-bestand.',
   'filesView.diagram.closeDiagramView': 'Diagramweergave sluiten',
   'filesView.diagram.saveDiagram': 'Diagram opslaan',
@@ -1956,12 +1976,14 @@ export const dict = {
   'chat.autoReview.actions.dismiss': 'Sluiten',
   'chat.autoReview.toast.removeFailed': 'Kon de server niet bereiken om de codereview te wijzigen. Probeer het opnieuw.',
   'chat.prWatch.title': 'Wacht op pull request #{number}',
+  'chat.prWatch.mr.title': 'Wacht op merge request !{number}',
+  'chat.prWatch.change.title': 'Wacht op wijziging #{number}',
   'chat.prWatch.status.pending': 'controles lopen',
   'chat.prWatch.status.passed': 'controles geslaagd',
   'chat.prWatch.status.failed': 'een controle is mislukt',
   'chat.prWatch.status.waking': 'wekt de agent',
   'chat.prWatch.actions.stop': 'Niet meer volgen',
-  'chat.prWatch.toast.stopFailed': 'Kon de server niet bereiken om het volgen van de pull request te stoppen. Probeer het opnieuw.',
+  'chat.prWatch.toast.stopFailed': 'Kan de server niet bereiken om het volgen te stoppen. Probeer het opnieuw.',
   'chat.draftDirtyNotice.tooltip': 'Er staan niet-gecommitte wijzigingen op deze branch.\nEen nieuwe sessie kan daar een conflict mee veroorzaken. Commit ze eerst of gebruik een andere worktree.',
   'chat.draftDirtyNotice.indicatorAria': 'Niet-gecommitte wijzigingen in deze map',
   'diffView.hunk.label': 'Hunks',
@@ -2113,6 +2135,11 @@ export const dict = {
   'chat.goal.status.blocked': 'Geblokkeerd',
   'chat.goal.status.budgetLimited': 'Budget bereikt',
   'chat.goal.status.complete': 'Voltooid',
+  'chat.goal.mark.active': 'Goal actief',
+  'chat.goal.mark.paused': 'Goal gepauzeerd',
+  'chat.goal.mark.blocked': 'Goal geblokkeerd',
+  'chat.goal.mark.budgetLimited': 'Budget van goal bereikt',
+  'chat.goal.mark.complete': 'Goal voltooid',
   'chat.goal.usage.tokens': '{used} tokens',
   'chat.goal.usage.tokensWithBudget': '{used}/{budget} tokens',
   'chat.goal.usage.turns': '{turns} voortzettingen',
@@ -2178,7 +2205,6 @@ export const dict = {
   'terminalView.tabs.renameDialog.save': 'Hernoemen',
   'terminalView.viewport.inputAria': 'Terminalinvoer',
   'terminalView.viewport.scrollbarAria': 'Scrollback van de terminal',
-  'directoryExplorerDialog.title': 'Projectmap toevoegen',
   'directoryExplorerDialog.description': 'Kies een map om als project toe te voegen.',
   'directoryExplorerDialog.toggle.showHidden': 'Verborgen tonen',
   'directoryExplorerDialog.pathInput.placeholder': 'Voer een pad in of kies uit de bestandsboom...',
@@ -2186,21 +2212,26 @@ export const dict = {
   'directoryExplorerDialog.actions.openInFinder': 'Openen in Finder',
   'directoryExplorerDialog.actions.adding': 'Toevoegen...',
   'directoryExplorerDialog.actions.addProject': 'Project toevoegen',
-  'directoryExplorerDialog.actions.addSelected': 'Selectie toevoegen',
-  'directoryExplorerDialog.actions.addLocalProject': 'Lokaal project toevoegen',
+  'directoryExplorerDialog.actions.addSelected': 'Selectie toevoegen ({count})',
   'directoryExplorerDialog.actions.cloneRepository': 'Repository klonen',
   'directoryExplorerDialog.actions.cloneAndAdd': 'Klonen en toevoegen',
   'directoryExplorerDialog.actions.cloning': 'Klonen...',
-  'directoryExplorerDialog.actions.createAndAdd': 'Aanmaken en toevoegen',
   'directoryExplorerDialog.actions.alreadyAdded': 'Al toegevoegd',
   'directoryExplorerDialog.clone.remoteUrlPlaceholder': 'Repository-URL (HTTPS of SSH)',
   'directoryExplorerDialog.clone.setupRequired': 'Gekloond en toegevoegd. Rond de toegang af in het Git-paneel; opnieuw klonen is niet nodig.',
   'directoryExplorerDialog.clone.identityMismatch': 'Deze identiteit bereikt dat adres niet. Kies er een die hetzelfde soort adres gebruikt (HTTPS of SSH).',
-  'directoryExplorerDialog.clone.unsupported': 'Klonen wordt niet ondersteund in de VS Code-runtime.',
   'directoryExplorerDialog.existing.bindFailed': 'Project toegevoegd, maar het account kon niet worden ingesteld. Kies het in het Git-paneel.',
-  'directoryExplorerDialog.browse.directories': 'Mappen',
   'directoryExplorerDialog.browse.loading': 'Mappen laden...',
   'directoryExplorerDialog.browse.empty': 'Geen overeenkomende mappen.',
+  'directoryExplorerDialog.actions.addNamed': "\"{name}\" toevoegen",
+  'directoryExplorerDialog.actions.createNamed': "\"{name}\" maken en toevoegen",
+  'directoryExplorerDialog.browse.home': "Thuismap",
+  'directoryExplorerDialog.browse.willCreate': "Er is geen map met de naam {name}. Deze wordt gemaakt.",
+  'directoryExplorerDialog.opencode.title': "Uit OpenCode",
+  'directoryExplorerDialog.opencode.caption': "Repositories die je in OpenCode hebt geopend",
+  'directoryExplorerDialog.clone.into': "Klonen naar",
+  'directoryExplorerDialog.footer.open': "Openen",
+  'directoryExplorerDialog.shortcut.space': "Spatie",
   'directoryExplorerDialog.browse.permissionDenied': 'OpenChamber heeft toegang tot deze map nodig.',
   'directoryExplorerDialog.browse.loadFailed': 'Kan deze map niet laden.',
   'directoryExplorerDialog.browse.grantAccess': 'Toegang verlenen',
@@ -3493,6 +3524,13 @@ export const dict = {
   'markdownRenderer.code.proposal': 'Voorstel',
   'markdownRenderer.code.actions.copyTitle': 'Code kopiëren',
   'markdownRenderer.code.actions.copiedTitle': 'Gekopieerd',
+  'markdownRenderer.code.actions.runTitle': 'Opdracht uitvoeren. De agent gaat verder met de uitvoer',
+  'markdownRenderer.code.actions.stopTitle': 'Opdracht stoppen',
+  'markdownRenderer.code.run.startFailed': 'De opdracht kon niet worden gestart',
+  'markdownRenderer.code.run.running': 'Bezig',
+  'markdownRenderer.code.run.finished': 'Voltooid',
+  'markdownRenderer.code.run.failed': 'Afsluitcode {code}',
+  'markdownRenderer.code.run.stopped': 'Gestopt',
   'markdownRenderer.table.actions.copyTitle': 'Tabel kopiëren',
   'markdownRenderer.code.actions.enableWrapTitle': 'Regelafbreking aanzetten',
   'markdownRenderer.code.actions.disableWrapTitle': 'Regelafbreking uitzetten',
@@ -3725,6 +3763,9 @@ export const dict = {
   'chat.dispatchedSession.showAnswer': 'Antwoord tonen',
   'chat.dispatchedSession.hideAnswer': 'Antwoord verbergen',
   'chat.dispatchedSession.open': 'Sessie openen',
+  'chat.fileOpenRequest.toast.description': 'Getoond in {session}',
+  'chat.fileOpenRequest.toast.descriptionUntitled': 'Getoond in een andere sessie',
+  'chat.fileOpenRequest.toast.openSession': 'Sessie openen',
   'chat.revertPopover.staged': 'Teruggedraaid: {count}',
   "chat.revertPopover.toast.restoreFailed": "De teruggedraaide berichten konden niet worden hersteld",
   'chat.workStatus.mcp.needsAuthHint': 'Log in op deze MCP-server via Instellingen → MCP.',
@@ -3901,12 +3942,16 @@ export const dict = {
   'sessions.scheduledTasks.editor.worktree.cleanup.keepHint': 'De worktree en zijn branch blijven na de run staan, zodat je het resultaat kunt bekijken.',
   'sessions.scheduledTasks.editor.worktree.notRepo': 'De projectmap is geen git-repository; uitvoeringen gebruiken de checkout zoals die is.',
   'sessions.scheduledTasks.dialog.usesDefaults': 'Standaarden voor sessies',
-  'sessions.moveChatToProject.menu': 'Naar project verplaatsen…',
-  'sessions.moveChatToProject.hint': 'Dit gesprek binnen een project voortzetten',
-  'sessions.moveChatToProject.title': 'Chat naar een project verplaatsen',
-  'sessions.moveChatToProject.description': 'Het gesprek gaat verder in de map van het project. Bestanden die de chat maakte blijven waar ze zijn.',
-  'sessions.moveChatToProject.success': 'Chat naar het project verplaatst',
-  'sessions.moveChatToProject.failed': 'Chat kon niet worden verplaatst',
+  'sessions.moveSession.menu': 'Sessie verplaatsen…',
+  'sessions.moveSession.hint': 'Bestanden blijven in de oude map',
+  'sessions.moveSession.title': 'Sessie verplaatsen',
+  'sessions.moveSession.description': 'De sessie gaat verder in de gekozen map. Bestanden blijven waar ze zijn.',
+  'sessions.moveSession.chooseFolder': 'Map kiezen…',
+  'sessions.moveSession.current': 'Huidige map',
+  'sessions.moveSession.success': 'Sessie verplaatst',
+  'sessions.moveSession.failed': 'Kan de sessie niet verplaatsen',
+  'chat.folderMissing.text': 'Map {name} bestaat niet meer',
+  'chat.folderMissing.action': 'Sessie verplaatsen',
   'chat.worktreeSetup.running': 'Worktree wordt ingericht: de setupopdrachten van het project lopen…',
   'chat.draft.creatingSession': 'Sessie wordt aangemaakt…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'De verbinding kwam niet tot stand, dus OpenChamber is op Local gestart. Verbind haar via de instantiekiezer zodra ze bereikbaar is.',

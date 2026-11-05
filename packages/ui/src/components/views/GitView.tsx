@@ -57,6 +57,7 @@ import { getSessionWorktreeRepairActions, getMutationBlockingReasons } from '@/s
 import { IntegrateCommitsSection } from './git/IntegrateCommitsSection';
 
 import { GitHeader } from './git/GitHeader';
+import { ButtonTooltip } from '@/components/ui/action-toolbar';
 import { StashesDialog } from './git/StashesDialog';
 import { ChangesPanel, type ChangesGroupConfig } from './git/ChangesPanel';
 import { CommitSection } from './git/CommitSection';
@@ -100,7 +101,7 @@ import { ContributorDestinationDialog } from './git/ContributorDestinationDialog
 import { useContributorDestinationChooser } from './git/contributorDestination';
 import { RepositoryConfigurationDialog } from '@/components/sections/openchamber/SourceControlBindingSettings';
 import { applyIdentityToRepository, identityApplicability, type IdentityApplicability } from '@/lib/source-control/applyIdentity';
-import { remoteTraits, identityDisplayName } from '@/lib/source-control/identity';
+import { instanceSshHostsFrom, remoteTraits, identityDisplayName } from '@/lib/source-control/identity';
 import { activeAuthor, offeredAuthors } from './git/gitAuthors';
 import { dirtySwitchPushTarget } from './git/dirtySwitchPushTarget';
 import { mapWithConcurrency } from '@/lib/concurrency';
@@ -386,10 +387,12 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
     ?? binding.read?.repository.remotes.find((remote) => remote.name === 'origin')?.name
     ?? binding.read?.repository.remotes[0]?.name
     ?? '';
+  const sourceControlIdentities = useSourceControlAuthStore((state) => state.identities);
+  const instanceSshHosts = React.useMemo(() => instanceSshHostsFrom(sourceControlIdentities), [sourceControlIdentities]);
   const identityApplicabilityOf = React.useCallback((identity: GitIdentityProfile): IdentityApplicability => {
     const remote = binding.read?.repository.remotes.find((entry) => entry.name === bindingRemoteName);
-    return remote ? identityApplicability(identity, remoteTraits(remote.fetch.displayUrl)) : { applicable: true };
-  }, [binding.read, bindingRemoteName]);
+    return remote ? identityApplicability(identity, remoteTraits(remote.fetch.displayUrl), instanceSshHosts) : { applicable: true };
+  }, [binding.read, bindingRemoteName, instanceSshHosts]);
   const sourceControlAuthEntries = useSourceControlAuthStore((state) => state.entries);
   const refreshIdentityAccounts = useSourceControlAuthStore((state) => state.refreshIdentityAccounts);
   const beginActiveSourceControlContextsLoad = useGitHubPrStatusStore((state) => state.beginActiveContextsLoad);
@@ -919,8 +922,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
 
     void Promise.all(
       hashesToLoad.map((hash) =>
-        git
-          .getCommitFiles(gitDirectory, hash)
+        (git.getCommitFiles ? git.getCommitFiles(gitDirectory, hash) : Promise.resolve({ files: [] }))
           .then((response) => ({ hash, files: response.files }))
           .catch((error) => {
             console.error('Failed to fetch commit files:', error);
@@ -1066,8 +1068,8 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
 
   // After a commit or a transfer the control waits for the status only: it is
   // what says what is staged and how far ahead the branch is. The branch list
-  // asks every remote over the network and the log reads history, so both
-  // follow in the background instead of holding the button for seconds.
+  // and the log read history, so both follow in the background instead of
+  // holding the button.
   const refreshAfterGitAction = React.useCallback(async (onBackgroundSettled?: () => void) => {
     if (!gitDirectory) return;
     const background = Promise.allSettled([fetchBranches(gitDirectory, git), refreshLog()]);
@@ -1105,11 +1107,13 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
         if (cancelled || getRuntimeKey() !== runtimeKey) return;
         if (hasLocal === true) return;
 
-        beginIdentityApply();
-        started = true;
-        await git.setGitIdentity(gitDirectory, defaultId);
-        if (cancelled || getRuntimeKey() !== runtimeKey) return;
-        autoAppliedDefaultRef.current.set(attemptKey, defaultId);
+        if (git.setGitIdentity) {
+          beginIdentityApply();
+          started = true;
+          await git.setGitIdentity(gitDirectory, defaultId);
+          if (cancelled || getRuntimeKey() !== runtimeKey) return;
+          autoAppliedDefaultRef.current.set(attemptKey, defaultId);
+        }
         await refreshIdentity();
       } catch (error) {
         if (!cancelled && getRuntimeKey() === runtimeKey) {
@@ -1306,6 +1310,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
     let commitOutcome: 'pending' | 'local' | 'published' = 'pending';
 
     try {
+      if (!git.createGitCommit) throw new Error('Git commit is unavailable on this runtime');
       const commit = await git.createGitCommit(gitDirectory, commitMessage.trim(), {
         files: filesToCommit,
         stageFiles: [],
@@ -1437,6 +1442,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
       toast.success(t('gitView.toast.createdBranch', { name: branchName }));
 
       // Checkout the new branch and stay on it
+      if (!git.checkoutBranch) throw new Error('Branch checkout is unavailable on this runtime');
       await git.checkoutBranch(gitDirectory, branchName);
 
       await refreshStatusAndBranches();
@@ -1504,6 +1510,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
     try {
       // Picking a remote-tracking branch checks out the local branch that
       // tracks it, so report the branch the repository actually landed on.
+      if (!git.checkoutBranch) throw new Error('Branch checkout is unavailable on this runtime');
       const result = await git.checkoutBranch(gitDirectory, normalized);
       toast.success(t('gitView.toast.checkedOut', { name: result?.branch || normalized }));
       await refreshStatusAndBranches();
@@ -1648,6 +1655,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
 
     const resolveBranchDivider = async () => {
       try {
+        if (!git.getGitLog) return;
         const branchOnlyLog = await git.getGitLog(gitDirectory, {
           from: baseBranch,
           to: 'HEAD',
@@ -1715,6 +1723,10 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
     }
     let cancelled = false;
     setGraphLogLoading(true);
+    if (!git.getGitLog) {
+      setGraphLogLoading(false);
+      return;
+    }
     git.getGitLog(gitDirectory, { maxCount: graphLogMaxCount, all: true })
       .then((result) => {
         if (!cancelled) setGraphLog(result);
@@ -2041,6 +2053,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
 
         if (operation === 'merge') {
           addOperationLog(`Merging ${target.label} into ${currentBranch}...`, 'running');
+          if (!git.merge) throw new Error('Git merge is unavailable on this runtime');
           const result = await git.merge(gitDirectory, { branch: integrationRef });
 
           if (result.conflict) {
@@ -2056,6 +2069,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
           }
         } else {
           addOperationLog(`Rebasing ${currentBranch} onto ${target.label}...`, 'running');
+          if (!git.rebase) throw new Error('Git rebase is unavailable on this runtime');
           const result = await git.rebase(gitDirectory, { onto: integrationRef });
 
           if (result.conflict) {
@@ -2113,9 +2127,11 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
 
     try {
       if (conflictOperation === 'merge') {
+        if (!git.abortMerge) throw new Error('Git abort merge is unavailable on this runtime');
         await git.abortMerge(gitDirectory);
         toast.success(t('gitView.toast.mergeAborted'));
       } else {
+        if (!git.abortRebase) throw new Error('Git abort rebase is unavailable on this runtime');
         await git.abortRebase(gitDirectory);
         toast.success(t('gitView.toast.rebaseAborted'));
       }
@@ -2141,22 +2157,26 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
       const isRebase = !!(status?.rebaseInProgress?.headName || status?.rebaseInProgress?.onto);
 
       if (isMerge) {
-        const result = await git.continueMerge(gitDirectory);
-        if (result.conflict) {
+        const result = git.continueMerge
+          ? await git.continueMerge(gitDirectory)
+          : null;
+        if (result?.conflict) {
           openConflictDialog(result.conflictFiles ?? [], 'merge');
           toast.error(t('gitView.toast.mergeConflictsDetected'));
-        } else {
+        } else if (result) {
           clearConflictState();
           toast.success(t('gitView.toast.mergeCompleted'));
           await refreshStatusAndBranches();
           await refreshLog();
         }
       } else if (isRebase) {
-        const result = await git.continueRebase(gitDirectory);
-        if (result.conflict) {
+        const result = git.continueRebase
+          ? await git.continueRebase(gitDirectory)
+          : null;
+        if (result?.conflict) {
           openConflictDialog(result.conflictFiles ?? [], 'rebase');
           toast.error(t('gitView.toast.rebaseConflictsDetected'));
-        } else {
+        } else if (result) {
           clearConflictState();
           toast.success(t('gitView.toast.rebaseStepCompleted'));
           await refreshStatusAndBranches();
@@ -2175,9 +2195,11 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
     try {
       const isMerge = !!status?.mergeInProgress?.head;
       if (isMerge) {
+        if (!git.abortMerge) throw new Error('Git abort merge is unavailable on this runtime');
         await git.abortMerge(gitDirectory);
         toast.success(t('gitView.toast.mergeAborted'));
       } else {
+        if (!git.abortRebase) throw new Error('Git abort rebase is unavailable on this runtime');
         await git.abortRebase(gitDirectory);
         toast.success(t('gitView.toast.rebaseAborted'));
       }
@@ -2238,6 +2260,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
       try {
         // Perform the operation
         if (operation === 'merge') {
+          if (!git.merge) throw new Error('Git merge is unavailable on this runtime');
           const result = await git.merge(gitDirectory, { branch });
           if (result.conflict) {
             hasConflict = true;
@@ -2249,6 +2272,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
             toast.success(t('gitView.toast.mergedIntoBranch', { branch: branchLabel, currentBranch: currentBranch || '' }));
           }
         } else {
+          if (!git.rebase) throw new Error('Git rebase is unavailable on this runtime');
           const result = await git.rebase(gitDirectory, { onto: branch });
           if (result.conflict) {
             hasConflict = true;
@@ -2638,32 +2662,33 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
               <DialogTitle>
                 {gitLogDialogMode === 'graph' ? t('gitView.graph.title') : t('gitView.history.title')}
               </DialogTitle>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="me-6 h-7 shrink-0 gap-1.5 px-2"
-                onClick={() => {
-                  if (gitLogDialogMode === 'graph') {
-                    setGraphLogRefreshToken((token) => token + 1);
-                    return;
-                  }
-                  if (!gitDirectory) return;
-                  void fetchLog(gitDirectory, git, logMaxCountLocal);
-                }}
-                disabled={gitLogDialogMode === 'graph' ? graphLogLoading : isLogLoading}
-                title={t('gitView.history.refresh')}
-                aria-label={t('gitView.history.refresh')}
-              >
-                <Icon
-                  name="refresh"
-                  className={cn(
-                    'size-4',
-                    (gitLogDialogMode === 'graph' ? graphLogLoading : isLogLoading) && 'animate-spin'
-                  )}
-                />
-                {t('gitView.history.refresh')}
-              </Button>
+              <ButtonTooltip label={t('contextTooltips.git.reloadCommits')} side="bottom" className="shrink-0">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="me-6 h-7 shrink-0 gap-1.5 px-2"
+                  onClick={() => {
+                    if (gitLogDialogMode === 'graph') {
+                      setGraphLogRefreshToken((token) => token + 1);
+                      return;
+                    }
+                    if (!gitDirectory) return;
+                    void fetchLog(gitDirectory, git, logMaxCountLocal);
+                  }}
+                  disabled={gitLogDialogMode === 'graph' ? graphLogLoading : isLogLoading}
+                  aria-label={t('gitView.history.refresh')}
+                >
+                  <Icon
+                    name="refresh"
+                    className={cn(
+                      'size-4',
+                      (gitLogDialogMode === 'graph' ? graphLogLoading : isLogLoading) && 'animate-spin'
+                    )}
+                  />
+                  {t('gitView.history.refresh')}
+                </Button>
+              </ButtonTooltip>
             </div>
             <DialogDescription>
               {t('gitView.history.dialogDescription')}
@@ -2767,6 +2792,7 @@ export const GitView: React.FC<GitViewProps> = ({ isActive }) => {
           const branch = pendingDirtySwitchBranch;
           if (!branch || !gitDirectory) return;
           const sourceBranch = status?.current ?? null;
+          if (!git.createGitCommit) throw new Error('Git commit is unavailable on this runtime');
           await git.createGitCommit(gitDirectory, message, { addAll: true });
           bumpIndexRevision(gitDirectory);
           let pushedRemoteName: string | null = null;

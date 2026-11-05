@@ -25,6 +25,7 @@ import { heapSnapshotI18n } from './heap-snapshot.i18n';
 import { consoleBudgetsI18n } from './console-budgets.i18n';
 import { imageToolI18n } from './image-tool.i18n';
 import { agentStatusI18n } from './agent-status.i18n';
+import { selectionApprovalI18n } from './selection-approval.i18n';
 import { snippetsI18n } from './snippets.i18n';
 import { sidebarWorkI18n } from './sidebar-work.i18n';
 import { sidebarSectionsI18n } from './sidebar-sections.i18n';
@@ -33,6 +34,7 @@ import { overviewI18n } from './overview.i18n';
 import { isolatedSpacesI18n } from './isolated-spaces.i18n';
 import { sourceBoardI18n } from './source-board.i18n';
 import { stacksI18n } from './stacks.i18n';
+import { prReviewI18n } from './pr-review.i18n';
 import { changeReviewI18n } from './change-review.i18n';
 import { projectActionsI18n } from './project-actions.i18n';
 import { gitIdentityEditorI18n } from './git-identity-editor.i18n';
@@ -47,6 +49,15 @@ import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
 import { guestStatusViewI18n } from './guest-status-view.i18n';
+import { tooltipsDiffI18n } from './tooltips-diff.i18n';
+import { tooltipsFilesI18n } from './tooltips-files.i18n';
+import { tooltipsGitI18n } from './tooltips-git.i18n';
+import { tooltipsTrackerI18n } from './tooltips-tracker.i18n';
+import { tooltipsWalkthroughI18n } from './tooltips-walkthrough.i18n';
+import { tooltipsTerminalBrowserI18n } from './tooltips-terminal-browser.i18n';
+import { tooltipsWorkspaceI18n } from './tooltips-workspace.i18n';
+import { tooltipsPanelI18n } from './tooltips-panel.i18n';
+import { tooltipsChatI18n } from './tooltips-chat.i18n';
 
 export const dict = {
   'quota.family.zen': 'نماذج Zen',
@@ -54,10 +65,6 @@ export const dict = {
   'quota.value.spent': 'تم إنفاق {spent}',
   'mobile.connect.headers.hint': 'تنطبق على هذا العنوان فقط. ترويسة Authorization محجوزة لرمز العميل.',
   'mobile.connect.headers.error': 'تعذرت قراءة ترويسات الاتصال أو حفظها. حاول مرة أخرى.',
-  'directoryExplorerDialog.import.title': 'إضافة مشاريع من OpenCode',
-  'directoryExplorerDialog.import.count': 'المشاريع المتاحة: {count}',
-  'directoryExplorerDialog.import.dismiss': 'عدم الاقتراح مرة أخرى',
-  'directoryExplorerDialog.import.failed': 'تعذر حفظ التغييرات. حاول مرة أخرى.',
   'opencodeCompatibility.bundled': 'يأتي OpenCode مضمّنًا مع OpenChamber. حدّث OpenChamber للحصول على OpenCode v2.',
   'opencodeCompatibility.title': 'يلزم OpenCode v2',
   'opencodeCompatibility.outdatedTitle': 'تحديث OpenCode',
@@ -572,6 +579,7 @@ export const dict = {
   'sessions.sidebar.header.actions.more': 'المزيد',
   'sessions.sidebar.header.actions.exitSelection': 'إنهاء التحديد',
   'sessions.sidebar.header.actions.selectSessions': 'تحديد الجلسات',
+  'sessions.sidebar.header.actions.markAllRead': 'تعليم الكل كمقروء',
   'sessions.sidebar.header.actions.sortProjects': 'فرز المشاريع',
   'sessions.sidebar.header.actions.sessionDisplayMode': 'وضع عرض الجلسات',
   'sessions.sidebar.header.displayMode.label': 'وضع العرض',
@@ -745,7 +753,7 @@ export const dict = {
   'sessions.sidebar.session.status.unread': 'تحديثات غير مقروءة',
   'sessions.sidebar.session.status.backgroundSubagent': 'وكيل فرعي يعمل في الخلفية',
   'sessions.sidebar.session.status.backgroundCommand': 'أمر يعمل في الخلفية',
-  'sessions.sidebar.session.status.waitingOnPullRequest': 'بانتظار طلب سحب',
+  'sessions.sidebar.session.status.waitingOnPullRequest': 'بانتظار الفحوصات أو مراجعة',
   'sessions.sidebar.session.status.pinned': 'جلسة مثبّتة',
   'sessions.sidebar.session.status.movingToWorktree': 'جارٍ نقل الجلسة إلى شجرة عمل جديدة',
   'sessions.sidebar.session.status.permissionRequired': 'مطلوب إذن',
@@ -1634,7 +1642,6 @@ export const dict = {
   'sidebarFilesTree.actions.uploadFilesTitle': 'رفع ملفات',
   'sidebarFilesTree.actions.refreshTitle': 'تحديث',
   'sidebarFilesTree.actions.collapseAllTitle': 'طي كل المجلدات',
-  'sidebarFilesTree.actions.fileMenuTitle': 'قائمة الملف',
   'sidebarFilesTree.state.searching': 'جارٍ البحث…',
   'sidebarFilesTree.state.loading': 'جارٍ التحميل…',
   'sidebarFilesTree.dialog.createFile.title': 'إنشاء ملف',
@@ -1723,6 +1730,8 @@ export const dict = {
   'filesView.error.switchToEditMode': 'بدّل إلى وضع التحرير لإصلاح المشكلة.',
   'filesView.error.readFileFailed': 'تعذّرت قراءة الملف',
   'filesView.editor.htmlPreviewTitle': 'معاينة HTML',
+  'filesView.editor.htmlPreviewRelayUnavailable': 'معاينة HTML غير متاحة عبر المرحّل',
+  'filesView.editor.htmlPreviewShowCode': 'عرض الكود',
   'filesView.editor.htmlAnnotate.intro': 'هذا تحديد عليه تعليق توضيحي من معاينة ملف HTML.',
   'filesView.diagram.closeDiagramView': 'إغلاق عرض المخطط',
   'filesView.diagram.saveDiagram': 'حفظ المخطط',
@@ -1886,12 +1895,14 @@ export const dict = {
   'chat.autoReview.actions.dismiss': 'إغلاق',
   'chat.autoReview.toast.removeFailed': 'تعذر الوصول إلى الخادم لتغيير مراجعة الكود. حاول مرة أخرى.',
   'chat.prWatch.title': 'بانتظار طلب السحب #{number}',
+  'chat.prWatch.mr.title': 'بانتظار طلب الدمج !{number}',
+  'chat.prWatch.change.title': 'بانتظار التغيير #{number}',
   'chat.prWatch.status.pending': 'الفحوصات قيد التشغيل',
   'chat.prWatch.status.passed': 'نجحت الفحوصات',
   'chat.prWatch.status.failed': 'فشل أحد الفحوصات',
   'chat.prWatch.status.waking': 'يوقظ الوكيل',
   'chat.prWatch.actions.stop': 'إيقاف المتابعة',
-  'chat.prWatch.toast.stopFailed': 'تعذر الوصول إلى الخادم لإيقاف متابعة طلب السحب. حاول مرة أخرى.',
+  'chat.prWatch.toast.stopFailed': 'تعذّر الوصول إلى الخادم لإيقاف المتابعة. حاول مرة أخرى.',
   'chat.draftDirtyNotice.tooltip': "لديك تغييرات غير مودعة في هذا الفرع.\nقد تتعارض جلسة جديدة معها. قد ترغب في إيداعها أولًا أو استخدام شجرة عمل (worktree) أخرى.",
   'chat.draftDirtyNotice.indicatorAria': 'تغييرات غير مودعة في هذا المجلد',
   'diffView.hunk.label': 'المقاطع',
@@ -2038,6 +2049,11 @@ export const dict = {
   'chat.goal.status.blocked': 'محظور',
   'chat.goal.status.budgetLimited': 'بلغ الميزانية',
   'chat.goal.status.complete': 'مكتمل',
+  'chat.goal.mark.active': 'الهدف نشط',
+  'chat.goal.mark.paused': 'الهدف متوقف مؤقتًا',
+  'chat.goal.mark.blocked': 'الهدف محظور',
+  'chat.goal.mark.budgetLimited': 'بلغ الهدف ميزانيته',
+  'chat.goal.mark.complete': 'الهدف مكتمل',
   'chat.goal.usage.tokens': '{used} رمز',
   'chat.goal.usage.tokensWithBudget': '{used}/{budget} رمز',
   'chat.goal.usage.turns': '{turns} استكمال',
@@ -2103,7 +2119,6 @@ export const dict = {
   'terminalView.tabs.renameDialog.save': 'إعادة تسمية',
   'terminalView.viewport.inputAria': 'إدخال الطرفية',
   'terminalView.viewport.scrollbarAria': 'سجل التمرير في الطرفية',
-  'directoryExplorerDialog.title': 'إضافة مجلد مشروع',
   'directoryExplorerDialog.description': 'اختر مجلدًا لإضافته كمشروع.',
   'directoryExplorerDialog.toggle.showHidden': 'إظهار المخفي',
   'directoryExplorerDialog.pathInput.placeholder': 'أدخل مسارًا أو اختر من الشجرة…',
@@ -2111,21 +2126,26 @@ export const dict = {
   'directoryExplorerDialog.actions.openInFinder': 'فتح في Finder',
   'directoryExplorerDialog.actions.adding': 'جارٍ الإضافة…',
   'directoryExplorerDialog.actions.addProject': 'إضافة مشروع',
-  'directoryExplorerDialog.actions.addSelected': 'إضافة المحدد',
-  'directoryExplorerDialog.actions.addLocalProject': 'إضافة مشروع محلي',
+  'directoryExplorerDialog.actions.addSelected': 'إضافة المحدد ({count})',
   'directoryExplorerDialog.actions.cloneRepository': 'استنساخ مستودع',
   'directoryExplorerDialog.actions.cloneAndAdd': 'استنساخ وإضافة',
   'directoryExplorerDialog.actions.cloning': 'جارٍ الاستنساخ…',
-  'directoryExplorerDialog.actions.createAndAdd': 'إنشاء وإضافة',
   'directoryExplorerDialog.actions.alreadyAdded': 'مضاف بالفعل',
   'directoryExplorerDialog.clone.remoteUrlPlaceholder': 'URL المستودع (HTTPS أو SSH)',
   'directoryExplorerDialog.clone.setupRequired': 'تم الاستنساخ والإضافة. أكمل إعداد الوصول في لوحة Git؛ لا حاجة للاستنساخ مرة أخرى.',
   'directoryExplorerDialog.clone.identityMismatch': 'لا يمكن لهذه الهوية الوصول إلى ذلك العنوان. اختر هوية تستخدم النوع نفسه من العناوين (HTTPS أو SSH).',
-  'directoryExplorerDialog.clone.unsupported': 'الاستنساخ غير مدعوم في بيئة تشغيل VS Code.',
   'directoryExplorerDialog.existing.bindFailed': 'أُضيف المشروع، لكن تعذّر تعيين حسابه. اختره في لوحة Git.',
-  'directoryExplorerDialog.browse.directories': 'المجلدات',
   'directoryExplorerDialog.browse.loading': 'جارٍ تحميل المجلدات…',
   'directoryExplorerDialog.browse.empty': 'لا توجد مجلدات مطابقة.',
+  'directoryExplorerDialog.actions.addNamed': "إضافة \"{name}\"",
+  'directoryExplorerDialog.actions.createNamed': "إنشاء \"{name}\" وإضافته",
+  'directoryExplorerDialog.browse.home': "الرئيسية",
+  'directoryExplorerDialog.browse.willCreate': "لا يوجد مجلد باسم {name}. سيتم إنشاؤه.",
+  'directoryExplorerDialog.opencode.title': "من OpenCode",
+  'directoryExplorerDialog.opencode.caption': "المستودعات التي فتحتها في OpenCode",
+  'directoryExplorerDialog.clone.into': "استنساخ إلى",
+  'directoryExplorerDialog.footer.open': "فتح",
+  'directoryExplorerDialog.shortcut.space': "مسافة",
   'directoryExplorerDialog.browse.permissionDenied': 'يحتاج OpenChamber إلى الوصول إلى هذا المجلد.',
   'directoryExplorerDialog.browse.loadFailed': 'تعذّر تحميل هذا المجلد.',
   'directoryExplorerDialog.browse.grantAccess': 'منح الوصول',
@@ -3421,6 +3441,13 @@ export const dict = {
   'markdownRenderer.code.proposal': 'اقتراح',
   'markdownRenderer.code.actions.copyTitle': 'نسخ الشيفرة',
   'markdownRenderer.code.actions.copiedTitle': 'تم النسخ',
+  'markdownRenderer.code.actions.runTitle': 'تشغيل الأمر. سيتابع الوكيل من مخرجاته',
+  'markdownRenderer.code.actions.stopTitle': 'إيقاف الأمر',
+  'markdownRenderer.code.run.startFailed': 'تعذر بدء الأمر',
+  'markdownRenderer.code.run.running': 'قيد التشغيل',
+  'markdownRenderer.code.run.finished': 'اكتمل',
+  'markdownRenderer.code.run.failed': 'رمز الخروج {code}',
+  'markdownRenderer.code.run.stopped': 'تم الإيقاف',
   'markdownRenderer.table.actions.copyTitle': 'نسخ الجدول',
   'markdownRenderer.code.actions.enableWrapTitle': 'تفعيل التفاف الأسطر',
   'markdownRenderer.code.actions.disableWrapTitle': 'تعطيل التفاف الأسطر',
@@ -3649,6 +3676,9 @@ export const dict = {
   'chat.dispatchedSession.showAnswer': 'إظهار الإجابة',
   'chat.dispatchedSession.hideAnswer': 'إخفاء الإجابة',
   'chat.dispatchedSession.open': 'فتح الجلسة',
+  'chat.fileOpenRequest.toast.description': 'معروض في {session}',
+  'chat.fileOpenRequest.toast.descriptionUntitled': 'معروض في جلسة أخرى',
+  'chat.fileOpenRequest.toast.openSession': 'فتح الجلسة',
   'chat.revertPopover.staged': 'تم التراجع: {count}',
   'chat.workStatus.mcp.needsAuthHint': 'سجّل الدخول إلى خادم MCP هذا من الإعدادات → MCP.',
   'mcpDropdown.toast.authorizeOpenFailed': 'تعذّر فتح صفحة التفويض',
@@ -3824,12 +3854,16 @@ export const dict = {
   'sessions.scheduledTasks.editor.worktree.cleanup.keepHint': 'تبقى شجرة العمل وفرعها بعد التشغيل لتراجع النتيجة.',
   'sessions.scheduledTasks.editor.worktree.notRepo': 'مجلد المشروع ليس مستودع git؛ ستستخدم التشغيلات الخروج الحالي كما هو.',
   'sessions.scheduledTasks.dialog.usesDefaults': 'الإعدادات الافتراضية للجلسة',
-  'sessions.moveChatToProject.menu': 'نقل إلى مشروع…',
-  'sessions.moveChatToProject.hint': 'متابعة هذه المحادثة داخل مشروع',
-  'sessions.moveChatToProject.title': 'نقل المحادثة إلى مشروع',
-  'sessions.moveChatToProject.description': 'تستمر المحادثة في مجلد المشروع. تبقى الملفات التي أنشأتها المحادثة في مكانها.',
-  'sessions.moveChatToProject.success': 'تم نقل المحادثة إلى المشروع',
-  'sessions.moveChatToProject.failed': 'تعذّر نقل المحادثة',
+  'sessions.moveSession.menu': 'نقل الجلسة…',
+  'sessions.moveSession.hint': 'تبقى الملفات في المجلد القديم',
+  'sessions.moveSession.title': 'نقل الجلسة',
+  'sessions.moveSession.description': 'تتابع الجلسة في المجلد المحدد. تبقى الملفات في مكانها.',
+  'sessions.moveSession.chooseFolder': 'اختيار مجلد…',
+  'sessions.moveSession.current': 'المجلد الحالي',
+  'sessions.moveSession.success': 'تم نقل الجلسة',
+  'sessions.moveSession.failed': 'تعذّر نقل الجلسة',
+  'chat.folderMissing.text': 'لم يعد المجلد {name} موجودًا',
+  'chat.folderMissing.action': 'نقل الجلسة',
   'chat.worktreeSetup.running': 'جارٍ إعداد شجرة العمل: تشغيل أوامر الإعداد الخاصة بالمشروع…',
   'chat.draft.creatingSession': 'جارٍ إنشاء الجلسة…',
   'desktopHostSwitcher.startup.fellBackToLocal': 'لم يُفتح اتصالها، لذا بدأ OpenChamber على النسخة المحلية. اتصل بها من مبدّل النسخ عندما يصبح الوصول إليها ممكنًا.',
@@ -3844,6 +3878,7 @@ export const dict = {
   'sessions.scheduledTasks.dialog.toast.alreadyQueued': 'هذه المهمة في قائمة الانتظار بالفعل وستعمل عند توفر مكان',
   'chat.modelControls.agentFavoriteAdd': 'إضافة إلى المفضلة. عند وجود مفضلة، يتنقل Tab بينها فقط',
   ...settingsDict,
+  ...selectionApprovalI18n.ar,
   ...linearIssuePickerI18n.ar,
   ...referencePickerI18n.ar,
   ...repositoryDiscussionsI18n.ar,
@@ -3878,6 +3913,7 @@ export const dict = {
   ...isolatedSpacesI18n.ar,
   ...sourceBoardI18n.ar,
   ...stacksI18n.ar,
+  ...prReviewI18n.ar,
   ...changeReviewI18n.ar,
   ...projectActionsI18n.ar,
   ...gitIdentityEditorI18n.ar,
@@ -3892,6 +3928,15 @@ export const dict = {
   ...workflowsI18n['ar'],
   ...sessionReferencesI18n['ar'],
   ...guestStatusViewI18n['ar'],
+  ...tooltipsDiffI18n['ar'],
+  ...tooltipsFilesI18n['ar'],
+  ...tooltipsGitI18n['ar'],
+  ...tooltipsTrackerI18n['ar'],
+  ...tooltipsWalkthroughI18n['ar'],
+  ...tooltipsTerminalBrowserI18n['ar'],
+  ...tooltipsWorkspaceI18n['ar'],
+  ...tooltipsPanelI18n['ar'],
+  ...tooltipsChatI18n['ar'],
   'settings.usage.page.state.claudeSignedOutTitle': 'لم يتم تسجيل الدخول إلى Claude Code',
   'settings.usage.page.state.claudeSignInCommand': 'شغّل هذا الأمر في الطرفية:',
   'settings.openchamber.visual.field.confirmFileTreeMove': 'التأكيد قبل نقل الملفات',
