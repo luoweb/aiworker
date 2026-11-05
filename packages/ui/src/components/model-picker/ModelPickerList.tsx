@@ -506,7 +506,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const listboxId = React.useId();
   const optionId = (index: number) => `${listboxId}-option-${index}`;
-  const virtualSectionsRef = React.useRef<Map<string, VirtualSectionHandle>>(new Map());
   const sectionHeaderSentinelRefs = React.useRef<Map<string, HTMLDivElement | null>>(new Map());
   const [stuckSectionHeaders, setStuckSectionHeaders] = React.useState<Set<string>>(new Set());
   const keyboardOwnsSelectionRef = React.useRef(false);
@@ -941,37 +940,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
       onEscape?.();
     }
   }, [disabled, leadingAction, moveSelection, navigation, onActiveKeyDown, onEscape, onSelect, onVariantKey, selectionStore]);
-
-  const syncStickyFade = React.useCallback((scroller: HTMLElement) => {
-    const hasTopScroll = scroller.scrollTop > 1;
-    const fadeSize = hasTopScroll
-      ? Math.min(STICKY_FADE_MIN_SIZE + scroller.scrollTop, STICKY_FADE_MAX_SIZE)
-      : 0;
-    stickyFadeSizeRef.current = fadeSize;
-    const fadeRoot = scroller.closest<HTMLElement>('.oc-sticky-fade-root');
-    fadeRoot?.style.setProperty('--scroll-shadow-top-size', `${fadeSize}px`);
-    fadeRoot?.style.setProperty(
-      '--scroll-shadow-top-clear-size',
-      `${Math.min(Math.max(fadeSize - 8, 0), STICKY_FADE_CLEAR_MAX_SIZE)}px`,
-    );
-  }, []);
-
-  const blockStickyFadeInteraction = React.useCallback((
-    event: React.MouseEvent<HTMLDivElement> | React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if ((event.target as Element).closest('[data-overlay-scrollbar-thumb], [data-model-picker-sticky-header]')) return;
-    // Enter or Space on a focused button clicks with no pointer position (detail 0,
-    // coordinates 0), which would otherwise read as a click on the fade.
-    if (event.type === 'click' && event.detail === 0) return;
-    const eventY = event.clientY - event.currentTarget.getBoundingClientRect().top;
-    if (eventY >= stickyFadeSizeRef.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-  }, []);
-
-  React.useLayoutEffect(() => {
-    if (stickyHeaders && scrollRef.current) syncStickyFade(scrollRef.current);
-  }, [stickyHeaders, syncStickyFade, rows]);
 
   const headerClassName = cn(
     'typography-micro font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-2 px-2 py-1.5',
