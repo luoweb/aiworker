@@ -43,6 +43,11 @@ find ${baseDir}/ -type f \( -name "index.html" -o -name "cli-args.js" \) -not -p
 
 # filter - undo over-renamed identifiers that should stay openchamber-*
 # (*.cjs included here too, so the same files get the same filter passes)
+# abc.sh only rewrites file CONTENTS; it never renames files. So every
+# `./OpenChamber*` module specifier must be restored below, or the branded
+# build imports a path that no longer exists on disk (TS2307 / rollup
+# "Could not resolve"). Add a rule here whenever upstream introduces a new
+# OpenChamber* component file.
 find ${baseDir}/../ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.cjs" -o -name "*.mjs"  -o -name "*.html" -o -name "*.json" -o -name "*.mdx" -o -name "*.md" \) -not -path "*/node_modules/*" -exec sed -i.bak \
   -e 's#aiworkerConfig#openchamberConfig#g' \
   -e 's#aiworkerEvents#openchamberEvents#g' \
@@ -56,6 +61,7 @@ find ${baseDir}/../ -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o 
   -e 's#AiWorkerVisual#OpenChamberVisual#g' \
   -e 's#AiWorkerWidget#OpenChamberWidget#g' \
   -e 's#AiWorkerNotifi#OpenChamberNotifi#g' \
+  -e 's#AiWorkerToolOutput#OpenChamberToolOutput#g' \
   {} +
 
 # Batch 3 - zh-CN draft preset labels translated to Simplified Chinese
