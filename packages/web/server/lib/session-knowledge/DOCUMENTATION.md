@@ -34,6 +34,7 @@ source:
 | `openchamber.guidance` | when to link, when to draw a page, where the tools are called |
 | `openchamber.checkout` | the directory and branch the session works on |
 | `openchamber.response-style` | the user's current response style |
+| `openchamber.extensions` | what active extensions add: their UI block components and their instructions (`../guests/agent-context.js`) |
 
 `sync` writes all of them right before a message goes out: the UI awaits it
 before the prompt request, the queue, scheduled tasks and dispatched sessions
@@ -208,14 +209,14 @@ it says so and offers one. Small tasks never get one.
 
 ## Where the tools are called
 
-While the managed tools are direct tools (the default; `agentToolsCodeMode`
-puts them in Code Mode's catalog), a session that has any of them is told
-they are called directly, never from inside a Code Mode `execute` script
-(`DIRECT_TOOLS_GUIDANCE`). OpenCode's Code Mode teaches the model that tools
-live in `execute`'s catalog: a model that called `tools.openchamber(...)` from
-a script was answered "Unknown tool", concluded the tool did not exist, and
-never named its task. With Code Mode on for our tools the sentence would be
-wrong, so it is left out.
+The tools whose call the chat draws (`openchamber_render`,
+`openchamber_secret`, `openchamber_workflow`) are direct tools; the rest sit
+behind Code Mode (`../agent-tool/DOCUMENTATION.md`). A session that has any of
+the direct ones is told, by name, that they are called directly and never from
+inside a Code Mode `execute` script (`directToolsGuidance`). OpenCode's Code
+Mode teaches the model that tools live in `execute`'s catalog: a model that
+called one of our direct tools from a script was answered "Unknown tool" and
+concluded the tool did not exist.
 
 ## Entries that read as instructions
 

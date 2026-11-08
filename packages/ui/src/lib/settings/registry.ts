@@ -303,11 +303,11 @@ export const SETTINGS_REGISTRY = {
   browserProvider: field({ scope: 'instance', parse: parseNonEmptyString, ui: uiStore('browserProvider', (v) => useUIStore.getState().setBrowserProvider(v)) }),
   agentNotifyToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentNotifyToolEnabled', (v) => useUIStore.getState().setAgentNotifyToolEnabled(v)) }),
   agentRenderToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentRenderToolEnabled', (v) => useUIStore.getState().setAgentRenderToolEnabled(v)) }),
+  agentUsageToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentUsageToolEnabled', (v) => useUIStore.getState().setAgentUsageToolEnabled(v)) }),
   agentImageToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentImageToolEnabled', (v) => useUIStore.getState().setAgentImageToolEnabled(v)) }),
   // `provider/model` of an image model; the server checks the shape.
   agentImageModel: field({ scope: 'instance', parse: parseNonEmptyString, ui: uiStore('agentImageModel', (v) => useUIStore.getState().setAgentImageModel(v)) }),
   agentSecretToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentSecretToolEnabled', (v) => useUIStore.getState().setAgentSecretToolEnabled(v)) }),
-  agentToolsCodeMode: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentToolsCodeMode', (v) => useUIStore.getState().setAgentToolsCodeMode(v)) }),
   agentMemoryToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentMemoryToolEnabled', (v) => useUIStore.getState().setAgentMemoryToolEnabled(v)) }),
   agentKnowledgeToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentKnowledgeToolEnabled', (v) => useUIStore.getState().setAgentKnowledgeToolEnabled(v)) }),
   agentWorkflowToolEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('agentWorkflowToolEnabled', (v) => useUIStore.getState().setAgentWorkflowToolEnabled(v)) }),
@@ -357,6 +357,7 @@ export const SETTINGS_REGISTRY = {
   autoDeleteAfterDays: field({ scope: 'instance', parse: parseIntegerInRange(1, 365), ui: uiStore('autoDeleteAfterDays', (v) => useUIStore.getState().setAutoDeleteAfterDays(v)) }),
   // Apply scope before action so leaving archived-only mode can restore an incoming archive choice.
   sessionRetentionOnlyArchived: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('sessionRetentionOnlyArchived', (v) => useUIStore.getState().setSessionRetentionOnlyArchived(v)) }),
+  sessionRetentionIncludeInWork: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('sessionRetentionIncludeInWork', (v) => useUIStore.getState().setSessionRetentionIncludeInWork(v)) }),
   sessionRetentionAction: field({ scope: 'instance', parse: parseOneOf(['archive', 'delete']), ui: uiStore('sessionRetentionAction', (v) => useUIStore.getState().setSessionRetentionAction(v)) }),
   mergedWorktreeCleanupEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('mergedWorktreeCleanupEnabled', (v) => useUIStore.getState().setMergedWorktreeCleanupEnabled(v)) }),
   worktreeArchiveOnDoneEnabled: field({ scope: 'instance', parse: parseBoolean, ui: uiStore('worktreeArchiveOnDoneEnabled', (v) => useUIStore.getState().setWorktreeArchiveOnDoneEnabled(v)) }),
@@ -557,6 +558,7 @@ export const SETTINGS_REGISTRY = {
 
   // ── Typography (profile; sizes per surface) ──
   fontSize: field({ scope: 'profile', perSurface: true, parse: parseFiniteNumber, ui: uiStore('fontSize', (v) => useUIStore.getState().setFontSize(v)) }),
+  chatFontSize: field({ scope: 'profile', perSurface: true, parse: parseFiniteNumber, ui: uiStore('chatFontSize', (v) => useUIStore.getState().setChatFontSize(v)) }),
   terminalFontSize: field({ scope: 'profile', perSurface: true, parse: parseFiniteNumber, ui: uiStore('terminalFontSize', (v) => useUIStore.getState().setTerminalFontSize(v)) }),
   editorFontSize: field({ scope: 'profile', perSurface: true, parse: parseFiniteNumber, ui: uiStore('editorFontSize', (v) => useUIStore.getState().setEditorFontSize(v)) }),
   uiFont: field({ scope: 'profile', parse: parseUiFont, ui: uiStore('uiFont', (v) => useUIStore.getState().setUiFont(v)) }),

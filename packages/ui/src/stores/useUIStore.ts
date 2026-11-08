@@ -1052,6 +1052,8 @@ interface UIStore {
   autoDeleteAfterDays: number;
   sessionRetentionAction: SessionRetentionAction;
   sessionRetentionOnlyArchived: boolean;
+  /** Retention also takes sessions in the In work block. Off by default: they stay until Done. */
+  sessionRetentionIncludeInWork: boolean;
   /** Archive a worktree's sessions and remove it once its PR is merged. Off by default. */
   mergedWorktreeCleanupEnabled: boolean;
   /** Done on a worktree in work also archives it. Off by default: Done then only takes it out of In work. */
@@ -1059,6 +1061,8 @@ interface UIStore {
   autoDeleteLastRunAt: number | null;
   messageLimit: number;
   fontSize: number;
+  /** Chat text size in percent of the interface size, so the chat can grow without the sidebar. */
+  chatFontSize: number;
   // Global draft welcome starters; null = unset (use the default built-in set).
   globalDraftStarters: DraftStarterRef[] | null;
   draftStartersVisible: boolean;
@@ -1157,14 +1161,13 @@ interface UIStore {
   agentMemoryToolEnabled: boolean;
   agentKnowledgeToolEnabled: boolean;
   agentNotifyToolEnabled: boolean;
+  agentUsageToolEnabled: boolean;
   agentImageToolEnabled: boolean;
   /** `provider/model` the image tool draws with; empty until the user picks one. */
   agentImageModel: string;
   agentRenderToolEnabled: boolean;
   agentSecretToolEnabled: boolean;
   agentWorkflowToolEnabled: boolean;
-  /** Whether OpenChamber's agent tools sit behind OpenCode's Code Mode instead of being direct tools. */
-  agentToolsCodeMode: boolean;
   /** The isolated-spaces switch as saved; the server applies it at its next start. */
   isolatedSpacesEnabled: boolean;
   /** The permission mode the server writes onto each new top-level session. */
@@ -1376,9 +1379,11 @@ interface UIStore {
   setAutoDeleteAfterDays: (days: number) => void;
   setSessionRetentionAction: (value: SessionRetentionAction) => void;
   setSessionRetentionOnlyArchived: (value: boolean) => void;
+  setSessionRetentionIncludeInWork: (value: boolean) => void;
   setAutoDeleteLastRunAt: (timestamp: number | null) => void;
   setMessageLimit: (value: number) => void;
   setFontSize: (size: number) => void;
+  setChatFontSize: (size: number) => void;
   setGlobalDraftStarters: (refs: DraftStarterRef[]) => void;
   setDraftStartersVisible: (value: boolean) => void;
   setTerminalFontSize: (size: number) => void;
@@ -1464,12 +1469,12 @@ interface UIStore {
   setAgentMemoryToolEnabled: (value: boolean) => void;
   setAgentKnowledgeToolEnabled: (value: boolean) => void;
   setAgentNotifyToolEnabled: (value: boolean) => void;
+  setAgentUsageToolEnabled: (value: boolean) => void;
   setAgentImageToolEnabled: (value: boolean) => void;
   setAgentImageModel: (value: string) => void;
   setAgentRenderToolEnabled: (value: boolean) => void;
   setAgentSecretToolEnabled: (value: boolean) => void;
   setAgentWorkflowToolEnabled: (value: boolean) => void;
-  setAgentToolsCodeMode: (value: boolean) => void;
   setIsolatedSpacesEnabled: (value: boolean) => void;
   setPermissionDefaultMode: (value: PermissionMode) => void;
   setAgentMemoryFeatureAvailable: (value: boolean) => void;
@@ -1639,11 +1644,13 @@ export const useUIStore = create<UIStore>()(
         autoDeleteAfterDays: 30,
         sessionRetentionAction: 'archive',
         sessionRetentionOnlyArchived: false,
+        sessionRetentionIncludeInWork: false,
         mergedWorktreeCleanupEnabled: false,
         worktreeArchiveOnDoneEnabled: false,
         autoDeleteLastRunAt: null,
         messageLimit: 200,
         fontSize: 100,
+        chatFontSize: 100,
         globalDraftStarters: null,
         terminalFontSize: 14,
         terminalShell: 'auto',
@@ -1719,12 +1726,12 @@ export const useUIStore = create<UIStore>()(
         agentMemoryToolEnabled: false,
         agentKnowledgeToolEnabled: true,
         agentNotifyToolEnabled: false,
+        agentUsageToolEnabled: false,
         agentImageToolEnabled: false,
         agentImageModel: '',
         agentRenderToolEnabled: true,
         agentSecretToolEnabled: true,
         agentWorkflowToolEnabled: false,
-        agentToolsCodeMode: false,
         isolatedSpacesEnabled: false,
         permissionDefaultMode: 'ask',
         agentMemoryFeatureAvailable: false,
@@ -2817,6 +2824,10 @@ export const useUIStore = create<UIStore>()(
           }));
         },
 
+        setSessionRetentionIncludeInWork: (value) => {
+          set({ sessionRetentionIncludeInWork: value });
+        },
+
         setAutoDeleteLastRunAt: (timestamp) => {
           set({ autoDeleteLastRunAt: timestamp });
         },
@@ -2831,6 +2842,10 @@ export const useUIStore = create<UIStore>()(
           const clampedSize = Math.max(50, Math.min(200, size));
           set({ fontSize: clampedSize });
           get().applyTypography();
+        },
+
+        setChatFontSize: (size) => {
+          set({ chatFontSize: Math.max(50, Math.min(200, Math.round(size))) });
         },
 
         setGlobalDraftStarters: (refs) => {
@@ -3386,6 +3401,9 @@ export const useUIStore = create<UIStore>()(
         setAgentNotifyToolEnabled: (value) => {
           set({ agentNotifyToolEnabled: value });
         },
+        setAgentUsageToolEnabled: (value) => {
+          set({ agentUsageToolEnabled: value });
+        },
         setAgentImageToolEnabled: (value) => {
           set({ agentImageToolEnabled: value });
         },
@@ -3406,9 +3424,6 @@ export const useUIStore = create<UIStore>()(
             const workflowTabIds = panel.tabs.filter((tab) => tab.mode === 'workflows').map((tab) => tab.id);
             if (workflowTabIds.length > 0) get().closeContextPanelTabs(directory, workflowTabIds);
           }
-        },
-        setAgentToolsCodeMode: (value) => {
-          set({ agentToolsCodeMode: value });
         },
         setAgentMemoryFeatureAvailable: (value) => {
           set({ agentMemoryFeatureAvailable: value });
@@ -3901,11 +3916,13 @@ export const useUIStore = create<UIStore>()(
           autoDeleteAfterDays: state.autoDeleteAfterDays,
           sessionRetentionAction: state.sessionRetentionAction,
           sessionRetentionOnlyArchived: state.sessionRetentionOnlyArchived,
+          sessionRetentionIncludeInWork: state.sessionRetentionIncludeInWork,
           mergedWorktreeCleanupEnabled: state.mergedWorktreeCleanupEnabled,
           worktreeArchiveOnDoneEnabled: state.worktreeArchiveOnDoneEnabled,
           autoDeleteLastRunAt: state.autoDeleteLastRunAt,
           messageLimit: state.messageLimit,
           fontSize: state.fontSize,
+          chatFontSize: state.chatFontSize,
           globalDraftStarters: state.globalDraftStarters,
           terminalFontSize: state.terminalFontSize,
           terminalShell: state.terminalShell,
@@ -3965,12 +3982,12 @@ export const useUIStore = create<UIStore>()(
           agentMemoryToolEnabled: state.agentMemoryToolEnabled,
           agentKnowledgeToolEnabled: state.agentKnowledgeToolEnabled,
           agentNotifyToolEnabled: state.agentNotifyToolEnabled,
+          agentUsageToolEnabled: state.agentUsageToolEnabled,
           agentImageToolEnabled: state.agentImageToolEnabled,
           agentImageModel: state.agentImageModel,
           agentRenderToolEnabled: state.agentRenderToolEnabled,
           agentSecretToolEnabled: state.agentSecretToolEnabled,
           agentWorkflowToolEnabled: state.agentWorkflowToolEnabled,
-          agentToolsCodeMode: state.agentToolsCodeMode,
           isolatedSpacesEnabled: state.isolatedSpacesEnabled,
           permissionDefaultMode: state.permissionDefaultMode,
           agentMemoryViewedAt: state.agentMemoryViewedAt,

@@ -180,6 +180,9 @@
     "agentRenderToolEnabled": {
       "scope": "instance"
     },
+    "agentUsageToolEnabled": {
+      "scope": "instance"
+    },
     "agentImageToolEnabled": {
       "scope": "instance"
     },
@@ -187,9 +190,6 @@
       "scope": "instance"
     },
     "agentSecretToolEnabled": {
-      "scope": "instance"
-    },
-    "agentToolsCodeMode": {
       "scope": "instance"
     },
     "agentMemoryToolEnabled": {
@@ -236,6 +236,9 @@
       "scope": "instance"
     },
     "sessionRetentionOnlyArchived": {
+      "scope": "instance"
+    },
+    "sessionRetentionIncludeInWork": {
       "scope": "instance"
     },
     "sessionRetentionAction": {
@@ -609,6 +612,10 @@
       "scope": "profile"
     },
     "fontSize": {
+      "scope": "profile",
+      "perSurface": true
+    },
+    "chatFontSize": {
       "scope": "profile",
       "perSurface": true
     },
