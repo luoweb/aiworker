@@ -78,6 +78,7 @@ import { subscribeMessageQueueSync } from "./message-queue-sync"
 import { subscribeAutoReviewSync } from "./auto-review-sync"
 import { subscribePrWatchSync } from "./pr-watch-sync"
 import { subscribeSessionWarmingSync } from "./session-warming-sync"
+import { subscribeSessionTodosSync } from "./session-todos-sync"
 import { subscribeSessionFoldersSync } from "./session-folders-sync"
 import { subscribeSessionDraftsSync } from "./session-drafts-sync"
 import { subscribePermissionPolicySync, subscribeSpacePermissionModes } from "./permission-mode-sync"
@@ -113,6 +114,7 @@ import { requestHostTurnStarts } from "./host-session-status-seed"
 import { setHostTurnStartRequester } from "./session-activity-timing"
 import { applyBackgroundShellEvents, directoriesWithRunningShells, refreshBackgroundShells } from "./background-shells"
 import { applyBackgroundImageEvents, refreshBackgroundImages } from "./background-images"
+import { applySessionLiveWorkEvents } from "./session-live-work"
 import { applyReplyCommandEvents } from "./reply-commands"
 import {
   CHAT_LOCATION_RELEASE_DELAY_MS,
@@ -332,6 +334,7 @@ const publishDirectoryEventBatch = (batch: DirectoryEventBatch): void => {
     // flush must see the command.
     applyBackgroundShellEvents(directory, events)
     applyBackgroundImageEvents(directory, events)
+    applySessionLiveWorkEvents(events)
     applyReplyCommandEvents(events)
     applyGlobalSessionStatusEvents(directory, events)
     applyGlobalBlockingRequestEvents(directory, events)
@@ -2232,6 +2235,7 @@ export function handleEvent(
       // indexes cover unopened directories and list/status races.
       applyBackgroundShellEvents(directory, [payload])
       applyBackgroundImageEvents(directory, [payload])
+      applySessionLiveWorkEvents([payload])
       applyReplyCommandEvents([payload])
       applyGlobalSessionStatusEvent(directory, payload)
       if (!heldForAutoAnswer) applyGlobalBlockingRequestEvents(directory, [payload])
@@ -3266,6 +3270,7 @@ export function SyncProvider(props: {
     const unsubscribeAutoReviewEvents = subscribeAutoReviewSync(runtimeKey)
     const unsubscribePrWatchEvents = subscribePrWatchSync(runtimeKey)
     const unsubscribeSessionWarming = subscribeSessionWarmingSync(runtimeKey)
+    const unsubscribeSessionTodos = subscribeSessionTodosSync(runtimeKey)
     const unsubscribeFolderEvents = subscribeSessionFoldersSync(runtimeKey)
     const unsubscribeDraftEvents = subscribeSessionDraftsSync(runtimeKey)
     const unsubscribeSpaceModes = subscribeSpacePermissionModes(runtimeKey)
@@ -3429,6 +3434,7 @@ export function SyncProvider(props: {
       unsubscribeAutoReviewEvents()
       unsubscribePrWatchEvents()
       unsubscribeSessionWarming()
+      unsubscribeSessionTodos()
       unsubscribeFolderEvents()
       unsubscribeDraftEvents()
       unsubscribeSpaceModes()
