@@ -280,6 +280,42 @@ const tryRelayFetch = async (
   return relay.fetch(path, { ...requestInit, headers });
 };
 
+// Chrome 105+ requires `duplex:'half'` when a Request has a ReadableStream body
+// and is re-wrapped via `new Request(existing, init)` or `new Request(url, existing)`.
+// Adding it unconditionally is harmless for non-stream bodies, so we always include it
+// instead of trying to detect stream bodies (which would require reading bodyUsed or
+// probing the body — both risky). This mirrors what the relay path does by forwarding
+// the Request directly (see tryRelayFetch above).
+const DUPLEX_HALF = 'half' as const;
+type DuplexRequestInit = RequestInit & { duplex?: typeof DUPLEX_HALF };
+
+// Re-wrap an existing Request with optional init overrides, always including duplex.
+const rewrapRequest = (existing: Request, init: RequestInit = {}): Request => {
+  const merged: DuplexRequestInit = { ...init, duplex: DUPLEX_HALF };
+  return new Request(existing, merged);
+};
+
+// Clone a Request to a new URL, preserving method/headers/body. Must include duplex
+// because the source body may be a ReadableStream.
+const relocateRequest = (source: Request, newUrl: string): Request => {
+  const init: DuplexRequestInit = {
+    method: source.method,
+    headers: source.headers,
+    body: source.body,
+    signal: source.signal,
+    mode: source.mode,
+    credentials: source.credentials,
+    cache: source.cache,
+    redirect: source.redirect,
+    referrer: source.referrer,
+    referrerPolicy: source.referrerPolicy,
+    integrity: source.integrity,
+    keepalive: source.keepalive,
+    duplex: DUPLEX_HALF,
+  };
+  return new Request(newUrl, init);
+};
+
 const resolveRuntimeFetchInput = (input: string | URL | Request, query?: RuntimeUrlQuery): string | URL | Request => {
   if (typeof input === 'string') {
     return buildRuntimeFetchUrl(input, query);
@@ -290,7 +326,7 @@ const resolveRuntimeFetchInput = (input: string | URL | Request, query?: Runtime
   }
 
   const target = buildRuntimeFetchUrl(input.url, query);
-  return target === input.url ? input : new Request(target, input);
+  return target === input.url ? input : relocateRequest(input, target);
 };
 
 // ---------------------------------------------------------------------------
@@ -359,8 +395,8 @@ export const runtimeFetch = async (rawInput: string | URL | Request, init: Runti
     addRuntimeProxyHeaders(resolvedUrl, headers);
     const networkInit = mobileRedirectPolicy(resolvedInput, { ...requestInit, headers });
     doFetch = resolvedInput instanceof Request
-      ? () => fetch(new Request(resolvedInput, networkInit))
-      : () => fetch(resolvedInput, networkInit);
+      ? () => fetch(rewrapRequest(resolvedInput, { ...requestInit, headers }))
+      : () => fetch(resolvedInput, { ...requestInit, headers });
     scopeHeaders = headers;
     url = resolvedUrl;
     method = String(
@@ -459,7 +495,7 @@ export const installRuntimeFetchBridge = (): void => {
           if (isActiveRuntimeServiceUrl(url)) {
             const headers = await mergeHeaders(input.headers, init?.headers);
             addRuntimeProxyHeaders(url.toString(), headers);
-            return nativeFetch(new Request(input, { ...init, headers }));
+            return nativeFetch(rewrapRequest(input, { ...init, headers }));
           }
         } catch {
           // Non-URL request inputs should fall through unchanged.
@@ -469,8 +505,8 @@ export const installRuntimeFetchBridge = (): void => {
       const headers = await mergeHeaders(input.headers, init?.headers);
       const target = buildRuntimeFetchUrl(input.url);
       addRuntimeProxyHeaders(target, headers);
-      const request = target === input.url ? input : new Request(target, input);
-      return nativeFetch(new Request(request, { ...init, headers }));
+      const request = target === input.url ? input : relocateRequest(input, target);
+      return nativeFetch(rewrapRequest(request, { ...init, headers }));
     }
 
     return nativeFetch(input, init);
