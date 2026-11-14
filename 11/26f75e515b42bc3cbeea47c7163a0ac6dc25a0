@@ -1,0 +1,16 @@
+.workbuddy/memory/2026-11-14.md
+  h_492b42777c8bc9 1-8
+packages/ui/src/components/model-picker/ModelPickerList.tsx
+  h_492b42777c8bc9 360-368,534-536
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.6",
+  "base_commit_sha": "1126f75e515b42bc3cbeea47c7163a0ac6dc25a0",
+  "prompts": {},
+  "humans": {
+    "h_492b42777c8bc9": {
+      "author": "Robin <luoweb@users.noreply.github.com>"
+    }
+  }
+}
