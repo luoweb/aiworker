@@ -10,6 +10,8 @@ import { canDriveBrowserPage } from './browser/hostCapability';
 import { messageQueueUpdatedEventSchema, type MessageQueueUpdatedEvent } from '@/stores/messageQueueStore';
 import { autoReviewUpdatedEventSchema, type AutoReviewUpdatedEvent } from '@/stores/useAutoReviewStore';
 import { prWatchUpdatedEventSchema, type PrWatchUpdatedEvent } from '@/sync/pr-watch';
+import { extensionWaitsUpdatedEventSchema, type ExtensionWaitsUpdatedEvent } from '@/sync/extension-waits';
+import { laterPagesUpdatedEventSchema, type LaterPagesUpdatedEvent } from '@/sync/later-pages';
 import { sessionWarmingSnapshotSchema, type SessionWarmingSnapshot } from '@/stores/useSessionWarmingStore';
 import { sessionTodosEventSchema, type SessionTodosEvent } from '@/stores/useSessionTodosStore';
 import { isJsonValue, type JsonValue } from '@openchamber/sdk';
@@ -160,6 +162,12 @@ type QuotaProvidersChangedEvent = { type: 'quota-providers-changed' };
  */
 type GuestsChangedEvent = { type: 'guests-changed' };
 
+/**
+ * The marks extensions put on sidebar rows changed (`marks.set`, or a service
+ * ended). Carries nothing; listeners re-read the marks.
+ */
+type GuestMarksChangedEvent = { type: 'guest-marks-changed' };
+
 /** An extension's service sent its open frames something (`emit`). */
 type GuestServiceEvent = { type: 'guest-service-event'; guestId: string; topic: string; data: JsonValue };
 
@@ -270,6 +278,18 @@ const isControlStreamSyncEvent = (event: SyncEvent): event is ControlStreamSyncE
   || event.type === 'openchamber.workflow-run' || event.type === 'openchamber.workflow-run-removed'
 );
 
+/**
+ * A page the agent shared with other people changed on the server (uploaded,
+ * opened, answered, expired, cancelled). Carries only which call; the card
+ * reads the group again, so the event cannot go stale.
+ */
+const sharePageChangedSchema = z.object({ sessionId: z.string().min(1), callId: z.string().min(1) });
+type SharePageChangedEvent = { type: 'share-page-changed' } & z.infer<typeof sharePageChangedSchema>;
+
+/** A page someone else shared, opened in this app, changed (opened, answered, its status read). */
+const receivedPageChangedSchema = z.object({ receivedId: z.string().min(1) });
+type ReceivedPageChangedEvent = { type: 'received-page-changed' } & z.infer<typeof receivedPageChangedSchema>;
+
 /** Followed pull requests, merge requests or issues whose state the server saw move. */
 type TrackedItemsChangedEvent = { type: 'tracked-items-changed'; records: z.infer<typeof trackedItemRecordsSchema> };
 
@@ -287,6 +307,7 @@ const notificationPropertiesSchema = z.object({
   directory: z.string().optional(),
   requireHidden: z.boolean().optional(),
   showWhenFocused: z.boolean().optional(),
+  toastOnly: z.boolean().optional(),
 });
 
 type OpenChamberEvent =
@@ -304,6 +325,8 @@ type OpenChamberEvent =
   | MessageQueueUpdatedEvent
   | AutoReviewUpdatedEvent
   | PrWatchUpdatedEvent
+  | ExtensionWaitsUpdatedEvent
+  | LaterPagesUpdatedEvent
   | PermissionPolicyEvent
   | ControlStreamSyncEnvelope
   /** Which sessions the server keeps warm, as a full snapshot. */
@@ -325,10 +348,13 @@ type OpenChamberEvent =
   | TrackerProvidersChangedEvent
   | QuotaProvidersChangedEvent
   | GuestsChangedEvent
+  | GuestMarksChangedEvent
   | GuestServiceEvent
   | ThemesChangedEvent
   | LimitFailoverEvent
   | ProjectContextChangedEvent
+  | SharePageChangedEvent
+  | ReceivedPageChangedEvent
   | SessionFoldersChangedEvent
   | SessionDraftsChangedEvent
   | AgentMemoryChangedEvent;
@@ -551,6 +577,22 @@ const dispatchFromEnvelope = (envelope: { type: string; properties: unknown }) =
     return;
   }
 
+  if (envelope.type === 'openchamber:extension-waits.updated') {
+    const parsed = extensionWaitsUpdatedEventSchema.safeParse(envelope);
+    if (parsed.success) {
+      for (const listener of listeners) listener(parsed.data);
+    }
+    return;
+  }
+
+  if (envelope.type === 'openchamber:render-later.updated') {
+    const parsed = laterPagesUpdatedEventSchema.safeParse(envelope);
+    if (parsed.success) {
+      for (const listener of listeners) listener(parsed.data);
+    }
+    return;
+  }
+
   if (envelope.type === 'openchamber:auto-review.updated') {
     const parsed = autoReviewUpdatedEventSchema.safeParse(envelope);
     if (parsed.success) {
@@ -669,6 +711,11 @@ const dispatchFromEnvelope = (envelope: { type: string; properties: unknown }) =
     return;
   }
 
+  if (envelope.type === 'openchamber:guest-marks-changed') {
+    for (const listener of listeners) listener({ type: 'guest-marks-changed' });
+    return;
+  }
+
   if (envelope.type === 'openchamber:guest-service-event') {
     const parsed = guestServiceEventSchema.safeParse(envelope.properties);
     if (!parsed.success || !isJsonValue(parsed.data.data)) return;
@@ -690,6 +737,18 @@ const dispatchFromEnvelope = (envelope: { type: string; properties: unknown }) =
   if (envelope.type === 'openchamber:project-context-changed') {
     const parsed = projectContextChangedSchema.safeParse(envelope.properties);
     if (parsed.success) for (const listener of listeners) listener({ type: 'project-context-changed', ...parsed.data });
+    return;
+  }
+
+  if (envelope.type === 'openchamber:share-page') {
+    const parsed = sharePageChangedSchema.safeParse(envelope.properties);
+    if (parsed.success) for (const listener of listeners) listener({ type: 'share-page-changed', ...parsed.data });
+    return;
+  }
+
+  if (envelope.type === 'openchamber:received-page') {
+    const parsed = receivedPageChangedSchema.safeParse(envelope.properties);
+    if (parsed.success) for (const listener of listeners) listener({ type: 'received-page-changed', ...parsed.data });
     return;
   }
 

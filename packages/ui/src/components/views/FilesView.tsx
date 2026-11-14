@@ -38,6 +38,7 @@ import { DocumentSymbolsPanel } from './DocumentSymbolsPanel';
 import { GitignoredToggleButton } from '@/components/layout/GitignoredToggleButton';
 import { useZoneInteractive } from '@/components/layout/zoneInteractiveContext';
 import { MarkdownPreviewSearch } from './MarkdownPreviewSearch';
+import { MarkdownPreviewOutline } from './MarkdownPreviewOutline';
 import { createFileContentPoller } from './fileContentPoller';
 import { fileStatSnapshotForRequestedPath, hasFileStatChanged, openFilePollStep, type FileStatSnapshot } from './fileStatChange';
 import { pendingFileNavigationStep } from './pendingFileNavigation';
@@ -1111,6 +1112,8 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
   // In-preview find for the rendered Markdown preview (Ctrl/Cmd+F).
   const [mdPreviewFindOpen, setMdPreviewFindOpen] = React.useState(false);
   const [mdPreviewFindFocusNonce, setMdPreviewFindFocusNonce] = React.useState(0);
+  // The outline of the rendered Markdown preview. Closed whenever a preview opens; never stored.
+  const [mdPreviewOutlineOpen, setMdPreviewOutlineOpen] = React.useState(false);
   const mdPreviewContainerRef = React.useRef<HTMLDivElement | null>(null);
   // Give the rendered preview keyboard focus (without scrolling it) unless the
   // user is typing somewhere else, so Cmd/Ctrl+F opens the preview find bar
@@ -2883,6 +2886,16 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
     setIsGoToLineOpen(false);
     setIsSymbolsOpen(false);
   }, [sourceEditorShown]);
+  // The outline lists the rendered preview's headings: it closes when the
+  // preview goes away and when another file opens.
+  const mdPreviewShown = isMarkdown && mdViewMode === 'preview';
+  React.useEffect(() => {
+    if (!mdPreviewShown) setMdPreviewOutlineOpen(false);
+  }, [mdPreviewShown]);
+  const outlineFilePath = selectedFile?.path;
+  React.useEffect(() => {
+    setMdPreviewOutlineOpen(false);
+  }, [outlineFilePath]);
   const staticLanguageExtension = React.useMemo(
     () => (selectedFilePath ? languageByExtension(selectedFilePath) : null),
     [selectedFilePath],
@@ -4550,6 +4563,27 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
       },
     } : null;
 
+    // Every Markdown file has the button in every mode, so the row never
+    // changes with the mode, and pressing it never changes the mode. The
+    // preview lists its rendered headings; the source lists them through the
+    // editor's own symbols panel, which reads a Markdown file's headings too.
+    const outlineAction: ToolbarAction | null = isMarkdown && isTextFile ? {
+      id: 'outline',
+      label: t('filesView.preview.outline.label'),
+      icon: 'list-unordered',
+      pressed: mdPreview ? mdPreviewOutlineOpen : sourceEditorShown && isSymbolsOpen,
+      onSelect: () => {
+        if (mdPreview) {
+          setMdPreviewOutlineOpen(!mdPreviewOutlineOpen);
+          return;
+        }
+        openSourceEditor();
+        setIsSymbolsOpen((open) => !sourceEditorShown || !open);
+      },
+      // Either panel treats a press on this button as its own toggle.
+      buttonAttributes: { 'data-markdown-outline-toggle': '', 'data-document-symbols-toggle': '' },
+    } : null;
+
     const goToLineAction: ToolbarAction | null = hasSourceEditor ? {
       id: 'go-to-line',
       label: t('filesView.editor.goToLine'),
@@ -4757,7 +4791,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
         // buttons whatever the file is.
         groups={[
           [modeAction, annotateAction],
-          [searchAction, commentAction],
+          [searchAction, outlineAction, commentAction],
         ]}
         menuOnly={[goToLineAction, symbolsAction, wrapAction, readAloudAction, ...fileActions, autoSaveAction]}
         trailing={[fullscreenAction]}
@@ -4820,9 +4854,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
   ) : null;
 
   const openExcalidrawExtensionCard = React.useCallback(() => {
-    const ui = useUIStore.getState();
-    ui.requestSettingsJump('integrations', 'integrations.extensions.excalidraw');
-    ui.setSettingsDialogOpen(true);
+    useUIStore.getState().openSettingsAt('integrations', 'integrations.extensions.excalidraw');
   }, []);
 
   // Above the scroller, so an editor opened far down the file is on screen.
@@ -5014,10 +5046,11 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
         </div>
         ) : null}
 
-        {/* Row 2: Docked editor toolbar. 40px with 24px buttons, the same band
-            the context panel's file tree draws beside it, so the two line up. */}
+        {/* Row 2: Docked editor toolbar, 36px with 24px buttons: the same band
+            the context panel's file tree draws beside it with its search
+            field and actions, so the two read as one strip. */}
         {selectedFile ? (
-          <div className="flex h-8 min-w-0 shrink-0 items-center border-t border-edge-muted px-2">
+          <div className="flex h-9 min-w-0 shrink-0 items-center border-t border-edge-muted px-2">
             {renderFileToolbar({ layout: 'docked' })}
           </div>
         ) : null}
@@ -5124,6 +5157,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
                       frontmatter="properties"
                       enableFileReferences={false}
                       allowRawHtml
+                      svgFences
                       windowed
                       tableWidthScope={selectedFile.path}
                     />
@@ -5132,12 +5166,19 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
               </div>
               <OverlayScrollbar containerRef={mdPreviewContainerRef} />
               {!isFullscreen && (
-                <MarkdownPreviewSearch
-                  containerRef={mdPreviewContainerRef}
-                  open={mdPreviewFindOpen}
-                  onOpenChange={setMdPreviewFindOpen}
-                  focusNonce={mdPreviewFindFocusNonce}
-                />
+                <>
+                  <MarkdownPreviewSearch
+                    containerRef={mdPreviewContainerRef}
+                    open={mdPreviewFindOpen}
+                    onOpenChange={setMdPreviewFindOpen}
+                    focusNonce={mdPreviewFindFocusNonce}
+                  />
+                  <MarkdownPreviewOutline
+                    containerRef={mdPreviewContainerRef}
+                    open={mdPreviewOutlineOpen}
+                    onOpenChange={setMdPreviewOutlineOpen}
+                  />
+                </>
               )}
             </div>
           ) : selectedFile && isHtml && htmlViewMode === 'preview' && htmlPreviewUnreachable ? (
@@ -5268,7 +5309,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
       <div className={cn("flex flex-col gap-2 py-2", isMobile ? "px-3" : "px-2")}>
         <div className="flex items-center gap-2">
           <div className="relative flex-1 min-w-0">
-            <Icon name="search" className="pointer-events-none absolute inset-s-2 top-2 size-4 text-muted-foreground" />
+            <Icon name="search" className="pointer-events-none absolute inset-s-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               ref={searchInputRef}
               value={searchQuery}
@@ -5450,6 +5491,7 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
                     frontmatter="properties"
                     enableFileReferences={false}
                     allowRawHtml
+                    svgFences
                     windowed
                     tableWidthScope={selectedFile.path}
                   />
@@ -5463,6 +5505,12 @@ export const FilesView: React.FC<FilesViewProps> = ({ mode = 'full', visible = t
                 onOpenChange={setMdPreviewFindOpen}
                 focusNonce={mdPreviewFindFocusNonce}
                 className="inset-e-4 top-16"
+              />
+              <MarkdownPreviewOutline
+                containerRef={mdFullscreenPreviewContainerRef}
+                open={mdPreviewOutlineOpen}
+                onOpenChange={setMdPreviewOutlineOpen}
+                className="inset-s-4 top-16"
               />
             </div>
           ) : canUseShikiFileView && textViewMode === 'view' ? (

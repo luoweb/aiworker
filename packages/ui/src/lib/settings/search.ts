@@ -539,6 +539,13 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     keywords: ['follow up', 'queue', 'steer', 'send immediately'],
   },
   {
+    id: 'chat.questions-placement',
+    page: 'chat',
+    titleKey: 'settings.openchamber.visual.field.questionsPlacement',
+    descriptionKey: 'settings.openchamber.visual.field.questionsPlacementInfo',
+    keywords: ['question', 'form', 'ask', 'pop-up', 'popup', 'dock', 'inline', 'in the chat'],
+  },
+  {
     id: 'chat.input-history-scope',
     page: 'chat',
     titleKey: 'settings.openchamber.visual.field.inputHistoryScope',
@@ -917,6 +924,15 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     isAvailable: (ctx) => !ctx.isVSCode && useUIStore.getState().agentWebToolEnabled,
   },
   {
+    id: 'sessions.agent-browser-logins',
+    page: 'general',
+    titleKey: 'settings.openchamber.tools.agentBrowserLogins.label',
+    descriptionKey: 'settings.openchamber.tools.agentBrowserLogins.info',
+    keywords: ['agent', 'browser', 'login', 'cookies', 'profile', 'session', 'security', 'privacy'],
+    // The desktop browser panel's profiles; rendered only while the web tool is on.
+    isAvailable: (ctx) => ctx.isDesktop && !ctx.isMobile && !ctx.isVSCode && useUIStore.getState().agentWebToolEnabled,
+  },
+  {
     id: 'sessions.agent-notify-tool',
     page: 'general',
     titleKey: 'settings.openchamber.tools.field.agentNotifyTool',
@@ -1163,6 +1179,13 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     page: 'projects',
     titleKey: 'settings.projects.page.section.worktree',
     keywords: ['worktree', 'branch', 'repository'],
+  },
+  {
+    id: 'projects.worktree.create',
+    page: 'projects',
+    titleKey: 'settings.openchamber.worktrees.create.title',
+    descriptionKey: 'settings.openchamber.worktrees.create.info',
+    keywords: ['worktree', 'create', 'copy-on-write', 'cow', 'reflink', 'clone', 'git worktree add', 'node_modules', 'disk'],
   },
   {
     id: 'projects.worktree.setup.wait',
@@ -1427,7 +1450,7 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     page: 'providers',
     titleKey: 'settings.classification.page.title',
     descriptionKey: 'settings.classification.page.description',
-    keywords: ['jev', 'typesafe', 'zen', 'api key', 'token', 'safety net', 'auto', 'routing', 'classification', 'promotion', 'off', 'disable', 'privacy', 'custom endpoint', 'base url', 'openai-compatible', 'system one', 'self-hosted', 'proxy'],
+    keywords: ['jev', 'typesafe', 'zen', 'api key', 'token', 'safety net', 'auto', 'routing', 'classification', 'promotion', 'off', 'disable', 'privacy', 'custom endpoint', 'base url', 'openai-compatible', 'system one', 'self-hosted', 'proxy', 'gemini', 'google', 'decisions'],
     isAvailable: (ctx) => !ctx.isVSCode && ctx.routingAvailable,
   },
   {
@@ -1435,7 +1458,7 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     page: 'providers',
     titleKey: 'settings.providers.page.custom.title',
     descriptionKey: 'settings.providers.page.custom.description',
-    keywords: ['other', 'custom', 'openai-compatible', 'base url', 'api key'],
+    keywords: ['other', 'custom', 'openai-compatible', 'base url', 'api key', 'client certificate', 'mtls', 'mutual tls', 'gateway'],
   },
   {
     id: 'providers.auth',
@@ -1734,7 +1757,7 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     titleKey: 'settings.extensions.add.label',
     descriptionKey: 'settings.extensions.add.info',
     keywords: ['folder', 'path', 'zip', 'git', 'url', 'install', 'guest', 'panel'],
-    isAvailable: (ctx) => !ctx.isVSCode && !ctx.isMobile,
+    isAvailable: (ctx) => !ctx.isVSCode,
   },
   {
     id: 'extensions.browse',
@@ -1742,7 +1765,7 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     titleKey: 'settings.extensions.browse.label',
     descriptionKey: 'settings.extensions.browse.hint',
     keywords: ['community', 'catalog', 'marketplace', 'store', 'gallery', 'website', 'discover', 'find', 'extension'],
-    isAvailable: (ctx) => !ctx.isVSCode && !ctx.isMobile && !ctx.enterpriseMode,
+    isAvailable: (ctx) => !ctx.isVSCode && !ctx.enterpriseMode,
   },
   {
     id: 'extensions.gitIdentity',
@@ -1750,14 +1773,14 @@ const SETTINGS_SEARCH_ITEMS: readonly SettingsSearchItem[] = [
     titleKey: 'settings.extensions.identity.title',
     descriptionKey: 'settings.extensions.add.info',
     keywords: ['ssh', 'key', 'identity', 'git', 'private', 'clone', 'extension'],
-    isAvailable: (ctx) => !ctx.isVSCode && !ctx.isMobile,
+    isAvailable: (ctx) => !ctx.isVSCode,
   },
   {
     id: 'extensions.updates.check',
     page: 'extensions',
     titleKey: 'settings.extensions.updates.check',
     keywords: ['update', 'upgrade', 'version', 'git', 'extension', 'guest', 'refresh'],
-    isAvailable: (ctx) => !ctx.isVSCode && !ctx.isMobile,
+    isAvailable: (ctx) => !ctx.isVSCode,
   },
 ] as const;
 

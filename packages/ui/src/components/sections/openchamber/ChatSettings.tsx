@@ -66,6 +66,11 @@ const FOLLOW_UP_BEHAVIOR_OPTIONS: ChipOption<FollowUpBehavior>[] = [
   { id: 'queue', labelKey: 'settings.openchamber.visual.option.followUpBehavior.queue.label' },
 ];
 
+const QUESTIONS_PLACEMENT_OPTIONS: ChipOption<'popup' | 'chat'>[] = [
+  { id: 'popup', labelKey: 'settings.openchamber.visual.option.questionsPlacement.popup.label' },
+  { id: 'chat', labelKey: 'settings.openchamber.visual.option.questionsPlacement.chat.label' },
+];
+
 const INPUT_HISTORY_SCOPE_OPTIONS: ChipOption<InputHistoryScope>[] = [
   { id: 'global', labelKey: 'settings.openchamber.visual.option.inputHistoryScope.global.label' },
   { id: 'session', labelKey: 'settings.openchamber.visual.option.inputHistoryScope.session.label' },
@@ -164,7 +169,7 @@ const MessagesTab: React.FC = () => {
 
   return (
     <>
-      <SettingsSection title={t('settings.layout.chat.section.activity')} divider={false} contentClassName="space-y-3">
+      <SettingsSection title={t('settings.layout.chat.section.activity')} contentClassName="space-y-3">
         <SettingsFieldRow label={t('settings.openchamber.visual.section.activityDefault')} settingsItem="chat.activity-default">
           <SettingsChipGroup
             value={activityRenderMode}
@@ -382,7 +387,10 @@ const ComposerTab: React.FC = () => {
   const inputHistoryLimit = useInputHistoryStore((state) => state.entryLimit);
   const applyInputHistoryScope = useInputHistoryStore((state) => state.applyScope);
   const applyInputHistoryLimit = useInputHistoryStore((state) => state.applyEntryLimit);
+  const questionsInChat = useUIStore((state) => state.questionsInChat);
+  const setQuestionsInChat = useUIStore((state) => state.setQuestionsInChat);
   const followUpOptions = useChipOptions(FOLLOW_UP_BEHAVIOR_OPTIONS);
+  const questionsPlacementOptions = useChipOptions(QUESTIONS_PLACEMENT_OPTIONS);
   const historyScopeOptions = useChipOptions(INPUT_HISTORY_SCOPE_OPTIONS);
   const enterSendSelected = enterToSendConfigured ? enterToSend : !isMobile;
 
@@ -408,7 +416,7 @@ const ComposerTab: React.FC = () => {
 
   return (
     <>
-      <SettingsSection title={t('settings.layout.chat.section.sending')} divider={false} settingsItem="chat.composer" contentClassName="space-y-5">
+      <SettingsSection title={t('settings.layout.chat.section.sending')} settingsItem="chat.composer" contentClassName="space-y-5">
         <div>
           {/* Phones send with the keyboard's own button, so there is no send key to pick. */}
           {isMobile ? null : (
@@ -447,6 +455,18 @@ const ComposerTab: React.FC = () => {
               options={followUpOptions}
               onChange={setFollowUpBehavior}
               aria-label={t('settings.openchamber.visual.section.followUpBehaviorAria')}
+            />
+          </SettingsFieldRow>
+          <SettingsFieldRow
+            label={t('settings.openchamber.visual.field.questionsPlacement')}
+            info={t('settings.openchamber.visual.field.questionsPlacementInfo')}
+            settingsItem="chat.questions-placement"
+          >
+            <SettingsChipGroup
+              value={questionsInChat ? 'chat' : 'popup'}
+              options={questionsPlacementOptions}
+              onChange={(value) => setQuestionsInChat(value === 'chat')}
+              aria-label={t('settings.openchamber.visual.field.questionsPlacement')}
             />
           </SettingsFieldRow>
         </div>
@@ -570,7 +590,6 @@ const AssistanceTab: React.FC = () => {
       <SettingsSection
         title={t('settings.openchamber.visual.section.sessionAssistance')}
         settingsItem="chat.session-assistance"
-        divider={false}
         contentClassName={SETTINGS_OPTION_STACK_CLASS}
       >
         <SettingsCheckboxRow

@@ -13,6 +13,8 @@ import { useProjectContextStore } from '@/stores/useProjectContextStore';
 import { useGlobalSessionsStore } from '@/stores/useGlobalSessionsStore';
 import { useAutoReviewStore } from '@/stores/useAutoReviewStore';
 import { resetPrWatchesForRuntimeSwitch } from '@/sync/pr-watch';
+import { resetExtensionWaitsForRuntimeSwitch } from '@/sync/extension-waits';
+import { resetLaterPagesForRuntimeSwitch } from '@/sync/later-pages';
 import { usePermissionStore } from '@/stores/permissionStore';
 import { useMessageQueueStore } from '@/stores/messageQueueStore';
 import { useFileSearchStore } from '@/stores/useFileSearchStore';
@@ -72,6 +74,8 @@ export const resetAppForRuntimeEndpointChange = (detail: RuntimeEndpointChangedD
   // The previous server keeps its runs going; this window shows the new one's.
   useAutoReviewStore.getState().resetForRuntimeSwitch();
   resetPrWatchesForRuntimeSwitch();
+  resetExtensionWaitsForRuntimeSwitch();
+  resetLaterPagesForRuntimeSwitch();
   disposeTerminalInputTransport();
   useTerminalStore.getState().clearAll();
   opencodeClient.reconnectToRuntimeBaseUrl();

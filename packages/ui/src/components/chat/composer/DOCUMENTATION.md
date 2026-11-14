@@ -64,12 +64,56 @@ oldest pending form and counts the rest in its header. The BTW sheet keeps
 the inline `FormCard` for its child session's forms; both render a field
 through `FormFieldControl`.
 
+With Settings → Chat → Composer → Questions set to "In the chat"
+(`questionsInChat` in `useUIStore`, a device-local key), `ChatContainer`
+renders every waiting form of the dock's scope as a `FormCard` at the end of
+the transcript (`TranscriptForms`, in the list footer), and the dock shrinks
+to `FormDockPointer`: one line with the first question's title and the count,
+whose click asks the timeline for that form's card by id
+(`revealWaitingPage(sessionId, formId)`). A toast's "Open session" does the
+same for the form it names. Answer, Dismiss and Cancel go through the same
+`replyToForm` / `cancelForm` routes. The card in the chat keeps the dock's
+rules: Submit, by its button or by Enter, waits until every question has an
+answer, and the answer draft uses the dock's key, so it survives the card
+unmounting and a switch back to the dock. A draft the dock left is taken with
+its link steps acknowledged, since the card shows every link at once. A card
+in a retained session that is shown again first takes up the draft another
+surface saved meanwhile: a location-scoped form shows in every session of its
+directory. The choice applies only while the transcript is on screen and not
+in a chat pinned in the side panel (`resolveFormsInChat`); an empty or
+loading session, an expanded composer and a pinned chat show the dock as
+before.
+
 On a phone the dock's body is clamped to the room above the keyboard
 (`useMobileAutocompleteMaxHeight`). iOS Safari raises the keyboard after the
 answer box takes focus, so the clamp shrinks the body under a box Safari has
 already revealed, and Safari does not reveal it again until the first
 keystroke. The dock therefore scrolls the focused field back into view
 whenever that height changes.
+
+### Why questions in the chat sit at the end of the transcript and the dock keeps a line
+
+The card goes in the list footer, after every row, and not at the form's
+tool call: a plugin form (`ask_later`, any `POST /session/:id/form`) is
+usually followed by the agent's explanation after its call returned, so a card
+at the call would sit above the message it refers to, and a form with no tool
+part (an MCP elicitation) has no call to sit at. The dock keeps one line
+instead of disappearing: a reader who scrolled up gets no other sign of a new
+question (no toast for the open session, no status row), and the next send
+cancels a question the reader never saw. The line is not a collapsed
+`FormDockPanel`, because that panel writes the shared draft from its own state
+and would overwrite what the card saved. The full panel still shows beside or
+instead of a card in three cases: a chat pinned in the side panel (see below),
+a session whose transcript is still loading, and an expanded composer. There
+it can overwrite the card's saved draft, for example when a reconnect hands it
+the same form again, as either of two docks on one form can today.
+The setting is device-local, not a
+synced preference: syncing it would need a server-side validator, and a phone
+and a desktop can reasonably want different answers. A chat pinned in the
+side panel keeps the full dock rather than a line of its own: the line asks
+for its card through the app-wide waiting-page request, which only the main
+timeline serves, so in the side panel it would move nothing, or move the main
+chat when that shows the same session.
 
 ### Why answer textareas measure content in one layout pass
 
@@ -134,7 +178,7 @@ being created from a draft's first message, and a message waiting for its
 space (`ComposerStatusStrip`; the creating line yields to the worktree line,
 so one wait shows one line, and appears only once the creation has taken
 300 ms, `useShownAfter`, so a fast server never flashes it), the goal (`SessionGoalRow`), a
-review loop and, once it ends, its result until dismissed, a dispute unfolding in place (`AutoReviewStrip`), the pull request the agent waits on with Stop watching (`PullRequestWatchStrip`), background commands, a staged revert
+review loop and, once it ends, its result until dismissed, a dispute unfolding in place (`AutoReviewStrip`), the pull requests the agent waits on with Stop watching, several collapsed into a count (`PullRequestWatchStrip`), background commands, a staged revert
 (`RevertedMessagesStrip`), the queue (`QueuedMessagesStrip`),
 the "looks done" hint or the review offer, the suggestion
 (`SessionSuggestionChip`). BTW hides all of them. A pending form, a nonempty
@@ -208,15 +252,56 @@ Mixed queues use only ordinary items for manual send; a scheduled-only queue
 cannot trigger an empty composer send. Enter and Ctrl/Cmd+Enter in an empty
 composer send the whole queue now, as one visible message (#4746). While a turn
 runs only Enter does this: the send button gives way to Stop until the turn
-ends, and a row's own Send sends just that message. Like any send, it dismisses
-open permission requests and forms. Scheduled items stay visible in the
-queue rows with reorder and remove, but no edit or send action.
+ends, and a row's own Send sends just that message. An empty-composer send
+dismisses open permission requests and the forms that hold a turn, as a direct
+composer send does; a row's own Send is queued-only and dismisses nothing.
+Scheduled items stay visible in the queue rows with reorder and remove, but no
+edit or send action.
 
-While a turn runs and the composer has content, a follow-up button sits above
-Stop (inside the pill on collapsed mobile). It takes the same path as plain
-Enter under the follow-up setting: with Queue it queues and shows the rotated
-icon labelled "Queue message"; with Steer it steers into the running turn and
-looks like the ordinary send button.
+The action button (`ComposerActionButtons`, and the same rule in the
+collapsed mobile pill) is one disc in one slot: 28px on desktop, the footer's
+button size in VS Code, and a 28px disc at the end of the 32px touch target on
+phones, where the footer and the collapsed pill take `pe-3.5` so the disc's
+right edge lines up with the agent label in the row below. The pill's action
+row is built like the expanded footer (`h-12`, the attach button in
+`composer-mobile-actions` at a 10px inset, mic and Send in a `gap-x-1`
+group), so no icon moves across the swap with 32px buttons or on the 36px
+touch floor. It is drawn by `.oc-action-disc` in `design-system.css`: the
+composer's text colour with the glyph cut out in the composer's own fill
+(`--oc-composer-foreground` over `--oc-composer-background`), flat, no ring
+or shadow. Disabled, it is a quiet tone step of the text colour with the
+glyph in the muted text. Which glyph it shows:
+
+- idle: Send (`arrow-up`);
+- a turn running, input empty: Stop, its square in the theme's error colour
+  (`--status-error`) on the quiet disc (`data-idle`): a bright disc for the
+  whole length of a run pulled the eye; the bare Stop shown beside
+  Send (below) takes the same red square;
+- a turn running, input with content: Send again, taking the same path as
+  plain Enter under the follow-up setting: with Queue it queues and is
+  labelled "Queue message", with Steer it steers into the running turn.
+  Ctrl/Cmd+Enter sends now instead of the setting's choice, as it does for
+  Enter.
+
+A run stays stoppable with the draft intact. Whether double Escape
+(`abort_run`, `hooks/useComposerAbortEscape.ts`) reaches a composer's session
+is decided in one place, `state/abortShortcutReach.ts`, which `ChatInput`
+passes down as `escapeStops`:
+
+| Surface | Running with a draft |
+| --- | --- |
+| Main window (and a chat pinned in its side panel), with a keyboard | One disc (Send); double Escape stops, named in the Send tooltip |
+| Mini Chat, with a keyboard | The same: `useMiniChatKeyboardShortcuts` wires the gesture to Mini Chat's own session |
+| BTW | A bare Stop icon before the disc: BTW's Escape collapses BTW, and the shortcut skips its composer |
+| Touch (the mobile composers, or a device with no hover and a coarse pointer) | A bare Stop icon before the disc, at the touch-target size |
+| Anything else (`unknown`) | A bare Stop icon before the disc, until the surface is wired |
+
+The visible Stop appears only in that state and takes room from the row on
+its left, so the disc does not move.
+
+Only the glyph changes as a run starts or ends, so nothing beside it moves. On
+desktop the footer's end padding is 8px, so the disc sits as far from the
+composer's right edge as from its bottom edge.
 
 `BackgroundShellsStrip` lists the commands that went to the background (not the ones
 a turn is waiting for, see `background` in `sync/background-shells.ts`) of
@@ -229,7 +314,7 @@ collapse into a count that expands in place, collapsed again on a session
 switch, and the count row carries Stop all. Stop all sends one call per owning
 session, so each agent gets one note for all of its commands and their
 completions arrive together; a stopping row stays disabled until OpenCode
-reports its command ended, and a failed call makes its commands stoppable again. It shows whether the session runs or idles, and hides in BTW and
+reports its command ended, and a failed call makes its commands stoppable again. A command its chat row is stopping from the foreground (`foregroundShellStop.ts`) appears here once its call moved to the background; its Stop stays disabled and Stop all leaves it out, so the agent gets one note; Stop all itself is disabled while every listed command is being stopped, and comes back when such a stop fails. It shows whether the session runs or idles, and hides in BTW and
 new-session drafts. The elapsed text is a leaf on the shared one-second
 ticker, and the tree is compared as a string, so neither the tick nor
 session-list updates re-render the composer. Images the session and its
@@ -332,19 +417,46 @@ elements between the box and the overlay carry `data-dictation-chain`, so the
 rule only targets their other children. A `:has()` over the box was
 re-evaluated for every descendant on each editor mutation.
 
-Typing re-renders `ChatInput` and its editor, nothing else. The children that
-do not depend on the draft text (footer, autocomplete popups, docks, BTW
-panel, draft target selectors and preset chips) are memoized, and the props
-`ChatInput` passes them keep their identity while the user types: callbacks
-read the text through `messageRef` or `useStableHandler`, derived objects are
-memoized, and `useBtwPanelState` and `useMobileComposerShell` return stable
-objects. `useBtwPanelState` reads the parent and fork sessions as primitives,
-and `useChatSearchDirectory` reads only the session's directory, so a
-streaming turn's `session.updated` events do not re-render the composer. The
-editor is memoized and every handler `ChatInput` passes it is a
-`useStableHandler`, so it renders only when what it shows changes.
+Typing re-renders nothing in React except what shows a value derived from the
+text: `ChatInput` renders when the composer turns empty or non-empty, the
+goal counter's length while a goal is armed, the snippet picker's draft while
+it is open, and the collapsed phone pill. The draft text lives in
+`state/composerText.ts`, which the editor's change handler updates on every
+edit. Handlers read the current text from it (or from the editor), render
+reads derived values through `useComposerTextValue`, and work that followed
+the text in an effect (draft persistence and publishing, the file mention
+check, session link reads, the picker's position, the new Chat's folder)
+subscribes through `useComposerTextEffect`. The children that do not depend
+on the text (footer, autocomplete popups, docks, BTW panel, draft target
+selectors and preset chips) are memoized, and the props `ChatInput` passes
+them keep their identity across its renders: callbacks are
+`useStableHandler`s or read `composerText`, derived objects are memoized, and
+`useBtwPanelState` and `useMobileComposerShell` return stable objects.
+`useBtwPanelState` reads the parent and fork sessions as primitives, and
+`useChatSearchDirectory` reads only the session's directory, so a streaming
+turn's `session.updated` events do not re-render the composer. The editor is
+memoized and every handler `ChatInput` passes it is a `useStableHandler`, so
+it renders only when what it shows changes.
 `__tests__/ChatInput.keystroke.test.tsx` counts the renders per keystroke and
-per streamed session update.
+per streamed session update, and sends a text whose Enter lands before any
+render.
+
+### Why the draft text lives outside React state
+
+As `ChatInput` state, every keystroke rendered the whole composer: about
+3.4 ms of a 10.9 ms keystroke at 4x CPU throttle into a 3,000-character draft
+(`profile:composer --type`), and the worst keystrokes twice as long. Holding
+the text in `composerText` leaves React only the values that change what is
+on screen. Handlers must read `composerText.get()` or the editor, never a
+value captured at render, or an Enter that arrives before the next render
+sends the text without its last keys.
+
+Text the app puts in goes through `setMessage`, which updates `composerText`
+and bumps `valueRevision` on `ComposerEditor`. The editor's `value` prop is
+`composerText.get()` read at render, so a remounted editor starts from the
+current text; the revision makes the editor write a value equal to the one it
+last rendered with, which happens because typing no longer renders it (type
+after a render, then the app restores the text of that render).
 
 A glass surface never carries its own shadow: the shadow sits on a wrapper
 (or the glass moves to an inner layer). Chromium grows a backdrop-filter
@@ -563,9 +675,12 @@ found in the text.
 
 ## The editor
 
-`editor/bidi.ts` gives each rendered logical line native `dir="auto"` and
-enables CodeMirror's `perLineTextDirection`, so browser layout and cursor
-movement use the same direction. The content root stays LTR; automatic
+`editor/bidi.ts` gives each rendered logical line the direction most of its
+words run (`proseTextDirection` in `lib/i18n/textDirection.ts`, the count chat
+prose uses), so a Latin-first Arabic line runs right to left beside an English
+one; a line without letters gets `dir="auto"`. It enables CodeMirror's
+`perLineTextDirection`, so browser layout and cursor movement use the same
+direction. The content root stays LTR; automatic
 direction there would depend on which lines virtualization has mounted.
 Only visible lines get decorations, rebuilt on document or viewport changes.
 
@@ -1106,6 +1221,14 @@ picker uses, and then draws as a chip where it stands: its number and title.
   (typed or restored), with that read.
 - Editing a queued message puts each item its text links back as that link's
   chip, the rest above the text.
+- The sent message draws the same chips where the links stand
+  (`message/parts/referenceLinkChips.tsx`, from the message's context parts;
+  in Markdown mode through `MarkdownLink`, by the link's `href`). A link names
+  an item whatever page of it opens (`isSameRepositoryItemLink`, the tracker's
+  identifier), so a picker item whose link the user also typed draws there too.
+  An item drawn inline leaves the attachment row; one the text does not link,
+  or links only inside code, stays there. Both chips open the item in the
+  Tracker (`useOpenTrackerItem`), Cmd or Ctrl its page.
 - A link on another host than the project's, or one no account can read, stays
   text with the picker's attach-failed toast. A link past the project's fork
   network is read again as a linked item, as the Tracker does. Discussions stay
@@ -1246,7 +1369,11 @@ one app-wide composer state is split per column:
   chat. A pinned composer sends with `usePinnedComposerSelection`: what was
   picked in it, saved for its session in the selection store the way the BTW
   composer saves its picks, otherwise the session record's model, variant and
-  agent. Its picker is `ModelControls` in controlled mode, where the agent
+  agent. A variant `"default"` is how OpenCode stores no effort, so the
+  pinned composer shows it as Default, as the main chat does: from the record
+  it is no effort, and saved as a pick (older pickers copied it there) it is
+  an explicit Default that still wins over the record. Its picker is
+  `ModelControls` in controlled mode, where the agent
   pick is saved for the picker's own session and never changes the main
   chat's agent. As in BTW, the pick carries the effort the composer shows to
   the new agent when the session has none saved for that agent and model, so
