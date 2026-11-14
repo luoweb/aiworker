@@ -357,6 +357,15 @@ const measuredRowHeights = {
 
 const STICKY_HEADER_OFFSET = 32;
 
+// Sticky-fade band sizing, in px. Once the scroller leaves the top the top
+// fade grows from STICKY_FADE_MIN_SIZE up to STICKY_FADE_MAX_SIZE (matching the
+// 48px scroll-shadow convention), and the solid clear band leading into the
+// gradient is capped at STICKY_FADE_CLEAR_MAX_SIZE so it never overshoots the
+// fade.
+const STICKY_FADE_MIN_SIZE = 12;
+const STICKY_FADE_MAX_SIZE = 48;
+const STICKY_FADE_CLEAR_MAX_SIZE = 40;
+
 const favoriteSortId = (entry: ModelPickerEntry) => `${entry.providerID}:${entry.modelID}`;
 const PROVIDER_SORT_PREFIX = 'provider:';
 
@@ -522,6 +531,9 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   // press as a context menu, so the two open the details once.
   const longPressRef = React.useRef<{ timer: number; x: number; y: number } | null>(null);
   const detailsOpenedAtRef = React.useRef(0);
+  // Last computed top-fade size, so click suppression on the overlay knows how
+  // far down the fade band reaches without re-reading the DOM.
+  const stickyFadeSizeRef = React.useRef(0);
   const cancelLongPress = () => {
     if (longPressRef.current) window.clearTimeout(longPressRef.current.timer);
     longPressRef.current = null;
