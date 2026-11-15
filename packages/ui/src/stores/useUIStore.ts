@@ -72,6 +72,8 @@ type DesktopWindowControlsPosition = 'left' | 'right';
 type DesktopWindowControlsStyle = 'classic' | 'traffic-lights';
 export type FileEditorKeymap = 'default' | 'vim';
 export type LargeTextPasteBehavior = 'ask' | 'attach' | 'inline' | 'inline-double-paste';
+/** Chat column width: a reading column, a wider capped column, or the whole chat for the transcript. */
+export type ChatWidth = 'default' | 'wider' | 'full';
 export type SessionGoalChecker = 'classifier' | 'small-model';
 
 const DEFAULT_LARGE_TEXT_PASTE_BEHAVIOR: LargeTextPasteBehavior = 'ask';
@@ -1072,6 +1074,8 @@ interface UIStore {
   terminalLoginShells: TerminalShell[];
   /** A terminal or project action tab closes when its process exits; off keeps the exited output. */
   terminalCloseOnExit: boolean;
+  /** Starting a project action brings its terminal tab forward in the side panel. */
+  terminalOpenOnProjectAction: boolean;
   editorFontSize: number;
   uiFont: UiFontOption;
   monoFont: MonoFontOption;
@@ -1217,7 +1221,7 @@ interface UIStore {
   enterToSend: boolean;
   enterToSendConfigured: boolean;
   mobileReturnKeySends: boolean;
-  wideChatLayoutEnabled: boolean;
+  chatWidth: ChatWidth;
   codeBlockLineWrap: boolean;
   tableCellWrap: boolean;
   copyMessagesAsPlainText: boolean;
@@ -1405,6 +1409,7 @@ interface UIStore {
   setTerminalShell: (shell: TerminalShell) => void;
   setTerminalLoginShells: (shells: TerminalShell[]) => void;
   setTerminalCloseOnExit: (value: boolean) => void;
+  setTerminalOpenOnProjectAction: (value: boolean) => void;
   setEditorFontSize: (size: number) => void;
   setUiFont: (font: UiFontOption) => void;
   setMonoFont: (font: MonoFontOption) => void;
@@ -1510,7 +1515,7 @@ interface UIStore {
   setEnterToSend: (value: boolean) => void;
   setMobileReturnKeySends: (value: boolean) => void;
   setEnterToSendConfigured: (value: boolean) => void;
-  setWideChatLayoutEnabled: (value: boolean) => void;
+  setChatWidth: (value: ChatWidth) => void;
   setCodeBlockLineWrap: (value: boolean) => void;
   setTableCellWrap: (value: boolean) => void;
   setCopyMessagesAsPlainText: (value: boolean) => void;
@@ -1679,6 +1684,7 @@ export const useUIStore = create<UIStore>()(
         terminalShell: 'auto',
         terminalLoginShells: [],
         terminalCloseOnExit: true,
+        terminalOpenOnProjectAction: true,
         editorFontSize: DEFAULT_EDITOR_FONT_SIZE,
         uiFont: DEFAULT_UI_FONT,
         monoFont: DEFAULT_MONO_FONT,
@@ -1776,7 +1782,7 @@ export const useUIStore = create<UIStore>()(
         enterToSend: false,
         enterToSendConfigured: false,
         mobileReturnKeySends: false,
-        wideChatLayoutEnabled: false,
+        chatWidth: 'default',
         codeBlockLineWrap: true,
         tableCellWrap: true,
         copyMessagesAsPlainText: true,
@@ -2912,6 +2918,10 @@ export const useUIStore = create<UIStore>()(
           set({ terminalCloseOnExit: value });
         },
 
+        setTerminalOpenOnProjectAction: (value) => {
+          set({ terminalOpenOnProjectAction: value });
+        },
+
         setEditorFontSize: (size) => {
           const rounded = Math.round(size);
           const clamped = Math.max(9, Math.min(32, rounded));
@@ -3533,8 +3543,8 @@ export const useUIStore = create<UIStore>()(
         setMobileReturnKeySends: (value) => {
           set({ mobileReturnKeySends: value });
         },
-        setWideChatLayoutEnabled: (value) => {
-          set({ wideChatLayoutEnabled: value });
+        setChatWidth: (value) => {
+          set({ chatWidth: value });
         },
         setCodeBlockLineWrap: (value) => {
           set({ codeBlockLineWrap: value });
@@ -3642,7 +3652,7 @@ export const useUIStore = create<UIStore>()(
       {
         name: 'ui-store',
         storage: createDeferredSafeJSONStorage(),
-        version: 29,
+        version: 30,
         migrate: (persistedState, version) => {
           if (!persistedState || typeof persistedState !== 'object') {
             return persistedState;
@@ -3674,6 +3684,12 @@ export const useUIStore = create<UIStore>()(
           // width the user set (any other) stays.
           if (version < 29 && state.contextEditorTreeWidth === 240) {
             state.contextEditorTreeWidth = DEFAULT_CONTEXT_EDITOR_TREE_WIDTH;
+          }
+
+          // v29 -> v30: the Wide chat layout switch became the Full chat width.
+          if (version < 30) {
+            state.chatWidth = state.wideChatLayoutEnabled === true ? 'full' : 'default';
+            delete state.wideChatLayoutEnabled;
           }
 
           // v20 -> v21: enable telemetry by default; preserve explicit choices.
@@ -4004,6 +4020,7 @@ export const useUIStore = create<UIStore>()(
           terminalShell: state.terminalShell,
           terminalLoginShells: state.terminalLoginShells,
           terminalCloseOnExit: state.terminalCloseOnExit,
+          terminalOpenOnProjectAction: state.terminalOpenOnProjectAction,
           editorFontSize: state.editorFontSize,
           uiFont: state.uiFont,
           monoFont: state.monoFont,
@@ -4077,7 +4094,7 @@ export const useUIStore = create<UIStore>()(
           enterToSend: state.enterToSend,
           enterToSendConfigured: state.enterToSendConfigured,
           mobileReturnKeySends: state.mobileReturnKeySends,
-          wideChatLayoutEnabled: state.wideChatLayoutEnabled,
+          chatWidth: state.chatWidth,
           codeBlockLineWrap: state.codeBlockLineWrap,
           tableCellWrap: state.tableCellWrap,
           copyMessagesAsPlainText: state.copyMessagesAsPlainText,
