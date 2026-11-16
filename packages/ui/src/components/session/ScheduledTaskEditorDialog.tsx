@@ -1231,7 +1231,8 @@ export function ScheduledTaskEditorDialog(props: {
           outerClassName="flex-1 min-h-0"
           useScrollShadow
           scrollShadowSize={64}
-          hideTopScrollShadow>
+          hideTopScrollShadow
+          hideBottomScrollShadow>
           <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 pb-5">{formBody}</div>
         </ScrollableOverlay>
 

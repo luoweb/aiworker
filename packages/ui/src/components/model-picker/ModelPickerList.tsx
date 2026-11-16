@@ -1391,17 +1391,14 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
       </div>
 
       <div className="relative flex min-h-0 flex-1">
-        {/* Both scroll fades are suppressed here: mask-image rasterizes as a
-            solid black block in software-rendered environments (remote
-            desktop, older GPUs). The real section headers keep their sticky
-            position, so nothing is lost — the crisp-identity fade overlay
-            below stays dormant with the mask. */}
+        {/* The bottom fade is suppressed: mask-image rasterizes as a solid
+            black block in software-rendered environments (remote desktop,
+            older GPUs). The top fade stays for the sticky section headers. */}
         <ScrollableOverlay
           ref={attachScroller}
-          // The bottom fade says the list goes on under the key-hint footer;
-          // without it the last row read as cut off.
           useScrollShadow
           scrollShadowSize={12}
+          hideBottomScrollShadow
           outerClassName={maxHeightClassName}
           className="overlay-scrollbar-target--no-gutter"
           style={maxHeightStyle}
