@@ -70,6 +70,7 @@ export type TimeFormatPreference = 'auto' | '12h' | '24h';
 type WeekStartPreference = 'auto' | 'sunday' | 'monday';
 type DesktopWindowControlsPosition = 'left' | 'right';
 type DesktopWindowControlsStyle = 'classic' | 'traffic-lights';
+export type MobileKeepScreenAwake = 'off' | 'working' | 'always';
 export type FileEditorKeymap = 'default' | 'vim';
 export type LargeTextPasteBehavior = 'ask' | 'attach' | 'inline' | 'inline-double-paste';
 /** Chat column width: a reading column, a wider capped column, or the whole chat for the transcript. */
@@ -1129,6 +1130,8 @@ interface UIStore {
   // Desktop dock badge showing the count of sessions with unseen activity (macOS).
   dockBadgeEnabled: boolean;
   alwaysShowScrollbars: boolean;
+  // Native phone app: keep the display on while the open session works, always, or never.
+  mobileKeepScreenAwake: MobileKeepScreenAwake;
   // An agent's question shows as a card at the end of the chat instead of
   // the dock above the composer. This device only.
   questionsInChat: boolean;
@@ -1172,6 +1175,7 @@ interface UIStore {
   agentKnowledgeToolEnabled: boolean;
   agentNotifyToolEnabled: boolean;
   agentUsageToolEnabled: boolean;
+  agentTerminalToolEnabled: boolean;
   agentImageToolEnabled: boolean;
   /** `provider/model` the image tool draws with; empty until the user picks one. */
   agentImageModel: string;
@@ -1469,6 +1473,7 @@ interface UIStore {
   setNotifyOnSubtasks: (value: boolean) => void;
   setDockBadgeEnabled: (value: boolean) => void;
   setAlwaysShowScrollbars: (value: boolean) => void;
+  setMobileKeepScreenAwake: (value: MobileKeepScreenAwake) => void;
   setQuestionsInChat: (value: boolean) => void;
   setNotifyOnCompletion: (value: boolean) => void;
   setNotifyOnPullRequests: (value: boolean) => void;
@@ -1492,6 +1497,7 @@ interface UIStore {
   setAgentKnowledgeToolEnabled: (value: boolean) => void;
   setAgentNotifyToolEnabled: (value: boolean) => void;
   setAgentUsageToolEnabled: (value: boolean) => void;
+  setAgentTerminalToolEnabled: (value: boolean) => void;
   setAgentImageToolEnabled: (value: boolean) => void;
   setAgentImageModel: (value: string) => void;
   setAgentMemoryDreamingEnabled: (value: boolean) => void;
@@ -1724,6 +1730,7 @@ export const useUIStore = create<UIStore>()(
         notifyOnSubtasks: true,
         dockBadgeEnabled: true,
         alwaysShowScrollbars: false,
+        mobileKeepScreenAwake: 'off',
         questionsInChat: false,
 
         // Event toggles (which events trigger notifications)
@@ -1760,6 +1767,7 @@ export const useUIStore = create<UIStore>()(
         agentKnowledgeToolEnabled: true,
         agentNotifyToolEnabled: false,
         agentUsageToolEnabled: false,
+        agentTerminalToolEnabled: false,
         agentImageToolEnabled: false,
         agentImageModel: '',
         agentMemoryDreamingEnabled: false,
@@ -3408,6 +3416,9 @@ export const useUIStore = create<UIStore>()(
         setAlwaysShowScrollbars: (value) => {
           set({ alwaysShowScrollbars: value });
         },
+        setMobileKeepScreenAwake: (value) => {
+          set({ mobileKeepScreenAwake: value });
+        },
         setQuestionsInChat: (value) => {
           set({ questionsInChat: value });
         },
@@ -3465,6 +3476,9 @@ export const useUIStore = create<UIStore>()(
         },
         setAgentUsageToolEnabled: (value) => {
           set({ agentUsageToolEnabled: value });
+        },
+        setAgentTerminalToolEnabled: (value) => {
+          set({ agentTerminalToolEnabled: value });
         },
         setAgentImageToolEnabled: (value) => {
           set({ agentImageToolEnabled: value });
@@ -4057,6 +4071,7 @@ export const useUIStore = create<UIStore>()(
           notifyOnSubtasks: state.notifyOnSubtasks,
           dockBadgeEnabled: state.dockBadgeEnabled,
           alwaysShowScrollbars: state.alwaysShowScrollbars,
+          mobileKeepScreenAwake: state.mobileKeepScreenAwake,
           questionsInChat: state.questionsInChat,
           notifyOnCompletion: state.notifyOnCompletion,
           notifyOnPullRequests: state.notifyOnPullRequests,
@@ -4078,6 +4093,7 @@ export const useUIStore = create<UIStore>()(
           agentKnowledgeToolEnabled: state.agentKnowledgeToolEnabled,
           agentNotifyToolEnabled: state.agentNotifyToolEnabled,
           agentUsageToolEnabled: state.agentUsageToolEnabled,
+          agentTerminalToolEnabled: state.agentTerminalToolEnabled,
           agentImageToolEnabled: state.agentImageToolEnabled,
           agentImageModel: state.agentImageModel,
           agentMemoryDreamingEnabled: state.agentMemoryDreamingEnabled,
