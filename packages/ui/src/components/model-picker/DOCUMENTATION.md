@@ -36,9 +36,10 @@ around it, the footer's text and what a pick does.
 
 Sections used to virtualize on their own past 40 models and render shorter
 ones whole, so ten providers of 30 models mounted 300 rows on every open.
-With captions as rows, one virtualizer covers the whole list. The sticky
-caption is an overlay that names the section of the top row, because a
-`position: sticky` caption cannot stick inside absolutely placed rows.
+With captions as rows, one virtualizer covers the whole list. A caption scrolls
+away with its section: a `position: sticky` caption cannot stick inside
+absolutely placed virtual rows, and the duplicate overlay that named the top
+section is gone with the mask it lived in.
 
 ### Why the virtualizer's view is capped at the window
 
@@ -85,12 +86,12 @@ row that click picked the model; once the details sheet was open it landed on
 the sheet's backdrop and closed it at once. The press listens for that one
 click and swallows it.
 
-### Why the bottom scroll fade is off
+### Why there are no scroll fades
 
 The scroll shadow's `mask-image` fade rasterizes as a solid black block under
 software rendering (remote desktop, older GPUs), which turns the list black.
-`hideBottomScrollShadow` stops the scroller from setting `data-bottom-scroll`,
-so the CSS mask rule never matches. The top fade stays because the sticky
-section captions read the top-scroll state. The key-hint footer already ends
-the list visually.
+The list therefore draws no mask at all, and the duplicate sticky caption that
+existed only to stay crisp inside that mask is gone too. The real section
+captions keep their `position: sticky`, and the search row and key-hint footer
+bound the list visually.
 

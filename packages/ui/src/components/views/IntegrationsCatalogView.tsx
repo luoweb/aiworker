@@ -205,6 +205,12 @@ const COMPONENT_ICON = {
   extension: 'apps',
 } satisfies Record<CatalogComponent['kind'], IconName>;
 
+// The chip variant's unselected tint is a translucent colour-mix over
+// transparent. Software rendering rasterizes that to a solid black block, so
+// this page mixes the same foreground tone into the opaque background instead.
+// Selected chips keep the variant's opaque `aria-pressed` fill.
+const CATEGORY_CHIP_TINT = 'bg-[color-mix(in_srgb,var(--foreground)_5%,var(--background))]';
+
 export function IntegrationsCatalogView(): React.ReactNode {
   const { t } = useI18n();
   const open = useUIStore((state) => state.isIntegrationsCatalogOpen);
@@ -773,7 +779,7 @@ export function IntegrationsCatalogView(): React.ReactNode {
 
       {searchResults ? null : (
         <div className="mt-4 flex flex-wrap gap-1.5" role="group" aria-label={t('integrationsCatalog.info.category')}>
-          <Button variant="chip" size="sm" className="rounded-full" aria-pressed={category === null} onClick={() => setCategory(null)}>
+          <Button variant="chip" size="sm" className={cn('rounded-full', CATEGORY_CHIP_TINT)} aria-pressed={category === null} onClick={() => setCategory(null)}>
             {t('integrationsCatalog.category.all')}
           </Button>
           {CATALOG_CATEGORY_ORDER.map((target) => (
@@ -781,7 +787,7 @@ export function IntegrationsCatalogView(): React.ReactNode {
               key={target}
               variant="chip"
               size="sm"
-              className="rounded-full"
+              className={cn('rounded-full', CATEGORY_CHIP_TINT)}
               aria-pressed={category === target}
               onClick={() => setCategory(category === target ? null : target)}
             >

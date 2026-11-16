@@ -781,18 +781,25 @@ the page below the list moves further down with every import.
 
 ## About: the Android app's own update
 
-On the Android app, About shows the app's version with a "Download app
-{version}" button while the app's update check offers a newer APK, the same
-link as the update toast (`openchamber/AboutSettings.tsx`,
-`MobileAppUpdateToast.tsx`). The check button there checks the app build too.
-Closing the toast skips that version for the toast only; the button stays
-until the version is installed. iOS updates through the App Store and gets no
-button. The server's update buttons on the same page name the server or the
-desktop app they replace, never the phone app.
+The fades were `mask-image` gradients through `#000` and `transparent`. Under
+software rendering (remote desktop, older GPUs) the mask rasterizes as a solid
+black block, so scrolling the list turned it black. The tile's padding already
+keeps the first and last rows clear of its rounded edges, so removing the mask
+costs nothing. Other scrollers suppress the same mask with
+`hideBottomScrollShadow` on `ScrollableOverlay`; this list draws its own native
+scroller and so drops the mask outright.
 
-### Why the button lives in About and the toast is not shown again
+The same rasterization fault hits translucent `color-mix(in srgb,
+var(--foreground) N%, transparent)` fills: under software rendering they turn
+into an opaque black block. Chip buttons are the visible case. Their unselected
+tint is mixed into the opaque page background instead
+(`... , var(--background))`), which looks the same and rasterizes cleanly; the
+selected state already uses an opaque token. When a tint must survive software
+rendering, mix into a concrete colour rather than `transparent`.
 
-A user who closed the toast already said no to it, so About is a quiet place
-to find the update instead of a toast that comes back. A second update item
-in the sessions footer was rejected: that item belongs to server updates in
-the browser, and a second meaning there confuses both.
+A recessed chip track is a second trap: its inset shadow plus a faint
+foreground tint reads as a black block behind the unselected chips, while the
+pressed pill's opaque fill hides it — so only the unselected chips look black.
+The usage range picker drops that track altogether (`bg-transparent
+!shadow-none`) and lets the chips sit on the page background. Do not restore
+`oc-recessed` on a segmented row of chips.

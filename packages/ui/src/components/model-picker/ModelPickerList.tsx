@@ -357,15 +357,6 @@ const measuredRowHeights = {
 
 const STICKY_HEADER_OFFSET = 32;
 
-// Sticky-fade band sizing, in px. Once the scroller leaves the top the top
-// fade grows from STICKY_FADE_MIN_SIZE up to STICKY_FADE_MAX_SIZE (matching the
-// 48px scroll-shadow convention), and the solid clear band leading into the
-// gradient is capped at STICKY_FADE_CLEAR_MAX_SIZE so it never overshoots the
-// fade.
-const STICKY_FADE_MIN_SIZE = 12;
-const STICKY_FADE_MAX_SIZE = 48;
-const STICKY_FADE_CLEAR_MAX_SIZE = 40;
-
 const favoriteSortId = (entry: ModelPickerEntry) => `${entry.providerID}:${entry.modelID}`;
 const PROVIDER_SORT_PREFIX = 'provider:';
 
@@ -520,8 +511,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const listboxId = React.useId();
   const optionId = (index: number) => `${listboxId}-option-${index}`;
-  const sectionHeaderSentinelRefs = React.useRef<Map<string, HTMLDivElement | null>>(new Map());
-  const [stuckSectionHeaders, setStuckSectionHeaders] = React.useState<Set<string>>(new Set());
   const keyboardOwnsSelectionRef = React.useRef(false);
   const lastMousePositionRef = React.useRef<{ x: number; y: number } | null>(null);
   // A drag ends with the pointer released over a row; that release is not a pick.
@@ -531,9 +520,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   // press as a context menu, so the two open the details once.
   const longPressRef = React.useRef<{ timer: number; x: number; y: number } | null>(null);
   const detailsOpenedAtRef = React.useRef(0);
-  // Last computed top-fade size, so click suppression on the overlay knows how
-  // far down the fade band reaches without re-reading the DOM.
-  const stickyFadeSizeRef = React.useRef(0);
   const cancelLongPress = () => {
     if (longPressRef.current) window.clearTimeout(longPressRef.current.timer);
     longPressRef.current = null;
@@ -664,43 +650,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
       return { ...provider, models: filteredModels };
     })
     .filter((provider) => provider.models.length > 0), [allowedProviderSet, isHidden, isModelAllowed, matchesQuery, orderedProviders]);
-
-  const visibleSectionKeys = React.useMemo(() => [
-    ...(filteredFavorites.length > 0 ? ['favorites'] : []),
-    ...(filteredRecents.length > 0 ? ['recent'] : []),
-    ...filteredProviders.map((provider) => `provider:${provider.id}`),
-  ], [filteredFavorites.length, filteredProviders, filteredRecents.length]);
-
-  React.useEffect(() => {
-    if (!stickyHeaders || !scrollRef.current) {
-      setStuckSectionHeaders((previous) => previous.size === 0 ? previous : new Set());
-      return;
-    }
-
-    const root = scrollRef.current;
-    const observer = new IntersectionObserver((entries) => {
-      setStuckSectionHeaders((previous) => {
-        const next = new Set(previous);
-        let changed = false;
-        for (const entry of entries) {
-          const sectionKey = (entry.target as HTMLElement).dataset.modelSectionKey;
-          if (!sectionKey) continue;
-          const rootTop = entry.rootBounds?.top ?? root.getBoundingClientRect().top;
-          const isAboveScroller = !entry.isIntersecting && entry.boundingClientRect.top < rootTop;
-          if (next.has(sectionKey) === isAboveScroller) continue;
-          changed = true;
-          if (isAboveScroller) next.add(sectionKey);
-          else next.delete(sectionKey);
-        }
-        return changed ? next : previous;
-      });
-    }, { root, threshold: 0 });
-
-    sectionHeaderSentinelRefs.current.forEach((element) => {
-      if (element) observer.observe(element);
-    });
-    return () => observer.disconnect();
-  }, [stickyHeaders, visibleSectionKeys]);
 
   const visibleLeadingEntry = React.useMemo(() => {
     if (!leadingEntry) return null;
@@ -957,37 +906,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
       onEscape?.();
     }
   }, [disabled, leadingAction, moveSelection, navigation, onActiveKeyDown, onEscape, onSelect, onVariantKey, selectionStore]);
-
-  const syncStickyFade = React.useCallback((scroller: HTMLElement) => {
-    const hasTopScroll = scroller.scrollTop > 1;
-    const fadeSize = hasTopScroll
-      ? Math.min(STICKY_FADE_MIN_SIZE + scroller.scrollTop, STICKY_FADE_MAX_SIZE)
-      : 0;
-    stickyFadeSizeRef.current = fadeSize;
-    const fadeRoot = scroller.closest<HTMLElement>('.oc-sticky-fade-root');
-    fadeRoot?.style.setProperty('--scroll-shadow-top-size', `${fadeSize}px`);
-    fadeRoot?.style.setProperty(
-      '--scroll-shadow-top-clear-size',
-      `${Math.min(Math.max(fadeSize - 8, 0), STICKY_FADE_CLEAR_MAX_SIZE)}px`,
-    );
-  }, []);
-
-  const blockStickyFadeInteraction = React.useCallback((
-    event: React.MouseEvent<HTMLDivElement> | React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if ((event.target as Element).closest('[data-overlay-scrollbar-thumb], [data-model-picker-sticky-header]')) return;
-    // Enter or Space on a focused button clicks with no pointer position (detail 0,
-    // coordinates 0), which would otherwise read as a click on the fade.
-    if (event.type === 'click' && event.detail === 0) return;
-    const eventY = event.clientY - event.currentTarget.getBoundingClientRect().top;
-    if (eventY >= stickyFadeSizeRef.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-  }, []);
-
-  React.useLayoutEffect(() => {
-    if (stickyHeaders && scrollRef.current) syncStickyFade(scrollRef.current);
-  }, [stickyHeaders, syncStickyFade, rows]);
 
   // A caption is no larger than the rows it heads (typography-meta).
   const captionClassName = sheetCaptions
@@ -1290,26 +1208,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
     onReorderFavorite(activeFavorite, overFavorite);
   };
 
-  // The caption the sticky overlay shows: the section of the row at the top of
-  // the view, or the first section while rows above every section (Auto, Not
-  // selected) are still in view.
-  const stuckSectionKey = (() => {
-    if (!stickyHeaders) return null;
-    const offset = (virtualizer.scrollOffset ?? 0) - scrollMargin;
-    const topItem = virtualItems.find((item) => item.end - scrollMargin > offset + 1);
-    let section: string | null = null;
-    if (topItem) {
-      for (let index = topItem.index; index >= 0; index -= 1) {
-        const row = rows[index];
-        if (row?.kind === 'header') { section = row.sectionKey; break; }
-      }
-    }
-    if (section) return section;
-    if (includeNotSelected) return null;
-    const firstHeader = rows.find((row) => row.kind === 'header');
-    return firstHeader?.kind === 'header' ? firstHeader.sectionKey : null;
-  })();
-
   // Rows of one section sit in one group, so a screen reader names the section.
   const groupedItems: { group: RowGroup | null; items: VirtualItem[] }[] = [];
   for (const item of virtualItems) {
@@ -1391,14 +1289,11 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
       </div>
 
       <div className="relative flex min-h-0 flex-1">
-        {/* The bottom fade is suppressed: mask-image rasterizes as a solid
-            black block in software-rendered environments (remote desktop,
-            older GPUs). The top fade stays for the sticky section headers. */}
+        {/* No scroll fades here: mask-image rasterizes as a solid black block
+            in software-rendered environments (remote desktop, older GPUs). The
+            real section headers keep their sticky position. */}
         <ScrollableOverlay
           ref={attachScroller}
-          useScrollShadow
-          scrollShadowSize={12}
-          hideBottomScrollShadow
           outerClassName={maxHeightClassName}
           className="overlay-scrollbar-target--no-gutter"
           style={maxHeightStyle}
@@ -1432,18 +1327,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
             </DndContext>
           ) : list}
         </ScrollableOverlay>
-        {stickyHeaders && stuckSectionKey ? (
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden="true"
-            data-model-picker-sticky-header="true"
-            onClick={() => toggleSection(stuckSectionKey)}
-            className={cn('oc-sticky-fade-overlay absolute inset-x-0 top-0 z-30 flex items-center gap-2 px-3 py-1.5 text-start text-muted-foreground', captionClassName)}
-          >
-            {renderSectionIdentity(stuckSectionKey)}
-          </button>
-        ) : null}
       </div>
 
       {/* Key hints mean nothing under a finger. */}
