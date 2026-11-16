@@ -356,9 +356,15 @@ const measuredRowHeights = {
 } satisfies Record<RowSizeKind, number>;
 
 const STICKY_HEADER_OFFSET = 32;
-const STICKY_FADE_MAX_SIZE = 52;
-const STICKY_FADE_MIN_SIZE = 36;
-const STICKY_FADE_CLEAR_MAX_SIZE = 28;
+
+// Sticky-fade band sizing, in px. Once the scroller leaves the top the top
+// fade grows from STICKY_FADE_MIN_SIZE up to STICKY_FADE_MAX_SIZE (matching the
+// 48px scroll-shadow convention), and the solid clear band leading into the
+// gradient is capped at STICKY_FADE_CLEAR_MAX_SIZE so it never overshoots the
+// fade.
+const STICKY_FADE_MIN_SIZE = 12;
+const STICKY_FADE_MAX_SIZE = 48;
+const STICKY_FADE_CLEAR_MAX_SIZE = 40;
 
 const favoriteSortId = (entry: ModelPickerEntry) => `${entry.providerID}:${entry.modelID}`;
 const PROVIDER_SORT_PREFIX = 'provider:';
@@ -514,7 +520,8 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const listboxId = React.useId();
   const optionId = (index: number) => `${listboxId}-option-${index}`;
-  const stickyFadeSizeRef = React.useRef(0);
+  const sectionHeaderSentinelRefs = React.useRef<Map<string, HTMLDivElement | null>>(new Map());
+  const [stuckSectionHeaders, setStuckSectionHeaders] = React.useState<Set<string>>(new Set());
   const keyboardOwnsSelectionRef = React.useRef(false);
   const lastMousePositionRef = React.useRef<{ x: number; y: number } | null>(null);
   // A drag ends with the pointer released over a row; that release is not a pick.
@@ -524,6 +531,9 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   // press as a context menu, so the two open the details once.
   const longPressRef = React.useRef<{ timer: number; x: number; y: number } | null>(null);
   const detailsOpenedAtRef = React.useRef(0);
+  // Last computed top-fade size, so click suppression on the overlay knows how
+  // far down the fade band reaches without re-reading the DOM.
+  const stickyFadeSizeRef = React.useRef(0);
   const cancelLongPress = () => {
     if (longPressRef.current) window.clearTimeout(longPressRef.current.timer);
     longPressRef.current = null;
@@ -654,6 +664,43 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
       return { ...provider, models: filteredModels };
     })
     .filter((provider) => provider.models.length > 0), [allowedProviderSet, isHidden, isModelAllowed, matchesQuery, orderedProviders]);
+
+  const visibleSectionKeys = React.useMemo(() => [
+    ...(filteredFavorites.length > 0 ? ['favorites'] : []),
+    ...(filteredRecents.length > 0 ? ['recent'] : []),
+    ...filteredProviders.map((provider) => `provider:${provider.id}`),
+  ], [filteredFavorites.length, filteredProviders, filteredRecents.length]);
+
+  React.useEffect(() => {
+    if (!stickyHeaders || !scrollRef.current) {
+      setStuckSectionHeaders((previous) => previous.size === 0 ? previous : new Set());
+      return;
+    }
+
+    const root = scrollRef.current;
+    const observer = new IntersectionObserver((entries) => {
+      setStuckSectionHeaders((previous) => {
+        const next = new Set(previous);
+        let changed = false;
+        for (const entry of entries) {
+          const sectionKey = (entry.target as HTMLElement).dataset.modelSectionKey;
+          if (!sectionKey) continue;
+          const rootTop = entry.rootBounds?.top ?? root.getBoundingClientRect().top;
+          const isAboveScroller = !entry.isIntersecting && entry.boundingClientRect.top < rootTop;
+          if (next.has(sectionKey) === isAboveScroller) continue;
+          changed = true;
+          if (isAboveScroller) next.add(sectionKey);
+          else next.delete(sectionKey);
+        }
+        return changed ? next : previous;
+      });
+    }, { root, threshold: 0 });
+
+    sectionHeaderSentinelRefs.current.forEach((element) => {
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
+  }, [stickyHeaders, visibleSectionKeys]);
 
   const visibleLeadingEntry = React.useMemo(() => {
     if (!leadingEntry) return null;
@@ -1343,24 +1390,18 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
         ) : null}
       </div>
 
-      <div
-        className="oc-sticky-fade-root relative flex min-h-0 flex-1"
-        // SAFETY: these custom properties configure the viewport-owned edge fade.
-        style={stickyHeaders ? { '--scroll-shadow-top-size': '0px' } as React.CSSProperties : undefined}
-        onPointerDownCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-        onClickCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-        onContextMenuCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-      >
+      <div className="relative flex min-h-0 flex-1">
+        {/* The bottom fade is suppressed: mask-image rasterizes as a solid
+            black block in software-rendered environments (remote desktop,
+            older GPUs). The top fade stays for the sticky section headers. */}
         <ScrollableOverlay
           ref={attachScroller}
-          // The bottom fade says the list goes on under the key-hint footer;
-          // without it the last row read as cut off.
           useScrollShadow
           scrollShadowSize={12}
+          hideBottomScrollShadow
           outerClassName={maxHeightClassName}
-          className="oc-sticky-fade-scroller overlay-scrollbar-target--no-gutter"
+          className="overlay-scrollbar-target--no-gutter"
           style={maxHeightStyle}
-          onScroll={stickyHeaders ? (event) => syncStickyFade(event.currentTarget) : undefined}
         >
           {sortableIds.length > 0 ? (
             <DndContext

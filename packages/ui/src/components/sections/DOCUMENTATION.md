@@ -764,6 +764,8 @@ theme list; `openchamber/ThemeSchematic.tsx` draws the app on the cards.
   the page.
 - Imported themes show their delete action in the list at rest, so it is
   clear which themes are imported.
+- The list has no top or bottom edge fade. Padding clears the rounded edges,
+  and a revealed row stays one padding below the top.
 
 ### Why one variant at a time and not both swatches per row
 

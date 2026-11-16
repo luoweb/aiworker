@@ -55,6 +55,7 @@ export const resolveTargetArchitecture = ({
   const host = normalizeTargetArchitecture(hostArchitecture, 'host architecture');
   const builderArchitecture = readElectronBuilderArchitecture(builderArgs);
   const requestedValues = [
+    environment.AIWORKER_TARGET_ARCH,
     environment.OPENCHAMBER_TARGET_ARCH,
     environment.ELECTRON_BUILDER_ARCH,
     builderArchitecture,

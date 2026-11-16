@@ -85,3 +85,12 @@ row that click picked the model; once the details sheet was open it landed on
 the sheet's backdrop and closed it at once. The press listens for that one
 click and swallows it.
 
+### Why the bottom scroll fade is off
+
+The scroll shadow's `mask-image` fade rasterizes as a solid black block under
+software rendering (remote desktop, older GPUs), which turns the list black.
+`hideBottomScrollShadow` stops the scroller from setting `data-bottom-scroll`,
+so the CSS mask rule never matches. The top fade stays because the sticky
+section captions read the top-scroll state. The key-hint footer already ends
+the list visually.
+
