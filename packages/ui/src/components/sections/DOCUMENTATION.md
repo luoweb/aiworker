@@ -748,6 +748,8 @@ theme list; `openchamber/ThemeSchematic.tsx` draws the app on the cards.
   the page.
 - Imported themes show their delete action in the list at rest, so it is
   clear which themes are imported.
+- The list has no top or bottom edge fade. Padding clears the rounded edges,
+  and a revealed row stays one padding below the top.
 
 ### Why one variant at a time and not both swatches per row
 
@@ -760,3 +762,13 @@ the theme's canvas and accent.
 
 Imported themes add up quickly (the catalog, a themes folder). Without a cap
 the page below the list moves further down with every import.
+
+### Why the list has no edge fades
+
+The fades were `mask-image` gradients through `#000` and `transparent`. Under
+software rendering (remote desktop, older GPUs) the mask rasterizes as a solid
+black block, so scrolling the list turned it black. The tile's padding already
+keeps the first and last rows clear of its rounded edges, so removing the mask
+costs nothing. Other scrollers suppress the same mask with
+`hideBottomScrollShadow` on `ScrollableOverlay`; this list draws its own native
+scroller and so drops the mask outright.

@@ -26,8 +26,8 @@ const MODE_OPTIONS: Array<{ value: ThemeMode; labelKey: 'settings.openchamber.vi
 ];
 
 /** Built-in pairs are named "Cursor Light" / "Cursor Dark"; the list shows the family name. */
-/** Height of the theme list's edge fades (0.75rem); the list pads by the same. */
-const LIST_FADE_PX = 12;
+/** Top padding of the theme list (0.75rem); a revealed row is kept clear of it. */
+const LIST_PAD_PX = 12;
 
 const themeLabel = (theme: Theme): string => {
   const suffix = theme.metadata.variant === 'dark' ? ' Dark' : ' Light';
@@ -268,7 +268,6 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
   const { deleteImportedTheme, customThemeIds } = useThemeSystem();
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [focusedId, setFocusedId] = React.useState<string | null>(null);
-  const [fade, setFade] = React.useState({ top: false, bottom: false });
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
 
@@ -276,14 +275,6 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
   const tabStopId = themes.some((theme) => theme.metadata.id === focusedId)
     ? focusedId
     : (selectedId ?? themes[0]?.metadata.id ?? null);
-
-  const updateFade = React.useCallback(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const top = scroller.scrollTop > 1;
-    const bottom = scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1;
-    setFade((current) => (current.top === top && current.bottom === bottom ? current : { top, bottom }));
-  }, []);
 
   const revealSelected = React.useCallback((onlyIfHidden: boolean) => {
     const scroller = scrollerRef.current;
@@ -294,28 +285,26 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
     const visible = top >= scroller.scrollTop && bottom <= scroller.scrollTop + scroller.clientHeight;
     if (onlyIfHidden && visible) return;
     const centred = Math.max(0, top - (scroller.clientHeight - row.offsetHeight) / 2);
-    // Land on a row's top edge, one fade height below the scroller's top, so
-    // the first full row sits clear of the top fade instead of under it.
+    // Land on a row's top edge, just below the scroller's top padding, so the
+    // first full row sits clear of it.
     const rowTops = [...new Set(Array.from(scroller.querySelectorAll<HTMLElement>('[role="option"]'), (option) => option.offsetTop))];
-    const anchor = rowTops.filter((rowTop) => rowTop - LIST_FADE_PX <= centred).pop();
-    scroller.scrollTop = anchor === undefined ? 0 : Math.max(0, anchor - LIST_FADE_PX);
+    const anchor = rowTops.filter((rowTop) => rowTop - LIST_PAD_PX <= centred).pop();
+    scroller.scrollTop = anchor === undefined ? 0 : Math.max(0, anchor - LIST_PAD_PX);
   }, []);
 
   React.useLayoutEffect(() => {
     revealSelected(false);
-    updateFade();
-  }, [revealSelected, updateFade]);
+  }, [revealSelected]);
 
   React.useEffect(() => {
     const list = listRef.current;
     if (!list) return;
     const observer = new ResizeObserver(() => {
       revealSelected(true);
-      updateFade();
     });
     observer.observe(list);
     return () => observer.disconnect();
-  }, [revealSelected, updateFade]);
+  }, [revealSelected]);
 
   const focusRow = (id: string | undefined) => {
     if (!id) return;
@@ -374,20 +363,15 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
   return (
     <div
       ref={scrollerRef}
-      onScroll={updateFade}
       onPointerLeave={() => onPreview(null)}
       onBlur={(event) => {
         const next = event.relatedTarget;
         if (!(next instanceof Node && event.currentTarget.contains(next))) onPreview(null);
       }}
-      className={cn(
-        // Padding and scroll padding the height of the fade, so the first and
-        // last rows rest outside it.
-        'oc-tile relative max-h-[20.5rem] scroll-py-3 overflow-y-auto rounded-xl px-1 py-3',
-        fade.top && fade.bottom && '[mask-image:linear-gradient(transparent,#000_0.75rem,#000_calc(100%-0.75rem),transparent)]',
-        fade.top && !fade.bottom && '[mask-image:linear-gradient(transparent,#000_0.75rem)]',
-        !fade.top && fade.bottom && '[mask-image:linear-gradient(#000_calc(100%-0.75rem),transparent)]',
-      )}
+      // No edge fades here: mask-image rasterizes as a solid black block in
+      // software-rendered environments (remote desktop, older GPUs). The
+      // padding keeps the first and last rows clear of the rounded edges.
+      className="oc-tile relative max-h-[20.5rem] scroll-py-3 overflow-y-auto rounded-xl px-1 py-3"
     >
       {themes.length === 0 && emptyText ? (
         <p role="status" className="px-2 py-6 text-center typography-ui-label text-muted-foreground">{emptyText}</p>
