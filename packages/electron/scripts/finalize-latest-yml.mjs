@@ -5,11 +5,14 @@ import path from 'node:path';
 
 const dir = process.env.LATEST_YML_DIR;
 const repo = process.env.GH_REPO;
-const version = process.env.OPENCHAMBER_VERSION;
+// The release workflow was renamed to the AiWorker brand and passes
+// AIWORKER_VERSION; keep reading the legacy OPENCHAMBER_VERSION for callers
+// that still use it (docs, tests, local runs).
+const version = process.env.AIWORKER_VERSION || process.env.OPENCHAMBER_VERSION;
 
 if (!dir) throw new Error('LATEST_YML_DIR is required');
 if (!repo) throw new Error('GH_REPO is required');
-if (!version) throw new Error('OPENCHAMBER_VERSION is required');
+if (!version) throw new Error('AIWORKER_VERSION is required');
 
 const parse = (content) => {
   const lines = content.split('\n');
@@ -124,15 +127,18 @@ if (windowsFromRelease) {
 
 const macX64 = await read('latest-yml-x86_64-apple-darwin', 'latest-mac.yml');
 const macArm64 = await read('latest-yml-aarch64-apple-darwin', 'latest-mac.yml');
-if (!macX64 || !macArm64) {
+if (!macX64 && !macArm64) {
+  console.log('no macOS update manifests found; skipping latest-mac.yml');
+} else if (!macX64 || !macArm64) {
   throw new Error('Both x64 and arm64 macOS update manifests are required');
+} else {
+  output['latest-mac.yml'] = serialize({
+    version: macArm64.version,
+    minimumSystemVersion: MAC_MINIMUM_DARWIN_VERSION,
+    files: [...macArm64.files, ...macX64.files],
+    releaseDate: macArm64.releaseDate,
+  });
 }
-output['latest-mac.yml'] = serialize({
-  version: macArm64.version,
-  minimumSystemVersion: MAC_MINIMUM_DARWIN_VERSION,
-  files: [...macArm64.files, ...macX64.files],
-  releaseDate: macArm64.releaseDate,
-});
 
 const tag = `v${version}`;
 const tmp = process.env.RUNNER_TEMP || '/tmp';

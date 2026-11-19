@@ -117,10 +117,14 @@ export function UsageStatsView({ className }: { className?: string }): React.Rea
     <ScrollableOverlay outerClassName={cn('h-full', className)} disableHorizontal>
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 px-4 py-4 sm:px-6">
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+          {/* No recessed track here: its inset shadow and 4%-foreground tint
+              read as a black block behind the unselected range chips. Let the
+              chips sit on the page background; the pressed pill stays raised. */}
           <SettingsChipGroup
             value={range}
             onChange={setRange}
             aria-label={t('usageStats.range.label')}
+            className="bg-transparent !shadow-none"
             options={USAGE_RANGES.map((option) => ({ value: option, label: t(RANGE_LABEL_KEYS[option]) }))}
           />
           <Select value={selectedProject ? selectedProject.id : ALL_PROJECTS} onValueChange={setProjectChoice}>

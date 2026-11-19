@@ -724,29 +724,6 @@ div[data-chat-input-footer="true"] {
   );
 }
 
-/* Sticky-fade overlay: the crisp duplicate identity stays
-   mounted and its visibility is driven synchronously by the scroller's own
-   top-scroll data attribute — the same signal that engages the mask — so the
-   overlay appears in the exact frame the mask hides the real header (no blink).
-   ScrollShadow sets data-top-scroll when nothing is below the viewport and
-   data-top-bottom-scroll when content is both above and below. */
-.oc-sticky-fade-overlay {
-  opacity: 0;
-  /* Hidden, it must not catch the clicks meant for the rows under it. */
-  pointer-events: none;
-}
-
-.oc-sticky-fade-root:has(.oc-sticky-fade-scroller[data-top-scroll="true"]) .oc-sticky-fade-overlay,
-.oc-sticky-fade-root:has(.oc-sticky-fade-scroller[data-top-bottom-scroll="true"]) .oc-sticky-fade-overlay {
-  opacity: 1;
-}
-
-/* The model picker's sticky caption folds its section, once it shows. */
-.oc-sticky-fade-root:has(.oc-sticky-fade-scroller[data-top-scroll="true"]) .oc-sticky-fade-overlay[data-model-picker-sticky-header],
-.oc-sticky-fade-root:has(.oc-sticky-fade-scroller[data-top-bottom-scroll="true"]) .oc-sticky-fade-overlay[data-model-picker-sticky-header] {
-  pointer-events: auto;
-}
-
 [data-scroll-shadow="true"][data-orientation="vertical"][data-bottom-scroll="true"]:not(.chat-scroll, [data-scroll-fade-bands]) {
   mask-image: linear-gradient(
     to bottom,

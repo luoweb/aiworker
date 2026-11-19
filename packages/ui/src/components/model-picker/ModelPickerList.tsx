@@ -325,9 +325,6 @@ const measuredRowHeights = {
 } satisfies Record<RowSizeKind, number>;
 
 const STICKY_HEADER_OFFSET = 32;
-const STICKY_FADE_MAX_SIZE = 52;
-const STICKY_FADE_MIN_SIZE = 36;
-const STICKY_FADE_CLEAR_MAX_SIZE = 28;
 
 const favoriteSortId = (entry: ModelPickerEntry) => `${entry.providerID}:${entry.modelID}`;
 const PROVIDER_SORT_PREFIX = 'provider:';
@@ -455,7 +452,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
   const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   const listboxId = React.useId();
   const optionId = (index: number) => `${listboxId}-option-${index}`;
-  const stickyFadeSizeRef = React.useRef(0);
   const keyboardOwnsSelectionRef = React.useRef(false);
   const lastMousePositionRef = React.useRef<{ x: number; y: number } | null>(null);
   const suppressClickRef = React.useRef(false);
@@ -1215,22 +1211,17 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
         ) : null}
       </div>
 
-      <div
-        className="oc-sticky-fade-root relative flex min-h-0 flex-1"
-        // SAFETY: these custom properties configure the viewport-owned edge fade.
-        style={stickyHeaders ? { '--scroll-shadow-top-size': '0px' } as React.CSSProperties : undefined}
-        onPointerDownCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-        onClickCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-        onContextMenuCapture={stickyHeaders ? blockStickyFadeInteraction : undefined}
-      >
+      <div className="relative flex min-h-0 flex-1">
+        {/* No scroll fades here: mask-image rasterizes as a solid black block
+            in software-rendered environments (remote desktop, older GPUs). The
+            real section headers keep their sticky position. */}
         <ScrollableOverlay
           ref={attachScroller}
           useScrollShadow
           scrollShadowSize={12}
           outerClassName={maxHeightClassName}
-          className="oc-sticky-fade-scroller overlay-scrollbar-target--no-gutter"
+          className="overlay-scrollbar-target--no-gutter"
           style={maxHeightStyle}
-          onScroll={stickyHeaders ? (event) => syncStickyFade(event.currentTarget) : undefined}
         >
           {sortableIds.length > 0 ? (
             <DndContext
@@ -1257,18 +1248,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
             </DndContext>
           ) : list}
         </ScrollableOverlay>
-        {stickyHeaders && stuckSectionKey ? (
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden="true"
-            data-model-picker-sticky-header="true"
-            onClick={() => toggleSection(stuckSectionKey)}
-            className={cn('oc-sticky-fade-overlay absolute inset-x-0 top-0 z-30 flex items-center gap-2 px-3 py-1.5 text-start text-muted-foreground', captionClassName)}
-          >
-            {renderSectionIdentity(stuckSectionKey)}
-          </button>
-        ) : null}
       </div>
 
       {showKeyboardHints ? (

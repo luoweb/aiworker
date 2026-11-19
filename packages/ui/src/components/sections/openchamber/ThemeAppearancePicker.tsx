@@ -228,21 +228,12 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
   const { deleteImportedTheme, customThemeIds } = useThemeSystem();
   const [deletingId, setDeletingId] = React.useState<string | null>(null);
   const [focusedId, setFocusedId] = React.useState<string | null>(null);
-  const [fade, setFade] = React.useState({ top: false, bottom: false });
   const scrollerRef = React.useRef<HTMLDivElement>(null);
   const listRef = React.useRef<HTMLDivElement>(null);
 
   const tabStopId = themes.some((theme) => theme.metadata.id === focusedId)
     ? focusedId
     : (selectedId ?? themes[0]?.metadata.id ?? null);
-
-  const updateFade = React.useCallback(() => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-    const top = scroller.scrollTop > 1;
-    const bottom = scroller.scrollTop + scroller.clientHeight < scroller.scrollHeight - 1;
-    setFade((current) => (current.top === top && current.bottom === bottom ? current : { top, bottom }));
-  }, []);
 
   const revealSelected = React.useCallback((onlyIfHidden: boolean) => {
     const scroller = scrollerRef.current;
@@ -254,25 +245,23 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
     if (onlyIfHidden && visible) return;
     const centred = Math.max(0, top - (scroller.clientHeight - row.offsetHeight) / 2);
     const rowTops = [...new Set(Array.from(scroller.querySelectorAll<HTMLElement>('[role="option"]'), (option) => option.offsetTop))];
-    const anchor = rowTops.filter((rowTop) => rowTop - LIST_FADE_PX <= centred).pop();
-    scroller.scrollTop = anchor === undefined ? 0 : Math.max(0, anchor - LIST_FADE_PX);
+    const anchor = rowTops.filter((rowTop) => rowTop - LIST_PAD_PX <= centred).pop();
+    scroller.scrollTop = anchor === undefined ? 0 : Math.max(0, anchor - LIST_PAD_PX);
   }, []);
 
   React.useLayoutEffect(() => {
     revealSelected(false);
-    updateFade();
-  }, [revealSelected, updateFade]);
+  }, [revealSelected]);
 
   React.useEffect(() => {
     const list = listRef.current;
     if (!list) return;
     const observer = new ResizeObserver(() => {
       revealSelected(true);
-      updateFade();
     });
     observer.observe(list);
     return () => observer.disconnect();
-  }, [revealSelected, updateFade]);
+  }, [revealSelected]);
 
   const focusRow = (id: string | undefined) => {
     if (!id) return;
@@ -330,7 +319,6 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
   return (
     <div
       ref={scrollerRef}
-      onScroll={updateFade}
       onPointerLeave={() => onPreview(null)}
       onBlur={(event) => {
         const next = event.relatedTarget;
