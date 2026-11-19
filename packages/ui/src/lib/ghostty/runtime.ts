@@ -1,5 +1,4 @@
-// Adapted from T3 Code's libghostty-vt browser adapter (MIT, T3 Tools Inc.).
-// See LICENSE-T3CODE in this directory.
+import { fetchBypassingRuntimeBridge } from '@/lib/runtime-fetch';
 
 type WasmFunction = (...args: Array<number | bigint>) => number;
 
@@ -19,9 +18,6 @@ type TypeLayouts = Readonly<Record<string, TypeLayout>>;
 
 const textDecoder = new TextDecoder();
 
-// The vendored artifact is fetched at runtime; `new URL` keeps this a plain
-// static asset for Vite in every surface (web, VS Code webview, Electron's
-// openchamber-ui:// protocol) and a readable file URL under bun's test runner.
 const ghosttyWasmUrl = new URL('./vendor/ghostty-vt.wasm', import.meta.url);
 
 /**
@@ -68,8 +64,6 @@ export class GhosttyRuntime {
 
   static async load(bytes?: ArrayBuffer): Promise<GhosttyRuntime> {
     const wasmBytes = bytes ?? (await fetchGhosttyWasm());
-    // The log import needs the instance's memory, which only exists once
-    // instantiation returns; the holder closes that loop.
     const instanceHolder: { current: WebAssembly.Instance | null } = { current: null };
     const imports = {
       env: {
@@ -117,8 +111,6 @@ export class GhosttyRuntime {
   allocOpaque(): number {
     const pointer = this.call('ghostty_wasm_alloc_opaque');
     if (pointer === 0) throw new Error('libghostty-vt failed to allocate an opaque pointer');
-    // The slot is uninitialized until a *_new call writes it; zero it so dispose
-    // paths that run after a partial initialization never free a garbage pointer.
     new DataView(this.memory.buffer).setUint32(pointer, 0, true);
     return pointer;
   }
@@ -156,7 +148,6 @@ export class GhosttyRuntime {
     return new Uint8Array(this.memory.buffer, pointer, size);
   }
 
-  /** Reuse scalar reads across cells, refreshing after any terminal grows shared WASM memory. */
   private currentMemoryView(): DataView {
     if (this.memoryView.buffer !== this.memory.buffer) {
       this.memoryView = new DataView(this.memory.buffer);
@@ -231,9 +222,6 @@ export class GhosttyRuntime {
       throw new Error('libghostty-vt did not expose its callback table');
     }
     const index = table.length;
-    // grow-then-set instead of grow(1, fn): WebKit stores a grow init value
-    // with broken type information and every later call_indirect through the
-    // entry traps with a signature mismatch. table.set canonicalizes correctly.
     table.grow(1);
     table.set(index, trampoline);
     this.writePtyFunctionIndex = index;
@@ -241,7 +229,7 @@ export class GhosttyRuntime {
 }
 
 async function fetchGhosttyWasm(): Promise<ArrayBuffer> {
-  const response = await fetch(ghosttyWasmUrl);
+  const response = await fetchBypassingRuntimeBridge(ghosttyWasmUrl);
   if (!response.ok) {
     throw new Error(`Unable to load libghostty-vt (${response.status})`);
   }
@@ -250,7 +238,6 @@ async function fetchGhosttyWasm(): Promise<ArrayBuffer> {
 
 let runtimePromise: Promise<GhosttyRuntime> | null = null;
 
-/** One WebAssembly instance per page; every terminal owns and frees its own handles inside it. */
 export function loadGhosttyRuntime(): Promise<GhosttyRuntime> {
   runtimePromise ??= GhosttyRuntime.load().catch((error) => {
     runtimePromise = null;
