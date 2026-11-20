@@ -25,7 +25,8 @@ const MODE_OPTIONS: Array<{ value: ThemeMode; labelKey: 'settings.openchamber.vi
   { value: 'dark', labelKey: 'settings.openchamber.visual.option.themeMode.dark' },
 ];
 
-const LIST_FADE_PX = 12;
+/** Top padding of the theme list (0.75rem); a revealed row is kept clear of it. */
+const LIST_PAD_PX = 12;
 
 const themeLabel = (theme: Theme): string => {
   const suffix = theme.metadata.variant === 'dark' ? ' Dark' : ' Light';
@@ -324,12 +325,10 @@ function ThemeList({ themes, emptyText, selectedId, ariaLabel, touch, onSelect, 
         const next = event.relatedTarget;
         if (!(next instanceof Node && event.currentTarget.contains(next))) onPreview(null);
       }}
-      className={cn(
-        'oc-tile relative max-h-[20.5rem] scroll-py-3 overflow-y-auto rounded-xl px-1 py-3',
-        fade.top && fade.bottom && '[mask-image:linear-gradient(transparent,#000_0.75rem,#000_calc(100%-0.75rem),transparent)]',
-        fade.top && !fade.bottom && '[mask-image:linear-gradient(transparent,#000_0.75rem)]',
-        !fade.top && fade.bottom && '[mask-image:linear-gradient(#000_calc(100%-0.75rem),transparent)]',
-      )}
+      // No edge fades here: mask-image rasterizes as a solid black block in
+      // software-rendered environments (remote desktop, older GPUs). The
+      // padding keeps the first and last rows clear of the rounded edges.
+      className="oc-tile relative max-h-[20.5rem] scroll-py-3 overflow-y-auto rounded-xl px-1 py-3"
     >
       {themes.length === 0 && emptyText ? (
         <p role="status" className="px-2 py-6 text-center typography-ui-label text-muted-foreground">{emptyText}</p>

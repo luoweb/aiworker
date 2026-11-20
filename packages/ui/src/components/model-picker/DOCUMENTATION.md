@@ -41,9 +41,7 @@ around it, the footer's text and what a pick does.
   records, because models missing from models.dev use the provider's record.
 - The dragged row stays mounted across scrolling, and releasing a drag must
   not pick a model or toggle a section.
-- Keyboard events from controls inside a row belong to those controls. The
-  sticky fade allows keyboard-generated clicks, whose zero coordinates do not
-  identify a pointer location.
+- Keyboard events from controls inside a row belong to those controls.
 
 ## Decisions
 

@@ -806,35 +806,6 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
     }
   }, [disabled, leadingAction, moveSelection, navigation, onActiveKeyDown, onEscape, onSelect, onVariantKey, selectionStore]);
 
-  const syncStickyFade = React.useCallback((scroller: HTMLElement) => {
-    const hasTopScroll = scroller.scrollTop > 1;
-    const fadeSize = hasTopScroll
-      ? Math.min(STICKY_FADE_MIN_SIZE + scroller.scrollTop, STICKY_FADE_MAX_SIZE)
-      : 0;
-    stickyFadeSizeRef.current = fadeSize;
-    const fadeRoot = scroller.closest<HTMLElement>('.oc-sticky-fade-root');
-    fadeRoot?.style.setProperty('--scroll-shadow-top-size', `${fadeSize}px`);
-    fadeRoot?.style.setProperty(
-      '--scroll-shadow-top-clear-size',
-      `${Math.min(Math.max(fadeSize - 8, 0), STICKY_FADE_CLEAR_MAX_SIZE)}px`,
-    );
-  }, []);
-
-  const blockStickyFadeInteraction = React.useCallback((
-    event: React.MouseEvent<HTMLDivElement> | React.PointerEvent<HTMLDivElement>,
-  ) => {
-    if ((event.target as Element).closest('[data-overlay-scrollbar-thumb], [data-model-picker-sticky-header]')) return;
-    if (event.type === 'click' && event.detail === 0) return;
-    const eventY = event.clientY - event.currentTarget.getBoundingClientRect().top;
-    if (eventY >= stickyFadeSizeRef.current) return;
-    event.preventDefault();
-    event.stopPropagation();
-  }, []);
-
-  React.useLayoutEffect(() => {
-    if (stickyHeaders && scrollRef.current) syncStickyFade(scrollRef.current);
-  }, [stickyHeaders, syncStickyFade, rows]);
-
   const captionClassName = sheetCaptions
     ? 'typography-micro font-semibold uppercase tracking-wider'
     : 'typography-meta font-medium';

@@ -924,7 +924,7 @@ the browser, and a second meaning there confuses both.
 - Info hints and disabled-option tooltips own trigger click handling so Base UI's trigger-press close cannot undo a touch opening. Disabled buttons use wrapper triggers, and popup links retain their clicks.
 - Dragging closes row tooltips because they can consume Escape needed to cancel keyboard dragging. Mobile project selection uses the bottom sheet because select popups cannot scroll long lists within the viewport.
 - Theme preview controls use divs because the app's button SVG rule clears shape fills. Light-theme selected options use canvas color because elevated colors are darker there.
-- Theme list padding and scroll padding match edge fades so focused edge rows remain readable. Keyboard navigation has one tab stop and transfers focus after deletion; a missing stored theme uses the app's first-theme fallback.
+- Theme list padding clears the rounded edges so focused edge rows remain readable. Keyboard navigation has one tab stop and transfers focus after deletion; a missing stored theme uses the app's first-theme fallback.
 - Theme search ranks substring matches by prefix and word prefix because fuzzy matching returns unrelated names. Theme import reserves a partial-result line to keep its footer in place.
 - Project icon popups portal into Settings dialogs to remain inside their focus trap and stacking context. System file pickers sit outside popups because opening them closes the popup.
 - Project identity refresh follows the store only while clean. Selecting a symbol removes an image because the sidebar gives images precedence.
