@@ -34,10 +34,10 @@ import {
   readReferencePeople,
   readReferenceState,
   readReferencesAcrossRequest,
-  parseReferenceLink,
   searchGitHubReferences,
   searchGitHubReferencesAcross,
 } from './reference-search.js';
+import { parseReferenceLink } from './reference-links.js';
 import { fetchReviewState } from './review-draft.js';
 import type { Octokit, RestEndpointMethodTypes } from '@octokit/rest';
 import type { ProviderImplementation, ProviderSession } from '../source-control/provider-contract.js';
@@ -751,7 +751,7 @@ export function createGitHubResources({
         labels,
         text: query ?? '',
         cursor: cursor || null,
-      });
+      }, repo.host || GITHUB_COM);
       return { connected: true, repo, ...page };
     }),
 
@@ -805,7 +805,7 @@ export function createGitHubResources({
           if (folder.status !== 'included') continue;
           const { accountId, instance } = folder.trusted;
           const groupKey = JSON.stringify([instance ?? '', accountId]);
-          if (!accounts.has(groupKey)) accounts.set(groupKey, { accountId, octokit: folder.octokit, folders: [], authority: [], repositories: new Map() });
+          if (!accounts.has(groupKey)) accounts.set(groupKey, { accountId, octokit: folder.octokit, host: instance || GITHUB_COM, folders: [], authority: [], repositories: new Map() });
           const group = accounts.get(groupKey);
           if (!group) throw new Error('Missing reference account group');
           group.folders.push(folder);
@@ -961,7 +961,7 @@ export function createGitHubResources({
         context,
         sourceProject: { id: `${headOwner}/${headName}`, owner: headOwner, name: headName },
         targetProject: { id: project.id, owner: target.owner, name: target.repo },
-        classification: headOwner === target.owner && headName === target.repo ? 'same-repository' : 'contributor-fork',
+        classification: `${headOwner}/${headName}`.toLowerCase() === `${target.owner}/${target.repo}`.toLowerCase() ? 'same-repository' : 'contributor-fork',
         headSha,
         headRef: `refs/heads/${headRef}`,
         endpoint,
