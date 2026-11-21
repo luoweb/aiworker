@@ -665,6 +665,7 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
     getItemKey: (index) => rows[index]?.key ?? index,
     overscan: 8,
     scrollMargin,
+    // A row scrolled into view keeps the section caption that precedes it in view.
     scrollPaddingStart: stickyHeaders ? STICKY_HEADER_OFFSET : 0,
     rangeExtractor,
     observeElementRect: (instance, callback) => observeElementRect(instance, (rect) => {
@@ -1086,23 +1087,7 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
     onReorderFavorite(activeFavorite, overFavorite);
   };
 
-  const stuckSectionKey = (() => {
-    if (!stickyHeaders) return null;
-    const offset = (virtualizer.scrollOffset ?? 0) - scrollMargin;
-    const topItem = virtualItems.find((item) => item.end - scrollMargin > offset + 1);
-    let section: string | null = null;
-    if (topItem) {
-      for (let index = topItem.index; index >= 0; index -= 1) {
-        const row = rows[index];
-        if (row?.kind === 'header') { section = row.sectionKey; break; }
-      }
-    }
-    if (section) return section;
-    if (includeNotSelected) return null;
-    const firstHeader = rows.find((row) => row.kind === 'header');
-    return firstHeader?.kind === 'header' ? firstHeader.sectionKey : null;
-  })();
-
+  // Rows of one section sit in one group, so a screen reader names the section.
   const groupedItems: { group: RowGroup | null; items: VirtualItem[] }[] = [];
   for (const item of virtualItems) {
     const group = rows[item.index]?.group ?? null;
@@ -1184,12 +1169,11 @@ export const ModelPickerList: React.FC<ModelPickerListProps> = ({
 
       <div className="relative flex min-h-0 flex-1">
         {/* No scroll fades here: mask-image rasterizes as a solid black block
-            in software-rendered environments (remote desktop, older GPUs). The
-            real section headers keep their sticky position. */}
+            in software-rendered environments (remote desktop, older GPUs),
+            including the VS Code webview. Section captions scroll with their
+            rows; the search row and key-hint footer bound the list visually. */}
         <ScrollableOverlay
           ref={attachScroller}
-          useScrollShadow
-          scrollShadowSize={12}
           outerClassName={maxHeightClassName}
           className="overlay-scrollbar-target--no-gutter"
           style={maxHeightStyle}

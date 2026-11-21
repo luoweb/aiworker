@@ -88,7 +88,7 @@ afterEach(async () => {
   dom.close();
 });
 
-const renderPicker = async (favoriteModels: ModelPickerEntry[] = []) => {
+const renderPicker = async (favoriteModels: ModelPickerEntry[] = [], stickyHeaders = false) => {
   await act(async () => {
     root.render(
       <ModelPickerList
@@ -102,7 +102,7 @@ const renderPicker = async (favoriteModels: ModelPickerEntry[] = []) => {
         onToggleFavorite={() => {}}
         isFavorite={(entry) => entry.modelID === favorite.modelID}
         autoFocus={false}
-        stickyHeaders={false}
+        stickyHeaders={stickyHeaders}
       />,
     );
   });
@@ -157,4 +157,10 @@ test('a favorite row, which shows its provider only as a logo, names the provide
   const row = activeRow()!;
   expect(row.closest('[role="group"]')?.getAttribute('aria-label')).toBe('Favorites');
   expect(rowName(row)).toBe('Beta Lab Small');
+});
+
+test('the model list mounts no scroll shadow mask or sticky fade overlay', async () => {
+  await renderPicker([], true);
+  expect(host.querySelector('[data-scroll-shadow]')).toBeNull();
+  expect(host.querySelector('.oc-sticky-fade-overlay')).toBeNull();
 });

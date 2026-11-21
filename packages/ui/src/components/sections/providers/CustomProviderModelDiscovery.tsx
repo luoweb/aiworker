@@ -89,12 +89,14 @@ export const CustomProviderModelDiscovery: React.FC<Props> = ({ models, existing
         </div>
       ) : null}
 
+      {/* No scroll fade here: mask-image rasterizes as a solid black block in
+          software-rendered environments, including the VS Code webview. The
+          tile's padding already clears the first and last rows. */}
       <ScrollableOverlay
         outerClassName="oc-tile-inset max-h-[min(18rem,45dvh)] rounded-md"
         className="px-2 py-1"
         disableHorizontal
         preventOverscroll
-        useScrollShadow
       >
         {visible.length > 0 ? visible.map((model) => {
           const added = existingIds.has(model.id);

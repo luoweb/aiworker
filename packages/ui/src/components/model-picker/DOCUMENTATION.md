@@ -52,7 +52,8 @@ ones whole, so ten providers of 30 models mounted 300 rows on every open.
 With captions as rows, one virtualizer covers the whole list. A caption scrolls
 away with its section: a `position: sticky` caption cannot stick inside
 absolutely placed virtual rows, and the duplicate overlay that named the top
-section is gone with the mask it lived in.
+section is gone with the mask it lived in. There is no sticky caption in this
+list.
 
 ### Why the virtualizer's view is capped at the window
 
@@ -146,9 +147,10 @@ click and swallows it.
 ### Why there are no scroll fades
 
 The scroll shadow's `mask-image` fade rasterizes as a solid black block under
-software rendering (remote desktop, older GPUs), which turns the list black.
-The list therefore draws no mask at all, and the duplicate sticky caption that
-existed only to stay crisp inside that mask is gone too. The real section
-captions keep their `position: sticky`, and the search row and key-hint footer
-bound the list visually.
+software rendering (remote desktop, older GPUs, and the VS Code webview), which
+turns the list black. The list therefore mounts no `ScrollShadow` at all, and
+the duplicate sticky caption that existed only to stay crisp inside that mask
+is gone too. Section captions are ordinary rows, and the search row and
+key-hint footer bound the list visually. Hiding the two shadow edges was not
+enough: it left the overlay and its CSS behind for a merge to bring back.
 
