@@ -87,6 +87,7 @@
 - Deep-link parsing stays independent of React, stores and Capacitor so native producers share one vocabulary. Unknown routes return null, and both authority and authority-less custom-scheme forms parse. Provider selection belongs only to Usage, including extension provider IDs.
 - Native link listeners register before connection completes so cold-launch notification and URL intents survive splash and sync remounts. A module-level holder keeps only the newest intent, consumes it before dispatch and restores it when its shell handler is absent. Legacy notification session IDs remain a fallback when no explicit URL is supplied.
 - Shortcuts can carry a first message; URL deep links cannot. A shortcut naming an unknown project leaves that message unsent in the default draft so the user chooses its destination. Session links use the shared opener, including parent-panel resolution for `/btw` forks.
+- A share from another app opens a new-session draft of its own in the projects store's active project (the first project when none is active), and in Chat only when there is no project. The sidebar lists drafts only under projects, so a Chat draft could not be reopened once the user left it. The composer document owns the rest of the handoff.
 - An agent's file request stages navigation only for the session on screen or its lineage. Unknown subagents resolve from the server; lineage traversal stops at unreadable sessions and cycles because `/btw` metadata is writable. A delayed trust decision cannot stage a path into the previously visible session's Files pane.
 - Workspace panes retain their tree position across keyboard resizes and folding so an editor's draft and focus survive size-class changes. Closing retains the pending Changes request because it keys the persistent pane. New diff and commit requests are mutually exclusive and consumed once across remounts.
 - Tablet panel opening and closing uses compositor transforms over a width changed once. Width animation repeatedly lays out chat. Closing holds space until the slide ends, except when a size-class change or a displaced panel must release it immediately to avoid squeezing chat between two panels.
@@ -105,13 +106,20 @@
 ### Changes and files
 
 - Changes waits for the requested repository before applying commit scope; a repository outside the folder cannot borrow another repository's commit selection. Explicit commit navigation ends a board-selected PR override, and every repository change clears repository-bound PR selection.
-- A changed-file request looks in Last turn first, then in its repository's freshly read working-tree status. Only an answer for the current session settles it; failed reads retain Retry. Manual navigation or leaving the scope ends the request, while repository resolution alone does not replay it.
+- A changed-file request looks in its turn first (Last turn, or the older turn its chip names), then in its repository's freshly read working-tree status. The request carries the chip's session and folder, which read the turn, and the session on screen at the click, which owns it: only an answer while that session is on screen settles it, so a chip from another session still reaches the working-tree step; failed reads retain Retry. Manual navigation or leaving the scope ends the request, while repository resolution alone does not replay it. The older turn's folder lives in the pane's navigation, not in the surface's root, so a project switch drops the selection with the owner and the list, Last turn and Git actions belong to the new project.
 - Comparison expansion belongs to the exact path, range and retry cache entry. Branch and commit views request full context from Git; PR views reconstruct full contents from GitHub's two file versions. A pure rename has no hunks to draw. New nested-repository answers supersede earlier declined-diff results.
 - Hidden workspace panes keep navigation but perform visibility-scoped reads only while shown. Entering a comparison scope reports loading during render to avoid a false empty frame; revisits retain the previous list while refreshing. Failed background folder reloads preserve the listing already on screen.
 - Mobile reverts bound concurrency because the server serializes them per repository and excess POSTs occupy connections needed for reads. Local branch creation never implicitly pushes. A failed publish before a dirty switch leaves the user on the committed branch; pull conflicts remain a merge in progress.
 - Identity selection uses the repository's bound primary remote and the same configuration answers as add and clone. Trusting system Git is confirmed in repository configuration because selecting a menu item alone cannot authorize that trust.
 - Worktree deletion handles sessions in every subfolder while their directory still exists. Archiving rolls back if removal fails; keeping sessions moves them to the project first. Teardown retries reread options at execution time, and failed remote-branch deletion preserves the worktree with its reason.
 - Files navigation remains rooted for parent traversal, while an explicit chat tool target can open outside the workspace through the editor's existing outside-workspace read path. Image-preview navigation retains the browsed folder as Back's destination. Upload completion reloads only the folder still on screen.
+- A phone file or change list keeps the offset it left when a preview or diff
+  replaces it, and a file's search results, a folder's listing and each change
+  mode are their own list. A folder child starts at its top rather than
+  inheriting the parent's offset (the list's `memoryKey`). Search results of
+  the same folder and query stay on screen while a return re-runs the search
+  (`mobileFilesList`): a loading placeholder there would clamp the restored
+  offset and be saved as the list's. A failed folder read or search is not the list.
 
 ### Native chrome, notifications and snapshots
 
