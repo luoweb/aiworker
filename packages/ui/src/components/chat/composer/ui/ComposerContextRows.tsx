@@ -4,6 +4,7 @@ import { flushSync } from 'react-dom';
 
 import { CommentTextEditor } from '@/components/comments/CommentTextEditor';
 import { useCommentImagePaste } from '@/components/comments/useCommentImagePaste';
+import { opensDiff, useOpenCommentSource } from '@/components/comments/useOpenCommentSource';
 import { Icon } from '@/components/icon/Icon';
 import type { IconName } from '@/components/icon/icons';
 import { toast } from '@/components/ui';
@@ -87,16 +88,19 @@ const DraftRow: React.FC<{
     onSaveComment: (text: string) => boolean;
     composing: boolean;
     onComposeText: (text: string) => boolean;
-    onComposeFinish: (text: string) => void;
+    onComposeFinish: () => void;
     onComposeCancel: () => void;
     onFocusQuote: ((focused: boolean) => void) | null;
     onRevealQuote: (() => void) | null;
+    onOpenSource: (() => void) | null;
+    openSourceLabel: string;
     attachmentFilenames: readonly string[];
     onOpenScreenshot: (() => void) | null;
     onRemoveScreenshot: () => void;
-}> = ({ draft, view, open, editsInPlace, phoneLayout, onToggle, onClose, onRemove, onSaveComment, composing, onComposeText, onComposeFinish, onComposeCancel, onFocusQuote, onRevealQuote, attachmentFilenames, onOpenScreenshot, onRemoveScreenshot }) => {
+}> = ({ draft, view, open, editsInPlace, phoneLayout, onToggle, onClose, onRemove, onSaveComment, composing, onComposeText, onComposeFinish, onComposeCancel, onFocusQuote, onRevealQuote, onOpenSource, openSourceLabel, attachmentFilenames, onOpenScreenshot, onRemoveScreenshot }) => {
     const { t } = useI18n();
-    const [editText, setEditText] = React.useState(view.comment);
+    const [typedText, setTypedText] = React.useState<string | null>(null);
+    const editText = typedText ?? view.comment;
     const imagePaste = useCommentImagePaste();
     const editing = open && (editsInPlace || composing) && view.editable;
     const writeThrough = editing && composing;
@@ -105,8 +109,7 @@ const DraftRow: React.FC<{
     React.useEffect(() => {
         if (!editing) return;
         settledRef.current = false;
-        setEditText(view.comment);
-        // oxlint-disable-next-line react-hooks/exhaustive-deps
+        setTypedText(null);
     }, [editing]);
 
     const commitEdit = () => {
@@ -126,11 +129,12 @@ const DraftRow: React.FC<{
     };
     const composeRejectedRef = React.useRef(false);
     const composeText = (text: string) => {
-        setEditText(text);
         if (onComposeText(text)) {
+            setTypedText(null);
             composeRejectedRef.current = false;
             return;
         }
+        setTypedText(text);
         if (!composeRejectedRef.current) toast.error(t('inlineComment.toast.noRoom'));
         composeRejectedRef.current = true;
     };
@@ -142,7 +146,7 @@ const DraftRow: React.FC<{
         }
         settledRef.current = true;
         void imagePaste.attachCitedImages(editText);
-        onComposeFinish(editText);
+        onComposeFinish();
     };
     const cancelComposing = () => {
         settledRef.current = true;
@@ -237,7 +241,25 @@ const DraftRow: React.FC<{
             >
                 <span aria-hidden="true" className="h-4 w-[3px] shrink-0 rounded-full bg-primary/45" />
                 <Icon name={view.icon} className={cn('h-3.5 w-3.5 shrink-0 text-muted-foreground', view.iconClassName)} />
-                {phoneLayout && hasComment ? null : (
+                {phoneLayout && onOpenSource ? (
+                    <button
+                        type="button"
+                        dir="auto"
+                        className={cn(
+                            'min-w-0 truncate text-start text-muted-foreground underline-offset-2 hover:underline',
+                            view.editable ? 'max-w-[45%] shrink-0' : 'flex-1',
+                        )}
+                        style={{ minHeight: 0, minWidth: 0 }}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onOpenSource();
+                        }}
+                        aria-label={openSourceLabel}
+                        title={view.title}
+                    >
+                        {view.snippet}
+                    </button>
+                ) : phoneLayout && hasComment ? null : (
                     <span
                         dir="auto"
                         className={cn(
@@ -292,7 +314,25 @@ const DraftRow: React.FC<{
                 }}
             >
                 <Icon name={view.icon} className={cn('ms-1.5 h-3.5 w-3.5 shrink-0', view.iconClassName)} />
-                <span dir="auto" className="min-w-0 flex-1 truncate" title={view.title}>{view.title}</span>
+                {onOpenSource ? (
+                    <button
+                        type="button"
+                        dir="auto"
+                        className="min-w-0 flex-1 truncate text-start underline-offset-2 hover:underline"
+                        style={{ minHeight: 0, minWidth: 0 }}
+                        onPointerDown={keepEditorFocus}
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onOpenSource();
+                        }}
+                        aria-label={openSourceLabel}
+                        title={view.title}
+                    >
+                        {view.title}
+                    </button>
+                ) : (
+                    <span dir="auto" className="min-w-0 flex-1 truncate" title={view.title}>{view.title}</span>
+                )}
                 {actions}
             </div>
             {view.quote.trim() ? (
@@ -345,7 +385,7 @@ const DraftRow: React.FC<{
                 <div ref={fieldRef} className="mx-1.5 mt-1.5">
                     <CommentTextEditor
                         value={editText}
-                        onChange={writeThrough ? composeText : setEditText}
+                        onChange={writeThrough ? composeText : setTypedText}
                         onSubmit={finish}
                         onCancel={cancel}
                         enterSubmits
@@ -383,6 +423,7 @@ function ComposerContextRowsView({ draftTarget, isMobile, onOpenAttachment, surf
     const removeAttachedFile = useInputStore((state) => state.removeAttachedFile);
     const attachmentFilenames = React.useMemo(() => attachedFiles.map((file) => file.filename), [attachedFiles]);
     const mobileComment = useMobileCommentComposerController();
+    const openCommentSource = useOpenCommentSource(draftTarget?.directory ?? null);
     const [openId, setOpenId] = React.useState<string | null>(null);
     const [showAll, setShowAll] = React.useState(false);
     const openRowEditsRef = React.useRef(false);
@@ -577,8 +618,9 @@ function ComposerContextRowsView({ draftTarget, isMobile, onOpenAttachment, surf
                 onSaveComment={(text) => saveComment(draft, text)}
                 composing={draft.composing === true}
                 onComposeText={(text) => updateDraft(draftTarget, draft.id, { text })}
-                onComposeFinish={(text) => {
-                    if (!text.trim()) removeDraft(draftTarget, draft.id);
+                onComposeFinish={() => {
+                    const stored = useInlineCommentDraftStore.getState().getDrafts(draftTarget).find((item) => item.id === draft.id);
+                    if (!stored?.text.trim()) removeDraft(draftTarget, draft.id);
                     else updateDraft(draftTarget, draft.id, { composing: false });
                 }}
                 onComposeCancel={() => removeDraft(draftTarget, draft.id)}
@@ -588,6 +630,8 @@ function ComposerContextRowsView({ draftTarget, isMobile, onOpenAttachment, surf
                 onRevealQuote={revealable
                     ? () => quoteHighlights.reveal(draft.fileLabel, draft.anchor ?? legacyChatQuoteAnchor(draft.code))
                     : null}
+                onOpenSource={openCommentSource.canOpen(draft) ? () => openCommentSource.open(draft) : null}
+                openSourceLabel={t(opensDiff(draft.origin) ? 'chat.toolPart.openFileDiff' : 'chat.toolPart.openFile')}
                 attachmentFilenames={attachmentFilenames}
                 onOpenScreenshot={draft.screenshot && attachmentFilenames.includes(draft.screenshot) ? () => onOpenAttachment(draft.screenshot ?? '') : null}
             />

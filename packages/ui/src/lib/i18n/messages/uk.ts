@@ -15,7 +15,7 @@ import { fileEditorAidsI18n } from './file-editor-aids.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
 import { documentToolbarI18n } from './document-toolbar.i18n';
 import { uiBlocksI18n } from './ui-blocks.i18n';
-import { updateDialogCanaryI18n } from './update-dialog-canary.i18n';
+import { updateDialogCanaryI18n } from './update-dialog-canary.i18n'; import { updateIdleI18n } from './update-idle.i18n';
 import { aboutReleaseNotesI18n } from './about-release-notes.i18n';
 import { updateCheckErrorsI18n } from './update-check-errors.i18n';
 import { secretRequestI18n } from './secret-request.i18n';
@@ -25,6 +25,7 @@ import { settingsHintsI18n } from './settings-hints.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { sessionWarmingI18n } from './session-warming.i18n';
+import { sessionCostI18n } from './session-cost.i18n';
 import { connectionHeartbeatI18n } from './connection-heartbeat.i18n';
 import { compactionSettingsI18n } from './compaction-settings.i18n';
 import { heapSnapshotI18n } from './heap-snapshot.i18n';
@@ -62,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
@@ -115,10 +117,14 @@ export const dict: Record<I18nKey, string> = {
   'sessions.aiRename.noSmallModel': 'Потрібна Small Model. Увійдіть до провайдера моделей або оберіть її в Налаштування → Сесії.',
   'commitComparison.mode': 'Коміт',
   'pullRequestComparison.select': 'Виберіть пул-реквест',
+  'pullRequestComparison.searchShort': 'Шукати пул-реквести',
   'pullRequestComparison.pickAbove': 'Виберіть пул-реквест угорі',
   'pullRequestComparison.diffUnavailable': "{provider} не віддає диф пул-реквестів, тож тут їх не показати й не пройти",
   'pullRequestComparison.partial': 'Не вдалося завантажити частину пул-реквестів',
   'commitComparison.select': 'Вибрати коміт',
+  'commitComparison.branchDividerSingle': 'Вище: коміт, який є лише в {branch}. Нижче: уже в {base}.',
+  'commitComparison.branchDividerPlural': 'Вище: коміти, які є лише в {branch} ({count}). Нижче: уже в {base}.',
+  'commitComparison.backToList': 'Назад до комітів',
   'commitComparison.search': 'Пошук комітів...',
   'commitComparison.loadError': 'Не вдалося завантажити коміти',
   'commitComparison.noCommits': 'Комітів не знайдено',
@@ -222,7 +228,7 @@ export const dict: Record<I18nKey, string> = {
   ...htmlRenderI18n.uk,
   ...documentToolbarI18n.uk,
   ...uiBlocksI18n.uk,
-  ...updateDialogCanaryI18n.uk,
+  ...updateDialogCanaryI18n.uk, ...updateIdleI18n.uk,
   ...aboutReleaseNotesI18n.uk,
   ...updateCheckErrorsI18n.uk,
   ...secretRequestI18n.uk,
@@ -232,6 +238,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.uk,
   ...webSearchI18n.uk,
   ...sessionWarmingI18n.uk,
+  ...sessionCostI18n.uk,
   ...connectionHeartbeatI18n.uk,
   ...compactionSettingsI18n.uk,
   ...heapSnapshotI18n.uk,
@@ -268,6 +275,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.uk,
   ...integrationsCatalogI18n['uk'],
   ...diffFindI18n['uk'],
+  ...contextWindowI18n['uk'],
   ...markdownOutlineI18n['uk'],
   ...markdownGithubI18n['uk'],
   ...autocompleteScopeI18n['uk'],
@@ -709,6 +717,7 @@ export const dict: Record<I18nKey, string> = {
   "sessions.sidebar.header.displayMode.minimal": "Мінімальний",
   "sessions.sidebar.header.displayMode.showWork": "Показувати «В роботі»",
   "sessions.sidebar.header.displayMode.showPinned": "Показувати «Закріплені»",
+  "sessions.sidebar.header.displayMode.showSubagents": "Показувати сесії субагентів",
   "sessions.sidebar.header.displayMode.detailedZoneRows": "Детальні рядки",
   "sessions.sidebar.header.displayMode.worktreeNameByBranch": "Називати worktree за гілкою",
   "sessions.sidebar.activity.pinnedTitle": "Закріплені",
@@ -1326,6 +1335,8 @@ export const dict: Record<I18nKey, string> = {
   "worktree.bootstrap.toast.invalidConfiguration": "Перевірте конфігурацію підмодулів і Git LFS у репозиторії, а потім повторіть спробу.",
   "worktree.bootstrap.toast.repositoryTooManyFiles": "У репозиторії забагато файлів.",
   "worktree.bootstrap.toast.branchNameConflict": "Назва гілки конфліктує з наявною гілкою: така сама назва або одна вкладена в іншу. Перейменуйте гілку й створіть worktree ще раз.",
+  "worktree.bootstrap.toast.submoduleSourceLocal": "Сабмодулі не підтягнуто: OpenChamber бере їх лише через мережевий remote, а в цього worktree такого немає. Remote репозиторію — папка на цьому комп'ютері, remote немає взагалі або гілка нічого не відстежує. Працюйте в самій папці репозиторію або створіть worktree від гілки, чий upstream — мережевий remote.",
+  "worktree.bootstrap.toast.lfsSourceLocal": "Файли Git LFS не підтягнуто: OpenChamber бере їх лише через мережевий remote, а в цього worktree такого немає. Remote репозиторію — папка на цьому комп'ютері, remote немає взагалі або гілка нічого не відстежує. Працюйте в самій папці репозиторію або створіть worktree від гілки, чий upstream — мережевий remote.",
   "worktree.bootstrap.toast.cancelled": "Налаштування worktree скасовано. Повторіть спробу, коли будете готові.",
   "worktree.bootstrap.toast.transportFailed": "Перевірте доступ до репозиторію та мережеве з’єднання, а потім повторіть спробу.",
   "worktree.bootstrap.toast.timeoutDescription": "Worktree створено, але час очікування фонового налаштування минув.",
@@ -1880,7 +1891,8 @@ export const dict: Record<I18nKey, string> = {
   "contextSidebar.tokens.cacheRead": "Читання кешу",
   "contextSidebar.tokens.cacheWrite": "Запис кешу",
   "contextSidebar.tokens.cacheHit": "Влучання в кеш",
-  "chat.workStatus.replyCacheHit": "Влучання в кеш (відповідь)",
+  "chat.workStatus.replyCacheHit": "Кеш промпту",
+  "chat.workStatus.replyCacheHitDescription": "Частка промпту останньої відповіді, прочитана з кешу.",
   "contextSidebar.actions.copyJson": "Скопіювати JSON",
   "contextSidebar.actions.copy": "Копіювати",
   "contextSidebar.actions.copied": "Скопійовано",
@@ -1949,6 +1961,8 @@ export const dict: Record<I18nKey, string> = {
   "diffView.state.loadingDiff": "Завантаження diff...",
   "diffView.state.loadingChanges": "Завантаження змін...",
   "diffView.state.largeDiff": "Великий diff ({count} змінених рядків)",
+  "diffView.state.largeDiffLongLines": "Великий diff (дуже довгі рядки)",
+  "diffView.state.largeFile": "Великий файл",
   "diffView.state.largeDiffDescription": "Рендеринг може бути повільним. Ви все одно можете переглянути diff кнопкою нижче.",
   "diffView.summary.changedFilesSingle": "Змінено файл: {count}",
   "diffView.summary.changedFilesPlural": "Змінено файлів: {count}",
@@ -1973,6 +1987,10 @@ export const dict: Record<I18nKey, string> = {
   "diffView.layout.sideBySide": "Вигляд поруч",
   "diffView.actions.wrapLines": "Переносити рядки",
   "diffView.actions.moreActions": "Більше дій",
+  "diffView.actions.viewOptions": "Параметри перегляду діфу",
+  "gitView.sidebar.resizeAria": "Змінити ширину бічної панелі Git",
+  "gitView.commit.stagedCountSummary": "Індексовано: {count}",
+  "gitView.commit.collapseAria": "Згорнути форму коміту",
   "diffView.actions.openFileInEditorAtChange": "Відкрити цей файл у редакторі на зміні",
   "diffView.actions.openFileAtFirstChangedLine": "Відкрити цей файл у першому зміненому рядку",
   'diffView.actions.reviewAria': 'Поревʼювати зміни',
@@ -3093,6 +3111,11 @@ export const dict: Record<I18nKey, string> = {
   "openInApp.actions.copyPath": "Копіювати шлях",
   "openInApp.actions.refreshApps": "Оновити застосунки",
   "openInApp.toast.pathCopied": "Шлях скопійовано в буфер обміну",
+  "openInApp.toast.sshOpenFailed": "Не вдалося відкрити {app}. Перевірте, чи його встановлено на цьому комп’ютері.",
+  "openInApp.toast.sshInstanceChanged": "Це вікно перемкнулося на інший інстанс, перш ніж {app} відкрився. Спробуйте ще раз.",
+  "openInApp.toast.sshSettingsMismatch": "{app} не під’єднається так, як цей інстанс: його SSH-команда задає {settings}, а {app} цього не читає. Перенесіть ці налаштування в запис хоста в ~/.ssh/config.",
+  "openInApp.toast.sshUnresolved": "Не вдалося прочитати SSH-налаштування цього інстансу, тому {app} не відкрито. Перевірте його SSH-команду.",
+  "openInApp.toast.sshUnsupported": "{app} не може відкрити цей проєкт через SSH.",
   "projectActions.actions.addActionAria": "Додати дію",
   "projectActions.actions.addAction": "Додати дію",
   "projectActions.actions.addNewAction": "Додати нову дію",

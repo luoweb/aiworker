@@ -15,7 +15,7 @@ import { fileEditorAidsI18n } from './file-editor-aids.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
 import { documentToolbarI18n } from './document-toolbar.i18n';
 import { uiBlocksI18n } from './ui-blocks.i18n';
-import { updateDialogCanaryI18n } from './update-dialog-canary.i18n';
+import { updateDialogCanaryI18n } from './update-dialog-canary.i18n'; import { updateIdleI18n } from './update-idle.i18n';
 import { aboutReleaseNotesI18n } from './about-release-notes.i18n';
 import { updateCheckErrorsI18n } from './update-check-errors.i18n';
 import { secretRequestI18n } from './secret-request.i18n';
@@ -25,6 +25,7 @@ import { settingsHintsI18n } from './settings-hints.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { sessionWarmingI18n } from './session-warming.i18n';
+import { sessionCostI18n } from './session-cost.i18n';
 import { connectionHeartbeatI18n } from './connection-heartbeat.i18n';
 import { compactionSettingsI18n } from './compaction-settings.i18n';
 import { heapSnapshotI18n } from './heap-snapshot.i18n';
@@ -62,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
@@ -115,10 +117,14 @@ export const dict: Record<I18nKey, string> = {
   'sessions.aiRename.noSmallModel': 'Small Model が必要です。モデルプロバイダーにサインインするか、設定 → セッションで選択してください。',
   'commitComparison.mode': 'コミット',
   'pullRequestComparison.select': 'プルリクエストを選択',
+  'pullRequestComparison.searchShort': 'プルリクエストを検索',
   'pullRequestComparison.pickAbove': '上でプルリクエストを選択してください',
   'pullRequestComparison.diffUnavailable': "{provider} はプルリクエストの差分を提供していないため、ここでは表示もウォークスルーもできません",
   'pullRequestComparison.partial': '一部のプルリクエストを読み込めませんでした',
   'commitComparison.select': 'コミットを選択',
+  'commitComparison.branchDividerSingle': '上: {branch} にだけあるコミット。下: すでに {base} にあります。',
+  'commitComparison.branchDividerPlural': '上: {branch} にだけある {count} 件のコミット。下: すでに {base} にあります。',
+  'commitComparison.backToList': 'コミット一覧に戻る',
   'commitComparison.search': 'コミットを検索...',
   'commitComparison.loadError': 'コミットを読み込めませんでした',
   'commitComparison.noCommits': 'コミットが見つかりません',
@@ -212,7 +218,7 @@ export const dict: Record<I18nKey, string> = {
   ...htmlRenderI18n.ja,
   ...documentToolbarI18n.ja,
   ...uiBlocksI18n.ja,
-  ...updateDialogCanaryI18n.ja,
+  ...updateDialogCanaryI18n.ja, ...updateIdleI18n.ja,
   ...aboutReleaseNotesI18n.ja,
   ...updateCheckErrorsI18n.ja,
   ...secretRequestI18n.ja,
@@ -222,6 +228,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.ja,
   ...webSearchI18n.ja,
   ...sessionWarmingI18n.ja,
+  ...sessionCostI18n.ja,
   ...connectionHeartbeatI18n.ja,
   ...compactionSettingsI18n.ja,
   ...heapSnapshotI18n.ja,
@@ -258,6 +265,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.ja,
   ...integrationsCatalogI18n['ja'],
   ...diffFindI18n['ja'],
+  ...contextWindowI18n['ja'],
   ...markdownOutlineI18n['ja'],
   ...markdownGithubI18n['ja'],
   ...autocompleteScopeI18n['ja'],
@@ -700,6 +708,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.header.displayMode.minimal': 'ミニマル',
   'sessions.sidebar.header.displayMode.showWork': '作業中セクションを表示',
   'sessions.sidebar.header.displayMode.showPinned': 'ピン留めセクションを表示',
+  'sessions.sidebar.header.displayMode.showSubagents': 'サブエージェントのセッションを表示',
   'sessions.sidebar.header.displayMode.detailedZoneRows': '詳細な行',
   'sessions.sidebar.header.displayMode.worktreeNameByBranch': 'worktree をブランチ名で表示',
   'sessions.sidebar.activity.pinnedTitle': 'ピン留め',
@@ -1328,6 +1337,8 @@ export const dict: Record<I18nKey, string> = {
   'worktree.bootstrap.toast.invalidConfiguration': 'リポジトリのサブモジュールと Git LFS の設定を確認してから、再試行してください。',
   'worktree.bootstrap.toast.repositoryTooManyFiles': 'リポジトリのファイルが多すぎます。',
   'worktree.bootstrap.toast.branchNameConflict': 'ブランチ名が既存のブランチと衝突しています（同じ名前か、一方がもう一方の中に入れ子になっています）。ブランチ名を変更して、ワークツリーをもう一度作成してください。',
+  'worktree.bootstrap.toast.submoduleSourceLocal': 'サブモジュールは取得されませんでした。OpenChamber はネットワーク上のリモート経由でのみ取得しますが、この worktree には使えるリモートがありません。リポジトリのリモートがこのコンピューター上のフォルダーか、リモートが存在しないか、ブランチが何も追跡していません。リポジトリのフォルダーで直接作業するか、upstream がネットワーク上のリモートであるブランチから worktree を作成してください。',
+  'worktree.bootstrap.toast.lfsSourceLocal': 'Git LFS ファイルは取得されませんでした。OpenChamber はネットワーク上のリモート経由でのみ取得しますが、この worktree には使えるリモートがありません。リポジトリのリモートがこのコンピューター上のフォルダーか、リモートが存在しないか、ブランチが何も追跡していません。リポジトリのフォルダーで直接作業するか、upstream がネットワーク上のリモートであるブランチから worktree を作成してください。',
   'worktree.bootstrap.toast.cancelled': 'ワークツリーのセットアップはキャンセルされました。準備ができたら再試行してください。',
   'worktree.bootstrap.toast.transportFailed': 'リポジトリへのアクセスとネットワーク接続を確認してから、再試行してください。',
   'worktree.bootstrap.toast.timeoutDescription': 'ワークツリーは作成されましたが、バックグラウンドセットアップがタイムアウトしました。',
@@ -1920,7 +1931,8 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.tokens.cacheRead': 'キャッシュ読み取り',
   'contextSidebar.tokens.cacheWrite': 'キャッシュ書き込み',
   'contextSidebar.tokens.cacheHit': 'キャッシュヒット',
-  'chat.workStatus.replyCacheHit': 'キャッシュヒット（応答）',
+  'chat.workStatus.replyCacheHit': 'プロンプトキャッシュ',
+  'chat.workStatus.replyCacheHitDescription': '直前の応答でキャッシュから読み込まれたプロンプトの割合です。',
   'contextSidebar.actions.copyJson': 'JSONをコピー',
   'contextSidebar.actions.copy': 'コピー',
   'contextSidebar.actions.copied': 'コピーしました',
@@ -1989,6 +2001,8 @@ export const dict: Record<I18nKey, string> = {
   'diffView.state.loadingDiff': '差分を読み込み中...',
   'diffView.state.loadingChanges': '変更を読み込み中...',
   'diffView.state.largeDiff': '大きな差分（{count}行変更）',
+  'diffView.state.largeDiffLongLines': '大きな差分（非常に長い行）',
+  'diffView.state.largeFile': '大きなファイル',
   'diffView.state.largeDiffDescription': 'レンダリングが遅くなる可能性があります。以下をクリックして差分を表示できます。',
   'diffView.summary.changedFilesSingle': '{count}ファイルが変更されました',
   'diffView.summary.changedFilesPlural': '{count}ファイルが変更されました',
@@ -2013,6 +2027,10 @@ export const dict: Record<I18nKey, string> = {
   'diffView.layout.sideBySide': '左右に並べた表示',
   'diffView.actions.wrapLines': '行の折り返し',
   'diffView.actions.moreActions': 'その他の操作',
+  'diffView.actions.viewOptions': '差分表示オプション',
+  'gitView.sidebar.resizeAria': 'Git サイドバーのサイズを変更',
+  'gitView.commit.stagedCountSummary': '{count}件ステージ済み',
+  'gitView.commit.collapseAria': 'コミットフォームを折りたたむ',
   'diffView.actions.openFileInEditorAtChange': '変更箇所でファイルをエディターで開く',
   'diffView.actions.openFileAtFirstChangedLine': '最初の変更行でファイルを開く',
   'diffView.actions.reviewAria': '変更をレビュー',
@@ -3136,6 +3154,11 @@ export const dict: Record<I18nKey, string> = {
   'openInApp.actions.copyPath': 'パスをコピー',
   'openInApp.actions.refreshApps': 'アプリを更新',
   'openInApp.toast.pathCopied': 'パスをクリップボードにコピーしました',
+  'openInApp.toast.sshOpenFailed': '{app} を開けませんでした。このコンピュータにインストールされているか確認してください。',
+  'openInApp.toast.sshInstanceChanged': '{app} が開く前に、このウィンドウは別のインスタンスに切り替わりました。もう一度お試しください。',
+  'openInApp.toast.sshSettingsMismatch': '{app} はこのインスタンスと同じ方法で接続できません。SSH コマンドで {settings} が指定されていますが、{app} はそれを読み取りません。~/.ssh/config のホストのエントリに移してください。',
+  'openInApp.toast.sshUnresolved': 'このインスタンスの SSH 設定を読み取れなかったため、{app} を開きませんでした。SSH コマンドを確認してください。',
+  'openInApp.toast.sshUnsupported': '{app} はこのプロジェクトを SSH で開けません。',
   'projectActions.actions.addActionAria': 'アクションを追加',
   'projectActions.actions.addAction': 'アクションを追加',
   'projectActions.actions.addNewAction': '新しいアクションを追加',

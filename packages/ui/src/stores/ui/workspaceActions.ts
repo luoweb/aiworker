@@ -1,8 +1,8 @@
 import { shownMobileWorkspaceTabs, storedMobileWorkspaceTabOrder } from '@/lib/mobileWorkspaceTabs';
-import { carrySurfaceToZone, getZoneView, withZoneView, zoneOfMode, CONTEXT_ZONES } from '@/lib/workspace/zones';
+import { carrySurfaceToZone, getZoneView, resolveZoneActiveTabId, withZoneView, zoneOfMode, CONTEXT_ZONES } from '@/lib/workspace/zones';
 import type { ContextZonePlacement } from '@/lib/workspace/zones';
 import { sanitizeWorkStatusSectionOrder } from '@/components/chat/work-status/sections';
-import { clampContextEditorTreeWidth } from './preferences';
+import { clampContextEditorTreeWidth, clampGitSidebarWidth } from './preferences';
 import type { ContextPanelDirectoryState, UIStoreSlice } from './types';
 import { normalizeDirectoryPath, clampContextZoneSize } from './contextTabs';
 import {
@@ -23,7 +23,9 @@ export const createWorkspaceActions: UIStoreSlice<
   | 'toggleContextEditorTree'
   | 'toggleContextEditor'
   | 'setContextEditorTreeWidth'
+  | 'setGitSidebarWidth'
   | 'closeContextPanel'
+  | 'toggleContextPanel'
   | 'closeContextZone'
   | 'toggleContextPanelExpanded'
   | 'setContextZoneSize'
@@ -88,8 +90,26 @@ export const createWorkspaceActions: UIStoreSlice<
     set({ contextEditorTreeWidth: clampContextEditorTreeWidth(width) });
   },
 
+  setGitSidebarWidth: (width) => {
+    if (!Number.isFinite(width)) {
+      return;
+    }
+    set({ gitSidebarWidth: clampGitSidebarWidth(width) });
+  },
+
   closeContextPanel: (directory) => {
     get().closeContextZone(directory, 'right');
+  },
+
+  toggleContextPanel: (directory) => {
+    const state = get();
+    const panel = state.contextPanelByDirectory[directory];
+    const rightTabId = panel
+      ? resolveZoneActiveTabId(panel.tabs, state.contextSurfaceZones, 'right', getZoneView(panel, 'right').activeTabId)
+      : null;
+    if (panel?.isOpen) state.closeContextPanel(directory);
+    else if (rightTabId) state.setActiveContextPanelTab(directory, rightTabId);
+    else state.openContextSurface(directory, 'git');
   },
 
   closeContextZone: (directory, zone, options) => {

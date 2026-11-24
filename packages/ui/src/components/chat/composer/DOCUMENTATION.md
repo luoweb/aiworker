@@ -621,7 +621,8 @@ render.
 
 ### Why a share waits for the draft to be the one on screen
 
-A share (the Android share intent) always opens a new-session draft of its own
+A share (Android's share intent, or the iOS share extension's inbox) always
+opens a new-session draft of its own
 (`openSharedFilesSession` in `apps/deepLinkNavigation.ts`) in the last-used
 project: the projects store's active project, which opening a session keeps
 current, or the first project when none is active. A project draft is listed in
@@ -1481,7 +1482,7 @@ command can leave the queue untouched and delivery can take only part of it.
   (as `QueuedContextPart`s on the queue item), the server or the VS Code
   auto-send delivers them through `queuedContextToParts`, and editing the
   queued message puts them back. A queued message is placed as captured — its
-  mention, file mentions, and skill instruction were resolved when it was
+  mention, file mentions, and skill names were resolved when it was
   queued, never at delivery — and its context follows it before the next
   queued message.
 - **Skills named with `$name` are attached to the prompt, not hinted at.**
@@ -1490,7 +1491,12 @@ command can leave the queue untouched and delivery can take only part of it.
   `SkillMentions`, and `opencodeClient.sendMessage` maps each name to its
   OpenCode skill id (`GET /api/skill`; the id is the skill's folder and can
   differ from its frontmatter name) and sends them in the prompt's `skills`
-  field. OpenCode then loads each skill's content into that user message. It
+  field. It reads `GET /api/model/default` first: OpenCode's skill list does
+  not wait for a location's plugins and answers `[]` while a fresh location
+  (a new worktree, the first send after a restart) is still booting, which
+  silently turned the skill into the instruction, while the default-model read
+  waits for activation (up to OpenCode's 5 s; past that the send goes on as
+  before). OpenCode then loads each skill's content into that user message. It
   rides the prompt's delivery, so a new-session draft (after the session is
   created), a steer while the agent works and a `/btw` fork all activate the
   skill with their own message, never mid-turn. The separate
@@ -1502,9 +1508,15 @@ command can leave the queue untouched and delivery can take only part of it.
   these skills…") is per skill and never blocks the send: a name OpenCode
   does not list, a failed skill list, or a prompt rejected with
   `Skill not found` (resent once with the same message id, since preparation
-  fails before admission). Queued messages keep the instruction captured at
-  queue time, because the server and the VS Code auto-send deliver them
-  without the composer's registry. A `$skill` in a message that routes to
+  fails before admission). A queued message carries the skill names captured
+  at queue time (`QueuedMessage.skills`), and every delivery attaches them the
+  same way: a manual send through `buildOutgoingMessage`, the VS Code
+  auto-send through `sendMessage`, and the server queue by its own lookup
+  (`packages/web/server/lib/message-queue/DOCUMENTATION.md`). An instruction
+  alone is not enough: OpenCode keeps a skill with `disable-model-invocation`
+  out of the model's skill list, so the model answers that the skill does not
+  exist. A message queued by an older build still delivers its captured
+  instruction. A `$skill` in a message that routes to
   `session.command` (a leading `/command`) keeps the instruction too: that
   route takes no skill attachments. A hand-typed leading `/name` that matches
   a skill and no command still attaches the skill (`session-ui-store`), so the
@@ -2294,6 +2306,23 @@ comment uses the trimmed `selectionApprovalText` setting, falling back to
 `Sounds good`. Existing drafts, attachments and linked references stay in place;
 the user sends them together through the normal Send action. The shortcut
 focuses the composer on desktop and does not request keyboard focus on mobile.
+
+## What a context row opens
+
+A review comment row's head opens what the comment was written on, through
+`components/comments/useOpenCommentSource.ts`; on the phone, where a tap on
+the row edits the comment, the collapsed row's label is that opener. A comment
+on uncommitted changes opens the file at its line (the Files drawer on the
+phone). A comment on a commit, a branch comparison or a change request opens
+that diff at the line, because the file on disk is another version. A comment on
+an earlier agent turn opens that turn's diff the way a turn's changed-file chip
+does; one on "Last turn" names no turn and gets no opener. The quoted code keeps
+its own behaviour: only a chat quote's reveals its source.
+
+The opener is withheld where the place cannot be shown: a branch comment while
+another branch is checked out, a comparison comment in VS Code, and any comment
+in the mini chat window, which has no file or diff viewer. A plan comment keeps
+no opener: its label is the plan document, which may not be a file yet.
 
 ## Mobile comment mode
 

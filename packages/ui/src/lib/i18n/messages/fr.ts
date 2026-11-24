@@ -14,7 +14,7 @@ import { fileEditorAidsI18n } from './file-editor-aids.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
 import { documentToolbarI18n } from './document-toolbar.i18n';
 import { uiBlocksI18n } from './ui-blocks.i18n';
-import { updateDialogCanaryI18n } from './update-dialog-canary.i18n';
+import { updateDialogCanaryI18n } from './update-dialog-canary.i18n'; import { updateIdleI18n } from './update-idle.i18n';
 import { aboutReleaseNotesI18n } from './about-release-notes.i18n';
 import { updateCheckErrorsI18n } from './update-check-errors.i18n';
 import { secretRequestI18n } from './secret-request.i18n';
@@ -24,6 +24,7 @@ import { settingsHintsI18n } from './settings-hints.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { sessionWarmingI18n } from './session-warming.i18n';
+import { sessionCostI18n } from './session-cost.i18n';
 import { connectionHeartbeatI18n } from './connection-heartbeat.i18n';
 import { compactionSettingsI18n } from './compaction-settings.i18n';
 import { heapSnapshotI18n } from './heap-snapshot.i18n';
@@ -61,6 +62,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
@@ -114,10 +116,14 @@ export const dict = {
   'sessions.aiRename.noSmallModel': 'Nécessite un Small Model. Connectez-vous à un fournisseur de modèles ou choisissez-en un dans Paramètres → Sessions.',
   'commitComparison.mode': 'Commit',
   'pullRequestComparison.select': 'Sélectionner une pull request',
+  'pullRequestComparison.searchShort': 'Rechercher des pull requests',
   'pullRequestComparison.pickAbove': 'Choisissez une pull request ci-dessus',
   'pullRequestComparison.diffUnavailable': "{provider} ne fournit pas le diff des pull requests : impossible de les afficher ou de les parcourir ici",
   'pullRequestComparison.partial': "Certaines pull requests n'ont pas pu être chargées",
   'commitComparison.select': 'Choisir un commit',
+  'commitComparison.branchDividerSingle': 'Au-dessus : le commit présent seulement dans {branch}. En dessous : déjà dans {base}.',
+  'commitComparison.branchDividerPlural': 'Au-dessus : {count} commits présents seulement dans {branch}. En dessous : déjà dans {base}.',
+  'commitComparison.backToList': 'Retour aux commits',
   'commitComparison.search': 'Rechercher des commits...',
   'commitComparison.loadError': 'Impossible de charger les commits',
   'commitComparison.noCommits': 'Aucun commit trouvé',
@@ -211,7 +217,7 @@ export const dict = {
   ...htmlRenderI18n.fr,
   ...documentToolbarI18n.fr,
   ...uiBlocksI18n.fr,
-  ...updateDialogCanaryI18n.fr,
+  ...updateDialogCanaryI18n.fr, ...updateIdleI18n.fr,
   ...aboutReleaseNotesI18n.fr,
   ...updateCheckErrorsI18n.fr,
   ...secretRequestI18n.fr,
@@ -221,6 +227,7 @@ export const dict = {
   ...usageStatsI18n.fr,
   ...webSearchI18n.fr,
   ...sessionWarmingI18n.fr,
+  ...sessionCostI18n.fr,
   ...connectionHeartbeatI18n.fr,
   ...compactionSettingsI18n.fr,
   ...heapSnapshotI18n.fr,
@@ -257,6 +264,7 @@ export const dict = {
   ...pluginsGridI18n.fr,
   ...integrationsCatalogI18n['fr'],
   ...diffFindI18n['fr'],
+  ...contextWindowI18n['fr'],
   ...markdownOutlineI18n['fr'],
   ...markdownGithubI18n['fr'],
   ...autocompleteScopeI18n['fr'],
@@ -533,6 +541,7 @@ export const dict = {
   'sessions.sidebar.header.displayMode.minimal': 'Minimal',
   'sessions.sidebar.header.displayMode.showWork': 'Afficher la section en cours',
   'sessions.sidebar.header.displayMode.showPinned': 'Afficher la section épinglées',
+  'sessions.sidebar.header.displayMode.showSubagents': 'Afficher les sessions des sous-agents',
   'sessions.sidebar.header.displayMode.detailedZoneRows': 'Lignes détaillées',
   'sessions.sidebar.header.displayMode.worktreeNameByBranch': 'Nommer les worktrees d’après leur branche',
   'sessions.sidebar.activity.pinnedTitle': 'Épinglées',
@@ -1676,7 +1685,8 @@ export const dict = {
   'contextSidebar.tokens.cacheRead': 'Lecture du cache',
   'contextSidebar.tokens.cacheWrite': 'Écriture du cache',
   'contextSidebar.tokens.cacheHit': 'Succès du cache',
-  'chat.workStatus.replyCacheHit': 'Succès du cache (réponse)',
+  'chat.workStatus.replyCacheHit': 'Cache du prompt',
+  'chat.workStatus.replyCacheHitDescription': 'Part du prompt lue depuis le cache lors de la dernière réponse.',
   'contextSidebar.actions.copyJson': 'Copier JSON',
   'contextSidebar.actions.copy': 'Copie',
   'contextSidebar.actions.copied': 'Copié',
@@ -1745,6 +1755,8 @@ export const dict = {
   'diffView.state.loadingDiff': 'Chargement du différentiel...',
   'diffView.state.loadingChanges': 'Chargement des modifications...',
   'diffView.state.largeDiff': 'Diff volumineux ({count} lignes modifiées)',
+  'diffView.state.largeDiffLongLines': 'Diff volumineux (lignes très longues)',
+  'diffView.state.largeFile': 'Fichier volumineux',
   'diffView.state.largeDiffDescription': 'Le rendu peut être lent. Vous pouvez tout de même afficher le diff avec le bouton ci-dessous.',
   'diffView.summary.changedFilesSingle': 'Le fichier {count} a été modifié',
   'diffView.summary.changedFilesPlural': 'Fichiers {count} modifiés',
@@ -1769,6 +1781,10 @@ export const dict = {
   'diffView.layout.sideBySide': 'Vue côte à côte',
   'diffView.actions.wrapLines': 'Retour à la ligne',
   'diffView.actions.moreActions': 'Plus d’actions',
+  'diffView.actions.viewOptions': 'Options d’affichage du diff',
+  'gitView.sidebar.resizeAria': 'Redimensionner la barre latérale Git',
+  'gitView.commit.stagedCountSummary': '{count} indexé(s)',
+  'gitView.commit.collapseAria': 'Réduire le formulaire de commit',
   'diffView.actions.openFileInEditorAtChange': 'Ouvrez ce fichier dans l\'éditeur lors du changement',
   'diffView.actions.openFileAtFirstChangedLine': 'Ouvrez ce fichier à la première ligne modifiée',
   'diffView.actions.reviewAria': 'Revoir les changements',
@@ -2820,6 +2836,11 @@ export const dict = {
   'openInApp.actions.copyPath': 'Copier le chemin',
   'openInApp.actions.refreshApps': 'Actualiser les applications',
   'openInApp.toast.pathCopied': 'Chemin copié dans le presse-papiers',
+  'openInApp.toast.sshOpenFailed': 'Impossible d\'ouvrir {app}. Vérifiez qu\'il est installé sur cet ordinateur.',
+  'openInApp.toast.sshInstanceChanged': 'Cette fenêtre est passée à une autre instance avant l\'ouverture de {app}. Réessayez.',
+  'openInApp.toast.sshSettingsMismatch': '{app} ne se connecterait pas comme cette instance : sa commande SSH définit {settings}, que {app} ne lit pas. Déplacez ces réglages dans l\'entrée de l\'hôte dans ~/.ssh/config.',
+  'openInApp.toast.sshUnresolved': 'Impossible de lire les réglages SSH de cette instance, {app} n\'a donc pas été ouvert. Vérifiez sa commande SSH.',
+  'openInApp.toast.sshUnsupported': '{app} ne peut pas ouvrir ce projet via SSH.',
   'projectActions.actions.addActionAria': 'Ajouter une action',
   'projectActions.actions.addAction': 'Ajouter une action',
   'projectActions.actions.addNewAction': 'Ajouter une nouvelle action',
@@ -3513,6 +3534,8 @@ export const dict = {
   'worktree.bootstrap.toast.invalidConfiguration': 'Vérifiez la configuration des sous-modules et de Git LFS du dépôt, puis réessayez.',
   'worktree.bootstrap.toast.repositoryTooManyFiles': 'Le dépôt contient trop de fichiers.',
   'worktree.bootstrap.toast.branchNameConflict': 'Le nom de la branche entre en conflit avec une branche existante : le même nom, ou l’un imbriqué dans l’autre. Renommez la branche et recréez le worktree.',
+  'worktree.bootstrap.toast.submoduleSourceLocal': 'Les sous-modules n\'ont pas été récupérés : OpenChamber ne les récupère que via un remote réseau, et ce worktree n\'en a aucun. Le remote du dépôt est un dossier sur cet ordinateur, il n\'y a pas de remote, ou la branche n\'en suit aucun. Travaillez dans le dossier du dépôt lui-même, ou créez le worktree à partir d\'une branche dont l\'upstream est un remote réseau.',
+  'worktree.bootstrap.toast.lfsSourceLocal': 'Les fichiers Git LFS n\'ont pas été récupérés : OpenChamber ne les récupère que via un remote réseau, et ce worktree n\'en a aucun. Le remote du dépôt est un dossier sur cet ordinateur, il n\'y a pas de remote, ou la branche n\'en suit aucun. Travaillez dans le dossier du dépôt lui-même, ou créez le worktree à partir d\'une branche dont l\'upstream est un remote réseau.',
   'worktree.bootstrap.toast.cancelled': 'La configuration du worktree a été annulée. Réessayez lorsque vous êtes prêt.',
   'worktree.bootstrap.toast.transportFailed': 'Vérifiez l’accès au dépôt et la connexion réseau, puis réessayez.',
   'worktree.bootstrap.toast.timeoutDescription': 'Le worktree a été créé, mais la configuration en arrière-plan a expiré.',

@@ -15,7 +15,7 @@ import { fileEditorAidsI18n } from './file-editor-aids.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
 import { documentToolbarI18n } from './document-toolbar.i18n';
 import { uiBlocksI18n } from './ui-blocks.i18n';
-import { updateDialogCanaryI18n } from './update-dialog-canary.i18n';
+import { updateDialogCanaryI18n } from './update-dialog-canary.i18n'; import { updateIdleI18n } from './update-idle.i18n';
 import { aboutReleaseNotesI18n } from './about-release-notes.i18n';
 import { updateCheckErrorsI18n } from './update-check-errors.i18n';
 import { secretRequestI18n } from './secret-request.i18n';
@@ -25,6 +25,7 @@ import { settingsHintsI18n } from './settings-hints.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { sessionWarmingI18n } from './session-warming.i18n';
+import { sessionCostI18n } from './session-cost.i18n';
 import { connectionHeartbeatI18n } from './connection-heartbeat.i18n';
 import { compactionSettingsI18n } from './compaction-settings.i18n';
 import { heapSnapshotI18n } from './heap-snapshot.i18n';
@@ -62,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
@@ -115,10 +117,14 @@ export const dict: Record<I18nKey, string> = {
   'sessions.aiRename.noSmallModel': 'Necesita un Small Model. Inicia sesión en un proveedor de modelos o elige uno en Ajustes → Sesiones.',
   'commitComparison.mode': 'Commit',
   'pullRequestComparison.select': 'Seleccionar solicitud de incorporación',
+  'pullRequestComparison.searchShort': 'Buscar pull requests',
   'pullRequestComparison.pickAbove': 'Elige una solicitud de incorporación arriba',
   'pullRequestComparison.diffUnavailable': "{provider} no ofrece el diff de las solicitudes de incorporación, así que aquí no se pueden mostrar ni recorrer",
   'pullRequestComparison.partial': 'No se pudieron cargar algunas solicitudes de incorporación',
   'commitComparison.select': 'Seleccionar commit',
+  'commitComparison.branchDividerSingle': 'Arriba: el commit que solo está en {branch}. Abajo: ya en {base}.',
+  'commitComparison.branchDividerPlural': 'Arriba: {count} commits que solo están en {branch}. Abajo: ya en {base}.',
+  'commitComparison.backToList': 'Volver a los commits',
   'commitComparison.search': 'Buscar commits...',
   'commitComparison.loadError': 'No se pudieron cargar los commits',
   'commitComparison.noCommits': 'No se encontraron commits',
@@ -222,7 +228,7 @@ export const dict: Record<I18nKey, string> = {
   ...htmlRenderI18n.es,
   ...documentToolbarI18n.es,
   ...uiBlocksI18n.es,
-  ...updateDialogCanaryI18n.es,
+  ...updateDialogCanaryI18n.es, ...updateIdleI18n.es,
   ...aboutReleaseNotesI18n.es,
   ...updateCheckErrorsI18n.es,
   ...secretRequestI18n.es,
@@ -232,6 +238,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.es,
   ...webSearchI18n.es,
   ...sessionWarmingI18n.es,
+  ...sessionCostI18n.es,
   ...connectionHeartbeatI18n.es,
   ...compactionSettingsI18n.es,
   ...heapSnapshotI18n.es,
@@ -268,6 +275,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.es,
   ...integrationsCatalogI18n['es'],
   ...diffFindI18n['es'],
+  ...contextWindowI18n['es'],
   ...markdownOutlineI18n['es'],
   ...markdownGithubI18n['es'],
   ...autocompleteScopeI18n['es'],
@@ -709,6 +717,7 @@ export const dict: Record<I18nKey, string> = {
   "sessions.sidebar.header.displayMode.minimal": "Mínimo",
   "sessions.sidebar.header.displayMode.showWork": "Mostrar en curso",
   "sessions.sidebar.header.displayMode.showPinned": "Mostrar ancladas",
+  "sessions.sidebar.header.displayMode.showSubagents": "Mostrar sesiones de subagentes",
   "sessions.sidebar.header.displayMode.detailedZoneRows": "Filas detalladas",
   "sessions.sidebar.header.displayMode.worktreeNameByBranch": "Nombrar los worktrees por su rama",
   "sessions.sidebar.activity.pinnedTitle": "Ancladas",
@@ -1326,6 +1335,8 @@ export const dict: Record<I18nKey, string> = {
   "worktree.bootstrap.toast.invalidConfiguration": "Revisa la configuración de submódulos y Git LFS del repositorio, y vuelve a intentarlo.",
   "worktree.bootstrap.toast.repositoryTooManyFiles": "El repositorio tiene demasiados archivos.",
   "worktree.bootstrap.toast.branchNameConflict": "El nombre de la rama choca con una rama existente: el mismo nombre o uno anidado dentro del otro. Cambia el nombre de la rama y vuelve a crear el worktree.",
+  "worktree.bootstrap.toast.submoduleSourceLocal": "No se obtuvieron los submódulos: OpenChamber solo los obtiene a través de un remoto de red, y este worktree no tiene ninguno. El remoto del repositorio es una carpeta en este equipo, no hay remoto o la rama no sigue ninguno. Trabaja en la carpeta del repositorio o crea el worktree desde una rama cuyo upstream sea un remoto de red.",
+  "worktree.bootstrap.toast.lfsSourceLocal": "No se obtuvieron los archivos de Git LFS: OpenChamber solo los obtiene a través de un remoto de red, y este worktree no tiene ninguno. El remoto del repositorio es una carpeta en este equipo, no hay remoto o la rama no sigue ninguno. Trabaja en la carpeta del repositorio o crea el worktree desde una rama cuyo upstream sea un remoto de red.",
   "worktree.bootstrap.toast.cancelled": "La configuración del worktree se canceló. Vuelve a intentarlo cuando quieras.",
   "worktree.bootstrap.toast.transportFailed": "Comprueba el acceso al repositorio y la conexión de red, y vuelve a intentarlo.",
   "worktree.bootstrap.toast.timeoutDescription": "El worktree se creó, pero la configuración en segundo plano agotó el tiempo de espera.",
@@ -1880,7 +1891,8 @@ export const dict: Record<I18nKey, string> = {
   "contextSidebar.tokens.cacheRead": "Lectura de caché",
   "contextSidebar.tokens.cacheWrite": "Escritura de caché",
   "contextSidebar.tokens.cacheHit": "Acierto de caché",
-  "chat.workStatus.replyCacheHit": "Acierto de caché (respuesta)",
+  "chat.workStatus.replyCacheHit": "Caché del prompt",
+  "chat.workStatus.replyCacheHitDescription": "Proporción del prompt leída desde la caché en la última respuesta.",
   "contextSidebar.actions.copyJson": "Copiar JSON",
   "contextSidebar.actions.copy": "Copiar",
   "contextSidebar.actions.copied": "Copiado",
@@ -1949,6 +1961,8 @@ export const dict: Record<I18nKey, string> = {
   "diffView.state.loadingDiff": "Cargando diff...",
   "diffView.state.loadingChanges": "Cargando cambios...",
   "diffView.state.largeDiff": "Diff grande ({count} líneas modificadas)",
+  "diffView.state.largeDiffLongLines": "Diff grande (líneas muy largas)",
+  "diffView.state.largeFile": "Archivo grande",
   "diffView.state.largeDiffDescription": "El renderizado puede ser lento. Aun así puedes ver el diff con el botón de abajo.",
   "diffView.summary.changedFilesSingle": "{count} archivo modificado",
   "diffView.summary.changedFilesPlural": "{count} archivos modificados",
@@ -1973,6 +1987,10 @@ export const dict: Record<I18nKey, string> = {
   "diffView.layout.sideBySide": "Vista lado a lado",
   "diffView.actions.wrapLines": "Ajuste de línea",
   "diffView.actions.moreActions": "Más acciones",
+  "diffView.actions.viewOptions": "Opciones de vista de diff",
+  "gitView.sidebar.resizeAria": "Cambiar el tamaño de la barra lateral de Git",
+  "gitView.commit.stagedCountSummary": "{count} preparados",
+  "gitView.commit.collapseAria": "Contraer formulario de commit",
   "diffView.actions.openFileInEditorAtChange": "Abrir este archivo en el editor en el cambio",
   "diffView.actions.openFileAtFirstChangedLine": "Abrir este archivo en la primera línea modificada",
   'diffView.actions.reviewAria': 'Revisar cambios',
@@ -3093,6 +3111,11 @@ export const dict: Record<I18nKey, string> = {
   "openInApp.actions.copyPath": "Copiar ruta",
   "openInApp.actions.refreshApps": "Actualizar aplicaciones",
   "openInApp.toast.pathCopied": "Ruta copiada al portapapeles",
+  "openInApp.toast.sshOpenFailed": "No se pudo abrir {app}. Comprueba que esté instalado en este equipo.",
+  "openInApp.toast.sshInstanceChanged": "Esta ventana cambió a otra instancia antes de que se abriera {app}. Inténtalo de nuevo.",
+  "openInApp.toast.sshSettingsMismatch": "{app} no se conectaría como lo hace esta instancia: su comando SSH define {settings}, que {app} no lee. Muévelos a la entrada del host en ~/.ssh/config.",
+  "openInApp.toast.sshUnresolved": "No se pudo leer la configuración SSH de esta instancia, así que {app} no se abrió. Revisa su comando SSH.",
+  "openInApp.toast.sshUnsupported": "{app} no puede abrir este proyecto por SSH.",
   "projectActions.actions.addActionAria": "Añadir acción",
   "projectActions.actions.addAction": "Añadir acción",
   "projectActions.actions.addNewAction": "Añadir nueva acción",

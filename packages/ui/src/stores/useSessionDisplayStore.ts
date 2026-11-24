@@ -7,6 +7,7 @@ import {
   clampSessionBatchSize,
   DEFAULT_SIDEBAR_SECTIONS,
   hiddenSidebarSectionsSchema,
+  sidebarPageIdsSchema,
   sidebarPinListsSchema,
   sidebarSectionsSchema,
   type SidebarPinList,
@@ -42,20 +43,26 @@ type SessionDisplayStore = {
   showWorkSection: boolean;
   showPinnedSection: boolean;
   detailedZoneRows: boolean;
+  showSubagentSessions: boolean;
   worktreeNameByBranch: boolean;
   sections: SidebarSectionEntry[];
   pinLists: SidebarPinList[];
   hiddenSections: string[];
+  pageOrder: string[];
+  hiddenPages: string[];
   sectionsOwner: string | null;
   setSections: (sections: SidebarSectionEntry[]) => void;
   setPinLists: (lists: SidebarPinList[]) => void;
   setHiddenSections: (ids: string[]) => void;
+  setPageOrder: (ids: string[]) => void;
+  setHiddenPages: (ids: string[]) => void;
   showArchivedSessions: boolean;
   projectSortOrder: ProjectSortOrder;
   setShowChatsSection: (show: boolean) => void;
   setShowWorkSection: (show: boolean) => void;
   setShowPinnedSection: (show: boolean) => void;
   setDetailedZoneRows: (detailed: boolean) => void;
+  setShowSubagentSessions: (show: boolean) => void;
   setWorktreeNameByBranch: (byBranch: boolean) => void;
   setShowArchivedSessions: (show: boolean) => void;
   toggleArchivedSessions: () => void;
@@ -131,20 +138,26 @@ export const useSessionDisplayStore = create<SessionDisplayStore>()(
       showWorkSection: true,
       showPinnedSection: true,
       detailedZoneRows: getSettingsSurface() === 'mobile',
+      showSubagentSessions: true,
       worktreeNameByBranch: false,
       sections: [...DEFAULT_SIDEBAR_SECTIONS],
       pinLists: [],
       hiddenSections: [],
+      pageOrder: [],
+      hiddenPages: [],
       sectionsOwner: null,
       setSections: (sections) => set({ sections: sidebarSectionsSchema.parse(sections), sectionsOwner: getRuntimeKey() }),
       setPinLists: (lists) => set({ pinLists: sidebarPinListsSchema.parse(lists), sectionsOwner: getRuntimeKey() }),
       setHiddenSections: (ids) => set({ hiddenSections: hiddenSidebarSectionsSchema.parse(ids), sectionsOwner: getRuntimeKey() }),
+      setPageOrder: (ids) => set({ pageOrder: sidebarPageIdsSchema.parse(ids), sectionsOwner: getRuntimeKey() }),
+      setHiddenPages: (ids) => set({ hiddenPages: sidebarPageIdsSchema.parse(ids), sectionsOwner: getRuntimeKey() }),
       showArchivedSessions: false,
       projectSortOrder: 'manual',
       setShowChatsSection: (show) => set({ showChatsSection: show }),
       setShowWorkSection: (show) => set({ showWorkSection: show }),
       setShowPinnedSection: (show) => set({ showPinnedSection: show }),
       setDetailedZoneRows: (detailed) => set({ detailedZoneRows: detailed }),
+      setShowSubagentSessions: (show) => set({ showSubagentSessions: show }),
       setWorktreeNameByBranch: (byBranch) => set({ worktreeNameByBranch: byBranch }),
       setShowArchivedSessions: (show) => set({ showArchivedSessions: show }),
       toggleArchivedSessions: () => set((state) => ({ showArchivedSessions: !state.showArchivedSessions })),
@@ -168,10 +181,15 @@ export type {
   ProjectSortOrder
 };
 
+export const useSidebarRowDisplay = (): Pick<SessionDisplayStore, 'showChatsSection' | 'showSubagentSessions'> => ({
+  showChatsSection: useSessionDisplayStore((state) => state.showChatsSection),
+  showSubagentSessions: useSessionDisplayStore((state) => state.showSubagentSessions),
+});
+
 export const dropSectionsOfOtherInstance = (runtimeKey: string): void => {
   const state = useSessionDisplayStore.getState();
   if (state.sectionsOwner === null || state.sectionsOwner === runtimeKey || isTransientRuntimeKey(runtimeKey)) return;
-  useSessionDisplayStore.setState({ sections: [...DEFAULT_SIDEBAR_SECTIONS], pinLists: [], hiddenSections: [], sectionsOwner: null });
+  useSessionDisplayStore.setState({ sections: [...DEFAULT_SIDEBAR_SECTIONS], pinLists: [], hiddenSections: [], pageOrder: [], hiddenPages: [], sectionsOwner: null });
 };
 subscribeRuntimeEndpointWillChange(({ runtimeKey }) => dropSectionsOfOtherInstance(runtimeKey));
 queueMicrotask(() => dropSectionsOfOtherInstance(getRuntimeKey()));

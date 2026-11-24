@@ -15,7 +15,7 @@ import { fileEditorAidsI18n } from './file-editor-aids.i18n';
 import { htmlRenderI18n } from './html-render.i18n';
 import { documentToolbarI18n } from './document-toolbar.i18n';
 import { uiBlocksI18n } from './ui-blocks.i18n';
-import { updateDialogCanaryI18n } from './update-dialog-canary.i18n';
+import { updateDialogCanaryI18n } from './update-dialog-canary.i18n'; import { updateIdleI18n } from './update-idle.i18n';
 import { aboutReleaseNotesI18n } from './about-release-notes.i18n';
 import { updateCheckErrorsI18n } from './update-check-errors.i18n';
 import { secretRequestI18n } from './secret-request.i18n';
@@ -25,6 +25,7 @@ import { settingsHintsI18n } from './settings-hints.i18n';
 import { usageStatsI18n } from './usage-stats.i18n';
 import { webSearchI18n } from './websearch.i18n';
 import { sessionWarmingI18n } from './session-warming.i18n';
+import { sessionCostI18n } from './session-cost.i18n';
 import { connectionHeartbeatI18n } from './connection-heartbeat.i18n';
 import { compactionSettingsI18n } from './compaction-settings.i18n';
 import { heapSnapshotI18n } from './heap-snapshot.i18n';
@@ -62,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
@@ -114,10 +116,14 @@ export const dict: Record<I18nKey, string> = {
   'sessions.aiRename.noSmallModel': 'يلزم نموذج صغير. سجّل الدخول إلى موفر نماذج أو اختر نموذجًا من الإعدادات ← الجلسات.',
   'commitComparison.mode': 'إيداع',
   'pullRequestComparison.select': 'اختيار طلب سحب',
+  'pullRequestComparison.searchShort': 'البحث في طلبات السحب',
   'pullRequestComparison.pickAbove': 'اختر طلب سحب من الأعلى',
   'pullRequestComparison.diffUnavailable': "لا يوفّر {provider} الفروقات لطلبات السحب، لذا لا يمكن عرضها أو شرحها هنا",
   'pullRequestComparison.partial': 'تعذّر تحميل بعض طلبات السحب',
   'commitComparison.select': 'اختيار إيداع',
+  'commitComparison.branchDividerSingle': 'في الأعلى: الإيداع الموجود فقط في {branch}. في الأسفل: موجود بالفعل في {base}.',
+  'commitComparison.branchDividerPlural': 'في الأعلى: {count} إيداعات موجودة فقط في {branch}. في الأسفل: موجودة بالفعل في {base}.',
+  'commitComparison.backToList': 'العودة إلى الإيداعات',
   'commitComparison.search': 'البحث في الإيداعات…',
   'commitComparison.loadError': 'تعذّر تحميل الإيداعات',
   'commitComparison.noCommits': 'لم يُعثر على إيداعات',
@@ -617,6 +623,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.header.displayMode.minimal': 'مبسّط',
   'sessions.sidebar.header.displayMode.showWork': 'إظهار قسم قيد العمل',
   'sessions.sidebar.header.displayMode.showPinned': 'إظهار قسم المثبّتة',
+  'sessions.sidebar.header.displayMode.showSubagents': 'إظهار جلسات الوكلاء الفرعيين',
   'sessions.sidebar.header.displayMode.detailedZoneRows': 'صفوف مفصّلة',
   'sessions.sidebar.header.displayMode.worktreeNameByBranch': 'تسمية worktree باسم الفرع',
   'sessions.sidebar.activity.pinnedTitle': 'المثبّتة',
@@ -1248,6 +1255,8 @@ export const dict: Record<I18nKey, string> = {
   'worktree.bootstrap.toast.invalidConfiguration': 'راجع إعدادات الوحدات الفرعية وGit LFS في المستودع، ثم أعد المحاولة.',
   'worktree.bootstrap.toast.repositoryTooManyFiles': 'يحتوي المستودع على عدد كبير جدًا من الملفات.',
   'worktree.bootstrap.toast.branchNameConflict': 'يتعارض اسم الفرع مع فرع موجود: الاسم نفسه، أو أحدهما متداخل داخل الآخر. أعد تسمية الفرع وأنشئ شجرة العمل مرة أخرى.',
+  'worktree.bootstrap.toast.submoduleSourceLocal': 'لم تُجلب الوحدات الفرعية: يجلبها OpenChamber عبر remote شبكي فقط، ولا يوجد واحد يمكن لشجرة العمل هذه استخدامه. remote المستودع مجلد على هذا الحاسوب، أو لا يوجد remote، أو أن الفرع لا يتتبع أي remote. اعمل في مجلد المستودع نفسه، أو أنشئ شجرة العمل من فرع يكون الـ upstream الخاص به remote شبكيًا.',
+  'worktree.bootstrap.toast.lfsSourceLocal': 'لم تُجلب ملفات Git LFS: يجلبها OpenChamber عبر remote شبكي فقط، ولا يوجد واحد يمكن لشجرة العمل هذه استخدامه. remote المستودع مجلد على هذا الحاسوب، أو لا يوجد remote، أو أن الفرع لا يتتبع أي remote. اعمل في مجلد المستودع نفسه، أو أنشئ شجرة العمل من فرع يكون الـ upstream الخاص به remote شبكيًا.',
   'worktree.bootstrap.toast.cancelled': 'أُلغي إعداد شجرة العمل. أعد المحاولة عندما تكون جاهزًا.',
   'worktree.bootstrap.toast.transportFailed': 'تحقق من الوصول إلى المستودع والاتصال بالشبكة، ثم أعد المحاولة.',
   'worktree.bootstrap.toast.timeoutDescription': 'أُنشئت شجرة العمل، لكن انتهت مهلة الإعداد في الخلفية.',
@@ -1826,7 +1835,8 @@ export const dict: Record<I18nKey, string> = {
   'contextSidebar.tokens.cacheRead': 'قراءة من الذاكرة المؤقتة',
   'contextSidebar.tokens.cacheWrite': 'كتابة إلى الذاكرة المؤقتة',
   'contextSidebar.tokens.cacheHit': 'إصابة الذاكرة المؤقتة',
-  'chat.workStatus.replyCacheHit': 'إصابة الذاكرة المؤقتة (الرد)',
+  'chat.workStatus.replyCacheHit': 'تخزين الطلب المؤقت',
+  'chat.workStatus.replyCacheHitDescription': 'نسبة الطلب المقروءة من الذاكرة المؤقتة في آخر رد.',
   'contextSidebar.actions.copyJson': 'نسخ JSON',
   'contextSidebar.actions.copy': 'نسخ',
   'contextSidebar.actions.copied': 'تم النسخ',
@@ -1895,6 +1905,8 @@ export const dict: Record<I18nKey, string> = {
   'diffView.state.loadingDiff': 'جارٍ تحميل الفروقات…',
   'diffView.state.loadingChanges': 'جارٍ تحميل التغييرات…',
   'diffView.state.largeDiff': 'فروقات كبيرة ({count} سطرًا متغيرًا)',
+  'diffView.state.largeDiffLongLines': 'فروقات كبيرة (أسطر طويلة جدًا)',
+  'diffView.state.largeFile': 'ملف كبير',
   'diffView.state.largeDiffDescription': 'قد يكون العرض بطيئًا. لا يزال بإمكانك عرض الفروقات بالنقر أدناه.',
   'diffView.summary.changedFilesSingle': 'تغيّر ملف واحد ({count})',
   'diffView.summary.changedFilesPlural': 'تغيّرت {count} ملفات',
@@ -3036,6 +3048,11 @@ export const dict: Record<I18nKey, string> = {
   'openInApp.actions.copyPath': 'نسخ المسار',
   'openInApp.actions.refreshApps': 'تحديث التطبيقات',
   'openInApp.toast.pathCopied': 'تم نسخ المسار إلى الحافظة',
+  'openInApp.toast.sshOpenFailed': 'تعذّر فتح {app}. تأكد من أنه مثبّت على هذا الكمبيوتر.',
+  'openInApp.toast.sshInstanceChanged': 'انتقلت هذه النافذة إلى مثيل آخر قبل فتح {app}. حاول مرة أخرى.',
+  'openInApp.toast.sshSettingsMismatch': 'لن يتصل {app} بالطريقة التي يتصل بها هذا المثيل: أمر SSH الخاص به يضبط {settings}، ولا يقرأها {app}. انقلها إلى إدخال المضيف في ~/.ssh/config.',
+  'openInApp.toast.sshUnresolved': 'تعذّرت قراءة إعدادات SSH لهذا المثيل، لذلك لم يُفتح {app}. تحقق من أمر SSH الخاص به.',
+  'openInApp.toast.sshUnsupported': 'لا يستطيع {app} فتح هذا المشروع عبر SSH.',
   'projectActions.actions.addActionAria': 'إضافة إجراء',
   'projectActions.actions.addAction': 'إضافة إجراء',
   'projectActions.actions.addNewAction': 'إضافة إجراء جديد',
@@ -3965,7 +3982,7 @@ export const dict: Record<I18nKey, string> = {
   ...htmlRenderI18n.ar,
   ...documentToolbarI18n.ar,
   ...uiBlocksI18n.ar,
-  ...updateDialogCanaryI18n.ar,
+  ...updateDialogCanaryI18n.ar, ...updateIdleI18n.ar,
   ...aboutReleaseNotesI18n.ar,
   ...updateCheckErrorsI18n.ar,
   ...secretRequestI18n.ar,
@@ -3975,6 +3992,7 @@ export const dict: Record<I18nKey, string> = {
   ...usageStatsI18n.ar,
   ...webSearchI18n.ar,
   ...sessionWarmingI18n.ar,
+  ...sessionCostI18n.ar,
   ...connectionHeartbeatI18n.ar,
   ...compactionSettingsI18n.ar,
   ...heapSnapshotI18n.ar,
@@ -4011,6 +4029,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.ar,
   ...integrationsCatalogI18n['ar'],
   ...diffFindI18n['ar'],
+  ...contextWindowI18n['ar'],
   ...markdownOutlineI18n['ar'],
   ...markdownGithubI18n['ar'],
   ...autocompleteScopeI18n['ar'],
@@ -4075,6 +4094,10 @@ export const dict: Record<I18nKey, string> = {
   'diffView.layout.sideBySide': 'العرض جنبًا إلى جنب',
   'diffView.actions.wrapLines': 'التفاف الأسطر',
   'diffView.actions.moreActions': 'إجراءات أخرى',
+  'diffView.actions.viewOptions': 'خيارات عرض الفروقات',
+  'gitView.sidebar.resizeAria': 'تغيير حجم الشريط الجانبي لـ Git',
+  'gitView.commit.stagedCountSummary': '{count} مُجهَّز',
+  'gitView.commit.collapseAria': 'طي نموذج الإيداع',
   'session.newWorktree.trust.skip': 'تخطٍّ',
   'chat.revertPopover.toast.restoreFailed': 'تعذّرت استعادة الرسائل المتراجع عنها',
   'notifications.error.bodyFallback': 'حدث خطأ',

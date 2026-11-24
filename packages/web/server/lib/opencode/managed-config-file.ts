@@ -23,6 +23,7 @@ export interface ManagedConfigSettings extends LimitFailoverConfigurationInput {
   agentSecretToolEnabled?: unknown;
   agentUsageToolEnabled?: unknown;
   agentTerminalToolEnabled?: unknown;
+  agentActionsToolEnabled?: unknown;
   agentWorkflowToolEnabled?: unknown;
 }
 
@@ -124,12 +125,13 @@ export const createManagedConfigRuntime = ({
     const includeSecret = settings?.agentSecretToolEnabled !== false;
     const includeUsage = settings?.agentUsageToolEnabled === true;
     const includeTerminal = settings?.agentTerminalToolEnabled === true;
+    const includeActions = settings?.agentActionsToolEnabled === true;
     const includeWorkflow = settings?.agentWorkflowToolEnabled === true;
 
     const directories = [];
     let permissions: ReturnType<typeof managedPermissionRules> = [];
-    if (agentToolRuntime && (includeControl || includeSchedule || includeWeb || includeMemory || includeKnowledge || includeNotify || includeRender || includeImage || includeSecret || includeUsage || includeTerminal || includeWorkflow)) {
-      directories.push(await agentToolRuntime.materializePlugin({ includeControl, includeSchedule, includeWeb, includeMemory, includeKnowledge, includeNotify, includeRender, includeShare, includeImage, includeSecret, includeUsage, includeTerminal, includeWorkflow }));
+    if (agentToolRuntime && (includeControl || includeSchedule || includeWeb || includeMemory || includeKnowledge || includeNotify || includeRender || includeImage || includeSecret || includeUsage || includeTerminal || includeActions || includeWorkflow)) {
+      directories.push(await agentToolRuntime.materializePlugin({ includeControl, includeSchedule, includeWeb, includeMemory, includeKnowledge, includeNotify, includeRender, includeShare, includeImage, includeSecret, includeUsage, includeTerminal, includeActions, includeWorkflow }));
       permissions = managedPermissionRules({ includeWorkflow });
     }
     if (agentToolRuntime && limitFailoverRuntime && isLimitFailoverConfigured(settings)) {
@@ -185,11 +187,13 @@ export const createManagedConfigRuntime = ({
 
   const syncExternalBridge = async () => (externalBridge ? externalBridge.syncBridge() : { active: false });
   const cleanupExternalBridge = async () => { await externalBridge?.cleanupBridge(); };
-  const registerExternalBridgeRoutes = (app: Application) => {
+  const readExternalBridgeToken = () => externalBridge?.readActiveToken() ?? null;
+  const registerExternalBridgeRoutes = (app: Application, isLoadedIn: (directory: string) => Promise<boolean | null>) => {
     if (!getOpenCodePluginDelivery) return;
     registerExternalPluginBridgeRoutes(app, {
       getBridge: () => externalBridge,
       getDelivery: getOpenCodePluginDelivery,
+      isLoadedIn,
     });
   };
 
@@ -207,6 +211,7 @@ export const createManagedConfigRuntime = ({
     refreshManagedConfigFile,
     syncExternalBridge,
     cleanupExternalBridge,
+    readExternalBridgeToken,
     registerExternalBridgeRoutes,
   };
 };

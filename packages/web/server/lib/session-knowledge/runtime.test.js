@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test';
 
-import { DISPATCH_GUIDANCE, KNOWLEDGE_ENTRY_KEYS, RENDER_PAGE_GUIDANCE, REPLY_COMMAND_GUIDANCE, SECRET_REQUEST_GUIDANCE, SESSION_LINK_GUIDANCE, WORK_NAME_GUIDANCE, WORKFLOW_GUIDANCE, buildKnowledgeEntries, createSessionKnowledgeRuntime, directToolsGuidance } from './runtime.js';
+import { DISPATCH_GUIDANCE, KNOWLEDGE_ENTRY_KEYS, RENDER_PAGE_GUIDANCE, REPLY_COMMAND_GUIDANCE, SECRET_REQUEST_GUIDANCE, SESSION_LINK_GUIDANCE, WORK_NAME_GUIDANCE, WORKFLOW_GUIDANCE, PROJECT_ACTIONS_GUIDANCE, buildKnowledgeEntries, createSessionKnowledgeRuntime, directToolsGuidance } from './runtime.js';
 import { UI_BLOCKS_GUIDANCE } from './ui-blocks-guidance.js';
 
 const DIRECTORY = '/work/project';
@@ -39,8 +39,8 @@ const createRuntime = (overrides = {}) => {
   },
   };
   for (const key of [
-    'readSessionMetadata', 'persistSessionMetadata', 'isAgentMemoryEnabled', 'isMemoryToolAvailable', 'isSessionLinkingAvailable',
-    'isPageRenderingAvailable', 'isSecretRequestAvailable', 'isWorkflowAvailable', 'readCheckoutBranch', 'readPlaceholderBranch', 'instructionEntries', 'isWorkNamingAvailable',
+    'readSessionMetadata', 'persistSessionMetadata', 'isAgentMemoryEnabled', 'isToolHost', 'isMemoryToolAvailable', 'isSessionLinkingAvailable',
+    'isPageRenderingAvailable', 'isSecretRequestAvailable', 'isWorkflowAvailable', 'readCheckoutBranch', 'readPlaceholderBranch', 'instructionEntries', 'isWorkNamingAvailable', 'hasProjectActions',
   ]) {
     if (key in overrides) dependencies[key] = overrides[key];
   }
@@ -161,6 +161,45 @@ describe('writing the knowledge into a session', () => {
   });
 });
 
+describe('whether the agent has the tools', () => {
+  const everyToolOn = {
+    isSessionLinkingAvailable: async () => true,
+    isPageRenderingAvailable: async () => true,
+    isSecretRequestAvailable: async () => true,
+    readCheckoutBranch: async () => 'main',
+  };
+
+  test('a folder whose OpenCode has no OpenChamber plugin hears nothing about the tools', async () => {
+    const instructionEntries = createEntriesStub();
+    const runtime = createRuntime({ ...pinnedStore(), ...everyToolOn, instructionEntries, isToolHost: async () => false });
+
+    expect(await runtime.sync('ses_a', DIRECTORY)).toBe(true);
+
+    expect(instructionEntries.held.get(PINNED)).toContain('Pinned note body.');
+    for (const key of [GUIDANCE, MEMORY, CHECKOUT]) {
+      expect(instructionEntries.calls).toContainEqual(['remove', 'ses_a', DIRECTORY, key]);
+    }
+  });
+
+  test('a check that could not answer keeps what the session was told', async () => {
+    const instructionEntries = createEntriesStub();
+    await createRuntime({ ...pinnedStore(), ...everyToolOn, instructionEntries }).sync('ses_a', DIRECTORY);
+    const told = new Map(instructionEntries.held);
+    expect(told.get(GUIDANCE)).toContain(SESSION_LINK_GUIDANCE);
+
+    for (const isToolHost of [async () => null, async () => { throw new Error('OpenCode unreachable'); }]) {
+      instructionEntries.calls.length = 0;
+      await createRuntime({ ...pinnedStore(), ...everyToolOn, instructionEntries, isToolHost }).sync('ses_a', DIRECTORY);
+
+      for (const key of [GUIDANCE, MEMORY, CHECKOUT]) {
+        expect(instructionEntries.calls.some((call) => call[3] === key)).toBe(false);
+        expect(instructionEntries.held.get(key)).toBe(told.get(key));
+      }
+      expect(instructionEntries.calls).toContainEqual(['put', 'ses_a', DIRECTORY, PINNED]);
+    }
+  });
+});
+
 describe('when to link', () => {
   test('is told in a session whose agent has the tool, even with nothing else to tell', async () => {
     const runtime = createRuntime({
@@ -264,6 +303,25 @@ describe('when to offer a workflow', () => {
 
     const without = await entriesFor(createRuntime({ ...bare, isWorkflowAvailable: async () => { throw new Error('settings unreadable'); } }), NO_PINS);
     expect(without[GUIDANCE]).toBe('');
+  });
+});
+
+describe('when to run a project action', () => {
+  const bare = {
+    isMemoryToolAvailable: async () => false,
+    projectContextRuntime: { readContext: async () => ({ notes: [], todos: [], plans: [] }) },
+  };
+
+  test('is told only in a session whose project has actions the agent may run', async () => {
+    const asked = [];
+    const withActions = await entriesFor(createRuntime({ ...bare, hasProjectActions: async (directory) => { asked.push(directory); return true; } }), NO_PINS);
+    expect(withActions[GUIDANCE]).toBe(PROJECT_ACTIONS_GUIDANCE);
+    expect(asked).toEqual([DIRECTORY]);
+
+    const none = await entriesFor(createRuntime({ ...bare, hasProjectActions: async () => false }), NO_PINS);
+    expect(none[GUIDANCE]).toBe('');
+    const unreadable = await entriesFor(createRuntime({ ...bare, hasProjectActions: async () => { throw new Error('setup unreadable'); } }), NO_PINS);
+    expect(unreadable[GUIDANCE]).toBe('');
   });
 });
 
