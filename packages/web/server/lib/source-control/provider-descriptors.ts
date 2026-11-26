@@ -115,6 +115,14 @@ export function publicProviderDescriptor(descriptor: ProviderDescriptor, order: 
       ...presentation.features,
       changeRequestTemplates: [...presentation.features.changeRequestTemplates],
       changeRequestPatch: descriptor.capabilities.changeRequestPatch === true,
+      reviews: descriptor.capabilities.reviews === true,
+    },
+    capabilities: {
+      reviewThreads: {
+        start: descriptor.capabilities.reviewThreads?.start === true,
+        reply: descriptor.capabilities.reviewThreads?.reply === true,
+        resolve: descriptor.capabilities.reviewThreads?.resolve === true,
+      },
     },
   };
   if (presentation.urls.resolve) published.urls.resolve = presentation.urls.resolve;

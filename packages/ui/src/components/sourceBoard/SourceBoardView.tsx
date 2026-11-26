@@ -13,7 +13,7 @@ import { IDLE_PULL_STATUS, readyValue, useReferenceBrowser } from '@/components/
 import { ReferencePreview } from '@/components/references/ReferencePreview';
 import type { ReferenceCommentActions } from '@/components/references/ReferenceComments';
 import {
-    canChangeDiscussionState,
+    canChangeReferenceState,
     DEFAULT_REPOSITORY_FILTER,
     REPOSITORY_KIND_ICONS,
     referenceNumberLabel,
@@ -62,7 +62,7 @@ import { SourceBoardTrackerStatus } from './SourceBoardTrackerStatus';
 import { SourceBoardReply } from './SourceBoardReply';
 import { SourceBoardAcrossNote } from './SourceBoardAcrossNote';
 import { SourceBoardChecksDialog } from './SourceBoardChecksDialog';
-import { SourceBoardLabels, SourceBoardReviewers } from './SourceBoardMetaEditors';
+import { SourceBoardAssignees, SourceBoardLabels, SourceBoardReviewers } from './SourceBoardMetaEditors';
 import { SourceBoardContainerPicker, SourceBoardProjectPicker, SourceBoardRepositoryPicker } from './SourceBoardPickers';
 import { choiceForFocus, resolveBoardTab, shouldRememberAll, useBoardRepository, useLinkRepository } from './boardRepository';
 import { isSameRepositoryItemLink } from './openTrackerItem';
@@ -519,6 +519,11 @@ const SourceBoardBody: React.FC<{
         </span>
     ) : null;
 
+    const { refreshRepositoryDetail, list: { retry: retryList } } = browser;
+    const refreshRepositoryItem = React.useCallback(
+        () => Promise.all([refreshRepositoryDetail(), retryList()]).then(() => undefined),
+        [refreshRepositoryDetail, retryList],
+    );
     const latestPull = previewItem?.source === 'repository' && browser.repositoryLatestDetail.status === 'ready'
         ? browser.repositoryLatestDetail.value.pull
         : null;
@@ -531,7 +536,7 @@ const SourceBoardBody: React.FC<{
             project={actionProject}
             context={readContext}
             onStartWorktree={(target, selection) => setWorktreeRequest({ project: target, selection })}
-            onChanged={browser.list.retry}
+            onChanged={refreshRepositoryItem} branchWriteAccess={readyValue(browser.repositoryDetail)?.branchWriteAccess}
             startIn={startIn}
             onLeave={onLeave}
             worktreeAvailable={!readsNestedRepository && !previewLinked}
@@ -561,12 +566,6 @@ const SourceBoardBody: React.FC<{
     const previewDiscussion = previewItem?.source === 'repository' && previewItem.reference.kind === 'discussion' && browser.repositoryDetail.status === 'ready'
         ? browser.repositoryDetail.value.discussion
         : undefined;
-
-    const { refreshRepositoryDetail, list: { retry: retryList } } = browser;
-    const refreshRepositoryItem = React.useCallback(
-        () => Promise.all([refreshRepositoryDetail(), retryList()]).then(() => undefined),
-        [refreshRepositoryDetail, retryList],
-    );
     const writableReference = previewItem?.source === 'repository' && context ? { context, reference: previewItem.reference } : null;
     const saveText = writableReference ? async (input: { title: string; body: string }) => {
         await updateRepositoryItemText(sourceControl, writableReference.context, writableReference.reference, input);
@@ -592,7 +591,7 @@ const SourceBoardBody: React.FC<{
             await sourceControl.refreshProviderReads(context, { item }).catch(() => undefined);
             forgetRepositoryPullStatus(item);
         }
-        await refreshRepositoryDetail();
+        await refreshRepositoryItem();
     };
 
     const listContextValue = useRepositoryReadContext(tracker ? null : allRepositories?.[0] ?? directory);
@@ -658,9 +657,9 @@ const SourceBoardBody: React.FC<{
             onSaveText={saveText}
             threadActions={threadActions}
             commentActions={commentActions}
-            stateMenu={previewItem?.source === 'repository' && previewItem.reference.state !== 'merged' && context
-                && (previewItem.reference.kind !== 'discussion' || canChangeDiscussionState(previewItem.reference, previewDiscussion)) ? (
-                <SourceBoardStateMenuItems item={previewItem} context={context} onChanged={refreshRepositoryItem} />
+            stateMenu={previewItem?.source === 'repository' && context
+                && canChangeReferenceState(previewItem.reference, readyValue(browser.repositoryDetail)) ? (
+                <SourceBoardStateMenuItems item={previewItem} context={context} writeAccess={readyValue(browser.repositoryDetail)?.writeAccess} onChanged={refreshRepositoryItem} />
             ) : undefined}
             commentAttachments={previewItem?.source === 'repository'
                 ? { onAttach: attachments.attachComment, onAttachAll: attachments.attachComments }
@@ -674,6 +673,7 @@ const SourceBoardBody: React.FC<{
                     onChanged={refreshRepositoryItem}
                 />
             ) : undefined}
+            assigneesControl={previewItem?.source === 'repository' && previewItem.reference.kind === 'issue' && previewItem.reference.linked !== true && context ? <SourceBoardAssignees key={referencePickerItemKey(previewItem)} issue={previewItem.reference} detail={browser.repositoryDetail} writeAccess={readyValue(browser.repositoryDetail)?.writeAccess} context={context} onChanged={refreshRepositoryItem} sheet={isMobile} /> : undefined}
             reviewersControl={previewItem?.source === 'repository' && previewItem.reference.kind === 'pull' && context ? (
                 <span className="inline-flex flex-wrap items-center gap-2">
                     <SourceBoardReviewers
@@ -692,7 +692,7 @@ const SourceBoardBody: React.FC<{
                             context={context}
                             projectOwnsDirectory={projectOwnsDirectory}
                             currentDirectory={currentDirectory}
-                            onLeave={onLeave}
+                            onLeave={onLeave} writeAccess={readyValue(browser.repositoryDetail)?.writeAccess}
                         />
                     ) : null}
                 </span>
@@ -717,7 +717,7 @@ const SourceBoardBody: React.FC<{
                     projectOwnsDirectory={projectOwnsDirectory}
                     currentDirectory={currentDirectory}
                     onLeave={onLeave}
-                    revision={browser.previewRevision}
+                    revision={browser.previewRevision} writeAccess={readyValue(browser.repositoryDetail)?.writeAccess}
                 />
             ) : null}
         />

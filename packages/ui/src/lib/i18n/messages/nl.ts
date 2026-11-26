@@ -66,6 +66,8 @@ import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
+import { chatExchangeI18n } from './chat-exchange.i18n';
+import { integrateConflictI18n } from './integrate-conflict.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { subagentsI18n } from './subagents.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
@@ -268,6 +270,8 @@ export const dict = {
   ...markdownOutlineI18n['nl'],
   ...markdownGithubI18n['nl'],
   ...autocompleteScopeI18n['nl'],
+  ...chatExchangeI18n['nl'],
+  ...integrateConflictI18n['nl'],
   ...workflowsI18n['nl'],
   ...subagentsI18n['nl'],
   ...sessionReferencesI18n['nl'],
@@ -427,10 +431,6 @@ export const dict = {
   'mobile.menu.update': 'Bijwerken',
   'mobile.menu.settings': 'Instellingen',
   'mobile.sessions.newChatCta': 'Nieuwe chat in {project}',
-  'mobile.sessions.dateGroup.today': 'Vandaag',
-  'mobile.sessions.dateGroup.yesterday': 'Gisteren',
-  'mobile.sessions.dateGroup.thisWeek': 'Eerder deze week',
-  'mobile.sessions.dateGroup.older': 'Ouder',
   'mobile.sessions.section.worktrees': 'Worktrees',
   'mobile.sessions.section.otherProjects': 'Project wisselen',
   'mobile.sessions.section.projects': 'Projecten',
@@ -736,6 +736,7 @@ export const dict = {
   'sessions.sidebar.empty.noMatches.description': 'Probeer een andere titel of branch.',
   'sessions.sidebar.activity.chatsTitle': 'Gesprekken',
   'sessions.sidebar.activity.chatsEmpty': 'Nog geen gesprekken.',
+  'sessions.sidebar.timeline.noSessionsYet': 'Nog geen sessies',
   'chat.chatInput.chooseProject': 'Kies project',
   'sessions.sidebar.header.projectDisplay.label': 'Projecten tonen',
   'sessions.sidebar.header.projectDisplay.all': 'Alle projecten',
@@ -879,6 +880,8 @@ export const dict = {
   'sessions.sidebar.session.status.movingToWorktree': 'Sessie wordt verplaatst naar een nieuwe worktree',
   'sessions.sidebar.session.status.permissionRequired': 'Toestemming vereist',
   'sessions.sidebar.session.status.questionPending': 'Openstaande vraag',
+  'sessions.sidebar.session.status.permissionRequiredOpen': 'Toestemming vereist. Opent de sessie die het vraagt',
+  'sessions.sidebar.session.status.questionPendingOpen': 'Openstaande vraag. Opent de sessie die het vraagt',
   'sessions.sidebar.session.status.activeFor': '{duration} actief',
   'sessions.sidebar.session.status.lastTurnDuration': 'Laatste beurt duurde {duration}',
   'sessions.sidebar.session.subsessions.collapse': 'Subsessies inklappen',
@@ -1602,6 +1605,7 @@ export const dict = {
   'walkthrough.blocked.emptyDiff.description': 'Er zijn in dit bereik nog geen wijzigingen.',
   'walkthrough.blocked.contextTooSmall.title': 'Deze diff is te groot voor het huidige model',
   'walkthrough.blocked.contextTooSmall.description': '{model} past ongeveer {available}K tekens en deze diff heeft ongeveer {required}K nodig. Er wordt niets afgekapt — kies in plaats daarvan een model met een grotere context.',
+  'walkthrough.blocked.contextTooSmall.descriptionRefused': '{model} heeft deze diff geweigerd omdat die te lang is. Kies een model met een grotere context of bekijk een smaller bereik.',
   'walkthrough.blocked.structuredOutput.title': 'Dit model kan geen gestructureerde output leveren',
   'walkthrough.blocked.structuredOutput.description': '{model} ondersteunt de gestructureerde antwoorden die een rondleiding nodig heeft.',
   'walkthrough.blocked.chooseModel': 'Kies het kleine model',
@@ -1678,6 +1682,7 @@ export const dict = {
   'contextPanel.browser.annotate.intro': 'Dit is een geannoteerde selectie uit de browser in de app.',
   'contextPanel.browser.annotate.attached': 'Annotatie aan de chat toegevoegd',
   'contextPanel.browser.annotate.noSession': 'Open eerst een chatsessie voordat u een annotatie toevoegt',
+  'contextPanel.browser.annotate.readOnly': 'Deze chat is alleen-lezen, dus er kunnen geen annotaties aan worden toegevoegd',
   'contextPanel.browser.annotate.noPage': 'Laad eerst een pagina voordat u annoteert',
   'contextPanel.browser.annotate.failed': 'Kan deze pagina niet annoteren',
   'contextPanel.browser.annotate.tool.element': 'Element',
@@ -2430,6 +2435,9 @@ export const dict = {
   'session.githubPrPicker.empty.noPullRequestsFound': 'Geen pull requests gevonden',
   'session.githubPrPicker.loading.pullRequests': 'Pull requests laden...',
   'session.githubPrPicker.actions.loadMore': 'Meer laden',
+  'session.githubPrPicker.filter.group.repository': 'Repository',
+  'session.githubPrPicker.filter.group.author': 'Auteur',
+  'session.githubPrPicker.filter.clearAll': 'Filters wissen',
   'session.newWorktree.title': 'Nieuwe worktree',
   'session.newWorktree.mode.newBranch': 'Nieuwe branch',
   'session.newWorktree.mode.existingBranch': 'Bestaande branch',
@@ -2704,6 +2712,7 @@ export const dict = {
   'chat.textSelection.title.saveInsightToNotes': 'Geselecteerde tekst opslaan in notities',
   'chat.messageBody.actions.revertAria': 'Terugdraaien naar dit bericht',
   'chat.messageBody.actions.revert': 'Vanaf hier terugdraaien',
+  'chat.messageBody.status.waitingForAgent': 'Wachten op de agent',
   'chat.messageBody.actions.forkAria': 'Forken vanaf dit bericht',
   'chat.messageBody.actions.fork': 'Vanaf hier forken',
   'chat.messageBody.actions.copyMessageAria': 'Berichttekst kopiëren',

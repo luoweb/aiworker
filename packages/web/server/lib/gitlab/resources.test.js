@@ -283,6 +283,55 @@ describe('GitLab resource service', () => {
     ]);
   });
 
+  it('marks the same outdated thread in the review state and the context read', async () => {
+    const sha = 'd'.repeat(40);
+    const old = 'c'.repeat(40);
+    const discussion = {
+      id: 'disc1', individual_note: false,
+      notes: [{
+        id: 10, type: 'DiffNote', body: 'Old line', resolvable: true, resolved: false,
+        author: { id: 3, username: 'sam' },
+        position: { position_type: 'text', new_path: 'a.ts', new_line: 4, head_sha: old },
+      }],
+    };
+    // Written on the whole file before the same push: it stays a whole-file thread, not an outdated line.
+    const fileDiscussion = {
+      id: 'disc2', individual_note: false,
+      notes: [{
+        id: 11, type: 'DiffNote', body: 'About this file', resolvable: true, resolved: false,
+        author: { id: 3, username: 'sam' },
+        position: { position_type: 'file', new_path: 'a.ts', head_sha: old },
+      }],
+    };
+    const mergeRequest = { ...openMR, sha, diff_refs: { base_sha: 'a'.repeat(40), start_sha: 'b'.repeat(40), head_sha: sha } };
+    const requester = { post: vi.fn(async () => ({ body: { data: { project: { mergeRequest: {
+      discussionLocked: false,
+      userPermissions: { createNote: true },
+      discussions: { nodes: [{ id: 'gid://gitlab/Discussion/disc1', notes: { nodes: [{ userPermissions: { resolveNote: true } }] } }] },
+    } } } } })) };
+    const { service } = setup({
+      MergeRequests: { ...setup().client.MergeRequests, all: list([mergeRequest]), allCommits: list([]), show: vi.fn(async () => mergeRequest), requester },
+      MergeRequestDiscussions: { all: list([discussion, fileDiscussion]) },
+      MergeRequestDraftNotes: { all: vi.fn(async () => []) },
+      Users: { showCurrentUser: vi.fn(async () => ({ id: 3, username: 'sam' })) },
+    });
+
+    const state = await service.reviewState('/repo', 5, null, 'origin');
+    const context = await service.changeRequestContext('/repo', 5, { includeTimeline: true });
+
+    // Both reads agree: the thread is outdated, has no line on the current head, and takes no reply there.
+    expect(state.threads).toEqual([
+      expect.objectContaining({ id: 'disc1', outdated: true, line: null, startLine: null, canReply: false }),
+      expect.objectContaining({ id: 'disc2', outdated: false, path: 'a.ts', line: null, canReply: true }),
+    ]);
+    expect(context.reviewComments.find((note) => note.id === '11')?.thread).not.toHaveProperty('outdated');
+    expect(context.reviewComments.find((note) => note.id === '10')).toMatchObject({
+      // The raw note keeps the line it was written on; the preview drops it from the thread it builds.
+      line: 4,
+      thread: { id: 'disc1', outdated: true },
+    });
+  });
+
   it("says what this account may do with a thread when GitLab's GraphQL answers", async () => {
     const post = vi.fn(async () => ({ body: { data: { project: { mergeRequest: {
       discussionLocked: true,
@@ -1061,7 +1110,7 @@ describe('GitLab comments and reviews', () => {
   it('reads labels and active members, and sets labels and reviewers as whole sets', async () => {
     const editMR = vi.fn(async (_id, _iid, update) => ({ ...openMR, labels: update.labels?.split(',') ?? [] }));
     const editIssue = vi.fn(async () => ({ iid: 3, title: 'Bug', web_url: `${origin}/me/repo/-/issues/3`, state: 'opened' }));
-    const { service } = setup({
+    const { service, client } = setup({
       MergeRequests: { ...setup().client.MergeRequests, edit: editMR, show: vi.fn(async () => ({ ...openMR, labels: ['bug'], reviewers: [{ id: 7, username: 'ann' }] })) },
       Issues: { ...setup().client.Issues, edit: editIssue },
       ProjectLabels: { all: vi.fn(async () => [{ name: 'bug', color: '#d73a4a' }, { name: '' }]) },
@@ -1075,6 +1124,9 @@ describe('GitLab comments and reviews', () => {
     await expect(service.listLabels('/repo', { owner: 'team', name: 'repo' })).resolves.toEqual([{ name: 'bug', color: 'd73a4a' }]);
     await expect(service.listReviewerCandidates('/repo', { owner: 'team', name: 'repo' }))
       .resolves.toEqual([{ id: '7', login: 'ann', avatarUrl: `${origin}/a.png` }]);
+    expect(client.ProjectMembers.all).toHaveBeenLastCalledWith('2', { includeInherited: true, perPage: 100, maxPages: 1 });
+    await service.listReviewerCandidates('/repo', { owner: 'team', name: 'repo' }, undefined, 'assignee');
+    expect(client.ProjectMembers.all).toHaveBeenLastCalledWith('2', { includeInherited: true, perPage: 100 });
 
     await service.setLabels({ kind: 'change-request-labels', labels: ['bug', 'docs'], providerTarget: { projectId: '2', number: 5 } });
     await service.setLabels({ kind: 'issue-labels', labels: [], providerTarget: { projectId: '1', number: 3 } });

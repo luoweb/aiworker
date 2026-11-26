@@ -95,12 +95,18 @@ describe('source control provider descriptors', () => {
     expect(gitlab.capabilities.merge.methods).toEqual(['merge', 'squash']);
   });
 
+  it('publishes the branch maintenance each provider can perform', () => {
+    expect(publicProviderDescriptor(github, 0).features).toMatchObject({ baseChange: true, updateBranch: true, rebase: true });
+    expect(publicProviderDescriptor(gitlab, 1).features).toMatchObject({ baseChange: true, updateBranch: false, rebase: true });
+    expect(publicProviderDescriptor(gitea, 2).features).toMatchObject({ baseChange: true, updateBranch: true, rebase: false });
+  });
+
   it('publishes plain JSON without functions, patterns or transport policy', () => {
     for (const [order, descriptor] of sourceControlProviderDescriptors.list().entries()) {
       const published = publicProviderDescriptor(descriptor, order);
       expect(JSON.parse(JSON.stringify(published))).toEqual(published);
       expect(published).not.toHaveProperty('transport');
-      expect(published).not.toHaveProperty('capabilities');
+      expect(published.capabilities.reviewThreads).toEqual({ start: expect.any(Boolean), reply: expect.any(Boolean), resolve: expect.any(Boolean) });
     }
     expect(publicProviderDescriptor(github, 0).terminology).toMatchObject({ changeRequest: 'pullRequest', changeRequestPrefix: '#' });
     expect(publicProviderDescriptor(gitlab, 1).auth).toMatchObject({ methods: ['device', 'pat', 'cli'], cliName: 'glab' });
@@ -129,13 +135,18 @@ describe('source control provider descriptors', () => {
       delete features.changeRequestEdit;
       // Nor the search-box qualifiers, newer still.
       delete features.advancedSearch;
+      // Nor the assignee and close reason writes.
+      delete features.issueAssignees;
+      delete features.issueCloseReasonWrite;
       // Nor the comment edit and delete routes.
       delete features.commentEdit;
       // GitHub served no uploads before this change.
       delete features.absoluteProjectUploads;
       if (descriptor.id === 'github') features.projectUploads = false;
       delete urls.discussion;
-      return { ...descriptor, features, urls };
+      const rest = { ...descriptor };
+      delete rest.capabilities;
+      return { ...rest, features, urls };
     };
     const published = sourceControlProviderDescriptors.list().map((descriptor, order) => withoutDiscussions(publicProviderDescriptor(descriptor, order)));
     expect(published.slice(0, BUILT_IN_SOURCE_CONTROL_PROVIDERS.length)).toEqual(BUILT_IN_SOURCE_CONTROL_PROVIDERS);
@@ -190,6 +201,15 @@ describe('extension provider descriptors', () => {
     for (const id of ['gitea', 'forgejo', 'ext-', 'ext-Bad', undefined]) {
       expect(() => descriptors.attachExtension({ ...gitea, id })).toThrow();
     }
+  });
+
+  it('publishes the review-thread capabilities an extension descriptor carries', () => {
+    const declared = {
+      ...extension('ext-forge'),
+      capabilities: { ...gitea.capabilities, reviewThreads: { start: false, reply: true, resolve: false } },
+    };
+    expect(publicProviderDescriptor(declared, 3).capabilities.reviewThreads).toEqual({ start: false, reply: true, resolve: false });
+    expect(publicProviderDescriptor(extension('ext-forge'), 3).capabilities.reviewThreads).toEqual(gitea.capabilities.reviewThreads);
   });
 
   it('publishes the extension marker only when given', () => {
@@ -251,3 +271,13 @@ describe('provider ids', () => {
   });
 });
 
+describe('review thread capabilities on the built-in descriptors', () => {
+  const published = (id) => publicProviderDescriptor(sourceControlProviderDescriptors.get(id), 0).capabilities;
+
+  it('publishes where each host can start, reply to and resolve a thread', () => {
+    expect(published('gitlab')).toEqual({ reviewThreads: { start: true, reply: true, resolve: true } });
+    expect(published('github')).toEqual({ reviewThreads: { start: false, reply: true, resolve: true } });
+    expect(published('gitea')).toEqual({ reviewThreads: { start: false, reply: false, resolve: false } });
+    expect(published('gerrit')).toEqual({ reviewThreads: { start: false, reply: true, resolve: false } });
+  });
+});

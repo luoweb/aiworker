@@ -17,7 +17,7 @@ import { installDownloadedDesktopUpdate } from './update-install.mjs';
 import { z } from 'zod';
 import { ElectronSshManager } from './ssh-manager.mjs';
 import { collectLocalFileDiagnostics, collectSshBufferDiagnostics } from '@openchamber/web/server/lib/diagnostics/local-files.js';
-import { replaceFileWithRetry } from './windows-file-replace.mjs';
+import { readJsonObjectForUpdate, replaceFileWithRetry } from './windows-file-replace.mjs';
 import { persistMainWindowState } from './window-state.mjs';
 import { createContextWindowController } from './context-window-controller.mjs';
 import { createWindowGeometryState } from './window-geometry-state.mjs';
@@ -148,12 +148,13 @@ import {
 } from './browser-panel-security.mjs';
 import { browserPanelKeyAction, browserPanelMouseAction, runBrowserPanelAction } from './browser-panel-navigation.mjs';
 import { isSpaceId, spaceIdOfPreviewPartition, spacePreviewPartition, spacePreviewProxyConfig } from './space-preview.mjs';
-import { shouldBlockGuestFrameNavigation } from './guest-frame-navigation.mjs';
+import { attachWindowNavigationGuards } from './window-navigation-guards.mjs';
 import { createRelayDevTunnelBridge } from './relay-dev-tunnel.mjs';
 import { parsePairingDeepLink } from './pairing-deep-link.mjs';
 import { attachRendererRecovery, takeSafeStart } from './renderer-recovery.mjs';
 import { createLoadFailureWarningFilter } from './load-failure-warnings.mjs';
 import { mintOutsideFileGrant } from '@openchamber/web/server/lib/fs/routes.js';
+import { openWindowsFolder } from '@openchamber/web/server/lib/fs/windows-shell-open.js';
 import { fetchUpdateNotes } from '@openchamber/web/server/lib/changelog/update-notes.js';
 import { compareVersions } from '@openchamber/web/server/lib/version-order.js';
 import { applyConnectAttemptTimeout } from '@openchamber/web/server/lib/network-defaults.js';
@@ -669,7 +670,7 @@ const writeJsonFile = async (filePath, data) => {
 let settingsMutationChain = Promise.resolve();
 const mutateSettingsRoot = (mutator) => {
   const next = settingsMutationChain.then(async () => {
-    const current = readSettingsRoot();
+    const current = await readJsonObjectForUpdate(settingsFilePath());
     const result = await mutator(current);
     const nextRoot = result ?? current;
     await writeJsonFile(settingsFilePath(), nextRoot);
@@ -1357,7 +1358,7 @@ import { provideLoginShellEnvSnapshot } from '@openchamber/web/server/lib/openco
 
 const inheritUserShellEnv = async () => {
   const shellEnv = await startShellEnvironmentProbe();
-  if (process.platform !== 'win32') provideLoginShellEnvSnapshot(shellEnv);
+  provideLoginShellEnvSnapshot(shellEnv);
   if (!shellEnv) return;
 
   const homeDir = os.homedir();
@@ -1485,7 +1486,7 @@ const spawnLocalServer = async () => {
 
   await mutateSettingsRoot((root) => {
     root.desktopLocalPort = port;
-  });
+  }).catch((error) => log.warn('[electron] could not save the local server port:', error));
 
   return url;
 };
@@ -2509,55 +2510,16 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {}, 
     }
   });
 
-  const isAllowedNavigationUrl = (raw, { includeHosts = true } = {}) => {
-    try {
-      const url = new URL(raw);
-      if (url.protocol === 'devtools:') return true;
-      if (url.protocol === `${UI_PROTOCOL}:`) return true;
-      if (url.protocol !== 'http:' && url.protocol !== 'https:') return false;
-      try {
-        if (new URL(browserWindow.webContents.getURL()).origin === url.origin) return true;
-      } catch {
-      }
-      if (state.localOrigin) {
-        try {
-          if (new URL(state.localOrigin).origin === url.origin) return true;
-        } catch {
-        }
-      }
-      if (state.sidecarUrl) {
-        try {
-          if (new URL(state.sidecarUrl).origin === url.origin) return true;
-        } catch {
-        }
-      }
-      return includeHosts && findConfiguredHostForUrl(raw) !== null;
-    } catch {
-      return false;
-    }
-  };
-
-  browserWindow.webContents.setWindowOpenHandler(({ url }) => {
-    const host = findConfiguredHostForUrl(url);
-    if (host) {
-      void openHostWindow(host, sessionRouteFromUrl(url), { reuseOpenWindow: true }).catch((error) => {
-        log.warn('[electron] failed to open host window from link:', error);
-      });
-      return { action: 'deny' };
-    }
-    if (isAllowedNavigationUrl(url, { includeHosts: false })) {
-      const route = sessionRouteFromUrl(url);
-      if (route) emitToWindow(browserWindow, 'openchamber:open-session', route);
-      return { action: 'deny' };
-    }
-    void shell.openExternal(url).catch(() => {});
-    return { action: 'deny' };
-  });
-
-  browserWindow.webContents.on('will-navigate', (event, url) => {
-    if (isAllowedNavigationUrl(url)) return;
-    event.preventDefault();
-    void shell.openExternal(url).catch(() => {});
+  attachWindowNavigationGuards({
+    webContents: browserWindow.webContents,
+    uiProtocol: UI_PROTOCOL,
+    getAllowedOrigins: () => [state.localOrigin, state.sidecarUrl],
+    findConfiguredHostForUrl,
+    sessionRouteFromUrl,
+    openHostWindow,
+    onOpenSession: (route) => emitToWindow(browserWindow, 'openchamber:open-session', route),
+    openExternal: (target) => shell.openExternal(target),
+    log,
   });
 
   browserWindow.webContents.on('did-navigate', (_event, url) => {
@@ -2568,32 +2530,6 @@ const createBrowserWindow = ({ label, restoreGeometry, url, runtimeConfig = {}, 
     if (browserWindow === state.mainWindow && details.isMainFrame && !details.isSameDocument) {
       mainWindowTrayActionsReady = false;
     }
-  });
-
-  browserWindow.webContents.on('will-frame-navigate', (details) => {
-    let frameOrigin;
-    try {
-      frameOrigin = details.frame?.origin;
-    } catch {
-      frameOrigin = undefined;
-    }
-    if (!shouldBlockGuestFrameNavigation({
-      isMainFrame: details.isMainFrame,
-      frameOrigin,
-      frame: details.frame,
-      initiator: details.initiator,
-      mainFrame: browserWindow.webContents.mainFrame,
-      url: details.url,
-      isAppOrigin: isAllowedNavigationUrl,
-    })) return;
-    details.preventDefault();
-    let host = '';
-    try {
-      host = new URL(details.url).host;
-    } catch {
-      host = '';
-    }
-    log.warn(`[guests] refused an extension frame navigating to ${host || 'an invalid URL'}`);
   });
 
   browserWindow.webContents.setZoomMode('disabled');
@@ -3019,19 +2955,17 @@ const createMiniChatWindow = async ({ mode, sessionId = '', directory = '', proj
     browserWindow.on('focus', refreshTrafficLights);
   }
 
-  browserWindow.webContents.setWindowOpenHandler(({ url }) => {
-    void shell.openExternal(url).catch(() => {});
-    return { action: 'deny' };
-  });
-  browserWindow.webContents.on('will-navigate', (event, url) => {
-    try {
-      const target = new URL(url);
-      const local = new URL(shouldUsePackagedUi() ? packagedUiOrigin() : (state.localOrigin || state.sidecarUrl || ''));
-      if (target.origin === local.origin) return;
-    } catch {
-    }
-    event.preventDefault();
-    void shell.openExternal(url).catch(() => {});
+  attachWindowNavigationGuards({
+    webContents: browserWindow.webContents,
+    uiProtocol: UI_PROTOCOL,
+    getAllowedOrigins: () => [shouldUsePackagedUi() ? packagedUiOrigin() : (state.localOrigin || state.sidecarUrl)],
+    findConfiguredHostForUrl,
+    sessionRouteFromUrl,
+    openHostWindow,
+    onOpenSession: () => {},
+    openExternal: (target) => shell.openExternal(target),
+    log,
+    routeLinks: false,
   });
   browserWindow.webContents.on('dom-ready', () => {
     const initScript = browserWindow.__ocInitScript;
@@ -4305,8 +4239,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
       const validated = await validateLocalPath(projectPath, 'Project path');
       if (process.platform === 'win32') {
         if (appId === 'finder') {
-          const error = await shell.openPath(validated.path);
-          if (error) throw new Error(error);
+          await openWindowsFolder(spawn, validated.path);
           return null;
         }
         await runSpecChain(await buildWindowsOpenProjectSpecs({ projectPath: validated.path, appId, appName }), appName);
@@ -4531,7 +4464,7 @@ const handleInvoke = async (browserWindow, command, args = {}) => {
           const unchanged = current && typeof current === 'object'
             && ['bgLight', 'fgLight', 'bgDark', 'fgDark'].every((key) => current[key] === colors[key]);
           if (!unchanged) {
-            void mutateSettingsRoot((root) => ({ ...root, desktopSplashColors: colors }));
+            mutateSettingsRoot((root) => ({ ...root, desktopSplashColors: colors })).catch((error) => log.warn('[electron] could not save splash colors:', error));
           }
         }
       }

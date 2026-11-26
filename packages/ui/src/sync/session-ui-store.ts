@@ -42,6 +42,7 @@ import { waitForWorktreeBootstrap } from "@/lib/worktrees/worktreeBootstrap"
 import { getWorktreeSetupWaitEnabled } from "@/lib/openchamberConfig"
 import { resolveCreatedWorktreeStartDirectory, resolveStartDirectory, resolveWorktreeStartDirectory } from "@/lib/worktrees/worktreeStartDirectory"
 import { resolveProjectForSessionDirectory } from "@/lib/projectResolution"
+import { isCheckoutRoot } from "@/lib/worktrees/integrateCheckouts"
 import type { ReadOnlySessionAssociation } from "@/lib/worktrees/readOnlySessionAssociation"
 import { admitSession, confirmNestedSessionTrust, isSessionAdmitted, nestedLineageProject, resolveAdmittedSessionProject, resolveProjectRefForWorktreeDirectory, withAdmittedLineage } from "./session-admission"
 import { isSessionDirectoryAdmitted } from "./session-admission-rule"
@@ -273,7 +274,7 @@ export async function routeMessage(params: Pick<SendMessageOptions, "isCurrentRu
     files: sendFiles,
     context: contextItems,
     ready: params.ready,
-    markBusy: params.markBusy,
+    markBusy: params.markBusy, steer: params.delivery === 'steer',
     appendSubmissions: params.appendSubmissions,
     onOptimisticInsert: params.onMessageMinted,
     send: async (messageID, context, commitRevert) => {
@@ -760,8 +761,7 @@ const projectOfWorktreeRoot = (
 ): { id: string; path: string } | null => {
   if (!directory) return null
   const target = normalizePath(directory)
-  const isWorktreeRoot = [...availableWorktreesByProject.values()]
-    .some((worktrees) => worktrees.some((worktree) => normalizePath(worktree.path) === target))
+  const isWorktreeRoot = isCheckoutRoot(availableWorktreesByProject, target)
   return isWorktreeRoot ? resolveProjectRefForWorktreeDirectory(directory, projectId) : null
 }
 

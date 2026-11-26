@@ -61,8 +61,8 @@ import {
 import { withContextObligatoryMessage, type ContextObligatoryMessage } from "@/lib/contextObligatoryMessages"
 import { getBtwOriginalSessionID, getBtwSessionID, isBtwSession, withoutBtwSessionLink } from "@/lib/sessionBtwMetadata"
 import { type LinkedIssue } from "@/lib/linkedIssues"
-import { withSessionWorkClosed, withSessionWorkState, type SessionWork } from "@/lib/sessionWorkMetadata"
-import { isPinnedMetadata, withSessionPinned } from "@/lib/sessionPins"
+import { type SessionWork } from "@/lib/sessionWorkMetadata"
+import { closesWorkOnPin, withSessionPinChange, withUserWorkState } from "@/lib/pinnedInWork"
 import { getImperativeSessionMessageLoader } from "./session-message-loader"
 import { cleanupPersistedSessionState } from "./session-deletion-cleanup"
 import { requestSessionArchiveBatch, requestSessionLinksUpdate, requestSessionMetadataUpdate, requestSessionUnarchiveBatch, type SessionArchiveStamp } from "./session-archive-batch"
@@ -77,7 +77,7 @@ import { ConnectionLostError } from "./connection-lost-error"
 import { noteSessionMoveEvent, requestSessionMove } from "./session-move-confirmation"
 import { promoteRestoredSessionOrdering } from "./session-ordering"
 import { normalizePath } from "@/lib/pathNormalization"
-import { mergeMessages } from "./optimistic"
+import { createOptimisticRollbackPatch, createOptimisticUserMessage, mergeMessages, shouldMarkBusyFromIdle } from "./optimistic"
 import { trackPromptInFlight } from "./prompts-in-flight"
 import { messagesBefore, messagesFrom } from "./message-ordering"
 import { deleteChatDirectory } from "@/lib/chatDirectories"
@@ -106,6 +106,7 @@ type OptimisticConfirmInput = OptimisticRemoveInput
 let _optimisticAdd: ((input: OptimisticAddInput) => void) | null = null
 let _optimisticRemove: ((input: OptimisticRemoveInput) => void) | null = null
 let _optimisticConfirm: ((input: OptimisticConfirmInput) => void) | null = null
+let _optimisticAdmit: ((input: OptimisticConfirmInput) => void) | null = null
 
 function sessionsMutationPatch(
   state: ReturnType<DirectoryStoreApi["getState"]>,
@@ -164,10 +165,12 @@ export function setOptimisticRefs(
   add: (input: OptimisticAddInput) => void,
   remove: (input: OptimisticRemoveInput) => void,
   confirm?: (input: OptimisticConfirmInput) => void,
+  admit?: (input: OptimisticConfirmInput) => void,
 ) {
   _optimisticAdd = add
   _optimisticRemove = remove
   _optimisticConfirm = confirm ?? null
+  _optimisticAdmit = admit ?? null
 }
 
 function dirStore() {
@@ -1192,7 +1195,7 @@ export async function setSessionWorkState(
   const runtimeKeyAtClick = getRuntimeKey()
   try {
     return await patchSessionMetadata(sessionId, directory, (metadata) =>
-      state === "open" && isPinnedMetadata(metadata) ? metadata : withSessionWorkState(metadata, state, Date.now()), runtimeKeyAtClick)
+      withUserWorkState(metadata, state, Date.now()), runtimeKeyAtClick)
   } catch (error) {
     if (isStaleRuntime(runtimeKeyAtClick)) return null
     throw error
@@ -1207,11 +1210,10 @@ export async function setSessionPinned(
 ): Promise<Session | null> {
   const runtimeKeyAtClick = getRuntimeKey()
   try {
-    return await patchSessionMetadata(sessionId, directory, (metadata) => {
-      const now = Date.now()
-      const next = withSessionPinned(metadata, pinned, now, list)
-      return pinned ? withSessionWorkClosed(next, now) : next
-    }, runtimeKeyAtClick)
+    const closesWork = pinned && await closesWorkOnPin(getGlobalSessionSnapshot(sessionId))
+    if (isStaleRuntime(runtimeKeyAtClick)) return null
+    return await patchSessionMetadata(sessionId, directory, (metadata) =>
+      withSessionPinChange(metadata, { pinned, list, closesWork, now: Date.now() }), runtimeKeyAtClick)
   } catch (error) {
     if (isStaleRuntime(runtimeKeyAtClick)) return null
     throw error
@@ -1799,6 +1801,7 @@ export async function optimisticSend(input: {
   appendSubmissions?: () => void
   onOptimisticInsert?: (messageID: string) => void
   markBusy?: boolean
+  steer?: boolean
   send: (messageID: string, context: SyntheticContextInput[], commitRevert?: () => Promise<void>) => Promise<void>
 }): Promise<void> {
   if (!_optimisticAdd || !_optimisticRemove) {
@@ -1824,6 +1827,7 @@ export async function optimisticSend(input: {
   const targetDirectory = input.directory ?? dir()
   const store = targetDirectory ? dirStoreForDirectory(targetDirectory) : dirStore()
   const stateBeforeSend = store.getState()
+  const markedBusyFromIdle = shouldMarkBusyFromIdle(stateBeforeSend.session_status[input.sessionId], input.markBusy)
   const sessionBeforeSend = stateBeforeSend.session.find((session) => session.id === input.sessionId)
   const revertMessageID = sessionBeforeSend?.revert?.messageID
   const messagesBeforeSend = stateBeforeSend.message[input.sessionId] ?? []
@@ -1859,9 +1863,9 @@ export async function optimisticSend(input: {
   const messageID = ascendingId("msg")
   const optimisticIDs = [...context.map((item) => item.id), messageID]
 
-  const optimisticParts: Part[] = [
-    { id: partIds.userText(messageID), sessionID: input.sessionId, messageID, type: "text", text: input.content },
-  ]
+  const optimisticParts: Part[] = input.content.length > 0
+    ? [{ id: partIds.userText(messageID), sessionID: input.sessionId, messageID, type: "text", text: input.content }]
+    : []
   if (input.files) {
     input.files.forEach((file, index) => {
       optimisticParts.push({
@@ -1877,12 +1881,7 @@ export async function optimisticSend(input: {
   }
 
   const created = Date.now()
-  const optimisticMessage: UserMessage = {
-    id: messageID,
-    role: "user",
-    sessionID: input.sessionId,
-    time: { created },
-  }
+  const optimisticMessage: UserMessage = createOptimisticUserMessage(input.sessionId, messageID, created, input.steer)
 
   const addSyntheticContext = (item: SyntheticContextInput & { id: string }) => {
     const synthetic: SyntheticMessage = compact({
@@ -1905,7 +1904,7 @@ export async function optimisticSend(input: {
   })
   input.onOptimisticInsert?.(messageID)
 
-  if (input.markBusy !== false) markSessionStatus(input.sessionId, targetDirectory, "busy")
+  if (markedBusyFromIdle) markSessionStatus(input.sessionId, targetDirectory, "busy")
 
   let revertCommitSent = false
   let revertCommitted = false
@@ -1917,13 +1916,15 @@ export async function optimisticSend(input: {
       }
     : undefined
 
-  const releasePrompt = trackPromptInFlight(input.sessionId)
+  const releasePrompt = trackPromptInFlight(input.sessionId, markedBusyFromIdle)
   let requestSent = false
   try {
     await input.ready
     assertRuntimeUnchanged()
     requestSent = true
     await input.send(messageID, context, commitRevert)
+    for (const id of optimisticIDs) _optimisticAdmit?.({ sessionID: input.sessionId, directory: targetDirectory, messageID: id })
+    releasePrompt(true)
   } catch (error) {
     const status = getErrorStatus(error)
     const ambiguousFailure = requestSent && isAmbiguousSendFailure(error)
@@ -1933,13 +1934,8 @@ export async function optimisticSend(input: {
 
     if (acceptedRecords) {
       materializeConfirmedSendRecords(store, input.sessionId, optimisticIDs, acceptedRecords)
-      for (const optimisticID of optimisticIDs) {
-        optimisticConfirm?.({
-          sessionID: input.sessionId,
-          directory: targetDirectory,
-          messageID: optimisticID,
-        })
-      }
+      for (const id of optimisticIDs) optimisticConfirm?.({ sessionID: input.sessionId, directory: targetDirectory, messageID: id })
+      releasePrompt(true)
       return
     }
 
@@ -1988,15 +1984,10 @@ export async function optimisticSend(input: {
       }
     }
 
-    rollbackStore.setState({
-      session,
-      message,
-      part,
-      session_status: {
-        ...rollbackState.session_status,
-        [input.sessionId]: { type: "idle" as const },
-      },
-    })
+    const restoreIdle = releasePrompt(false)
+    rollbackStore.setState(createOptimisticRollbackPatch(
+      rollbackState.session_status, input.sessionId, session, message, part, restoreIdle,
+    ))
     throw error
   } finally {
     releasePrompt()

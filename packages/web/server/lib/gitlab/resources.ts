@@ -8,6 +8,7 @@ import { resolveGitLabProjectsFromDirectory } from './repo.js';
 import { gitPatchForDiff } from './diff-patch.js';
 import { systemReferences, withIssueReferences, withReferences } from './references.js';
 import { isPlainObject as isPlain, isPresent, isString } from './validation.js';
+import { gitlabBranchFlags, gitlabItemFlags, gitlabItemWrites } from './item-writes.js';
 import type { SourceControlMutationTarget, SourceControlProjectRef } from '@openchamber/sdk';
 import type { ProviderReadContext } from '../source-control/provider-contract.js';
 import type { reviewCommentPosition } from '../source-control/review-position.js';
@@ -15,16 +16,14 @@ import type { JsonObject, JsonValue } from '../shared/json-values.js';
 import type { createGitLabClient, createGitLabDownloader, GitLabDownloadOptions, GitLabRequesterOptions } from './client.js';
 import type { GitLabMappedProject } from './mappers.js';
 
-type Client = ReturnType<typeof createGitLabClient>;
-type Query = NonNullable<GitLabRequesterOptions['searchParams']>;
+type Client = ReturnType<typeof createGitLabClient>; type Query = NonNullable<GitLabRequesterOptions['searchParams']>;
 type Reply = Awaited<ReturnType<Client['Projects']['show']>>;
 type Field = JsonValue | undefined;
 type Selector = Pick<SourceControlProjectRef, 'owner' | 'name'> | null | undefined;
 type Remote = string | undefined;
 type Project = { raw: JsonObject & { id: number }; project: GitLabMappedProject };
 type Projects = [Project, ...Project[]];
-type ReadOptions = { remote?: Remote; linked?: boolean | undefined; includeReferences?: boolean | undefined; requireComplete?: boolean | undefined;
-  constrainToPrimary?: boolean | undefined; requireNetwork?: boolean | undefined; project?: Selector };
+type ReadOptions = { remote?: Remote; linked?: boolean | undefined; includeReferences?: boolean | undefined; requireComplete?: boolean | undefined; constrainToPrimary?: boolean | undefined; requireNetwork?: boolean | undefined; project?: Selector };
 type ListOptions = { labels?: string[] | undefined; state?: string | undefined; people?: string | undefined; remote?: Remote;
   page?: number | undefined; query?: string | undefined };
 type ListFilter = { state: string; scope: string; reviewerUsername?: string; labels?: string };
@@ -613,20 +612,18 @@ export function createGitLabResourceService({ origin, client, download, resolveP
     if (errors.length) throw Object.assign(new Error(errors.join('; ')), { status: 422 });
     if (!isPlainObject(result?.mergeRequest)) throw new Error('GitLab returned an invalid request-changes result');
   };
-
-  const notesOfDiscussions = (discussions: JsonValue[] | null, permissions: Permissions | null) => {
+  const notesOfDiscussions = (discussions: JsonValue[] | null, permissions: Permissions | null, headSha: string | undefined) => {
     if (!array(discussions)) return discussions;
     return discussions.flatMap((discussion) => {
       if (!isPlainObject(discussion) || !array(discussion.notes)) return [discussion];
       if (discussion.individual_note === true || !isString(discussion.id) || !discussion.id) return discussion.notes;
       const opener = discussion.notes.find((note) => isPlainObject(note) && note.system !== true);
       const resolvable = discussion.notes.filter((note): note is JsonObject => isPlainObject(note) && note.resolvable === true);
-      type ThreadState = { id: string; resolvable: boolean; resolved: boolean; canResolve?: boolean; canReply?: boolean };
-      const state: ThreadState = {
-        id: discussion.id,
-        resolvable: resolvable.length > 0,
-        resolved: resolvable.length > 0 && resolvable.every((note) => note.resolved === true),
-      };
+      const position = isPlainObject(opener) && isPlainObject(opener.position) ? opener.position : null;
+      const outdated = headSha !== undefined && position?.position_type !== 'file' && isString(position?.head_sha) && position.head_sha !== headSha;
+      type ThreadState = { id: string; resolvable: boolean; resolved: boolean; outdated?: boolean; canResolve?: boolean; canReply?: boolean };
+      const state: ThreadState = { id: discussion.id, resolvable: resolvable.length > 0, resolved: resolvable.length > 0 && resolvable.every((note) => note.resolved === true) };
+      if (outdated) state.outdated = true;
       const canResolve = permissions?.resolve.get(discussion.id);
       if (canResolve !== undefined) state.canResolve = canResolve;
       if (permissions) state.canReply = permissions.reply;
@@ -738,6 +735,7 @@ export function createGitLabResourceService({ origin, client, download, resolveP
   };
 
   return {
+    ...gitlabItemWrites({ client, showProject, requireIssue, requireMutationResponse, requireMutationMergeRequest }),
     async resolveCreateMutation(context: Context, expected: Expected, options: { remote?: Remote; headRemote?: Remote } = {}) {
       if (options.remote !== undefined && options.remote !== context.primaryRemote) {
         throw Object.assign(new Error('GitLab mutation remote does not match the bound primary remote'), {
@@ -825,9 +823,10 @@ export function createGitLabResourceService({ origin, client, download, resolveP
       return download(`projects/${target.project.id}/uploads/${secret}/${encodeURIComponent(filename)}`, { range, signal });
     },
 
-    async listReviewerCandidates(directory: string, selector?: Selector, remote?: Remote) {
+    async listReviewerCandidates(directory: string, selector?: Selector, remote?: Remote, role?: 'assignee' | 'reviewer') {
       const target = await constrainedProject(directory, selector, remote);
-      const raw = await client.ProjectMembers.all(target.project.id, { includeInherited: true, perPage: 100, maxPages: 1 });
+      const raw = await client.ProjectMembers.all(target.project.id, role === 'assignee'
+        ? { includeInherited: true, perPage: 100 } : { includeInherited: true, perPage: 100, maxPages: 1 });
       if (!array(raw)) throw new Error('GitLab returned an invalid member list');
       return raw.flatMap((value) => {
         const member = obj(value);
@@ -843,7 +842,6 @@ export function createGitLabResourceService({ origin, client, download, resolveP
       if (!isPlainObject(raw) || !Number.isInteger(raw.id)) throw new Error('GitLab returned an invalid note');
       return {};
     },
-
     async resolveThread(payload: WithTarget & { threadId: string; resolved: boolean }) {
       const { projectId, number } = payload.providerTarget;
       const raw = await client.MergeRequestDiscussions.resolve(projectId, number, payload.threadId, payload.resolved);
@@ -859,7 +857,6 @@ export function createGitLabResourceService({ origin, client, download, resolveP
       if (!isPlainObject(raw) || !isString(raw.id) || !raw.id) throw new Error('GitLab returned an invalid thread');
       return {};
     },
-
     async reviewState(directory: string, number: number, project?: Selector, remote?: Remote) {
       const { target, raw } = await findByNumber(directory, number, project, { remote, constrainToPrimary: true });
       const request = requireMutationMergeRequest(raw, target.project);
@@ -890,12 +887,14 @@ export function createGitLabResourceService({ origin, client, download, resolveP
           const discussion = obj(value);
           const notes = asArray(discussion?.notes).filter((note): note is JsonObject => isPlainObject(note) && note.system !== true);
           const [first] = notes;
-          if (first?.type !== 'DiffNote' || !isPlainObject(first.position) || first.position.head_sha !== headSha) return [];
+          if (first?.type !== 'DiffNote' || !isPlainObject(first.position)) return [];
+          const outdated = first.position.position_type !== 'file' && isString(first.position.head_sha) && isString(headSha) && first.position.head_sha !== headSha;
           return [{
-            ...positionOfNote(first.position),
+            ...(outdated ? { ...positionOfNote(first.position), line: null, startLine: null } : positionOfNote(first.position)),
             id: discussion?.id,
             resolved: discussionResolved(value) === true,
-            canReply: permissions?.reply ?? false,
+            outdated,
+            canReply: !outdated && (permissions?.reply ?? false),
             canResolve: permissions?.resolve.get(discussion?.id) ?? false,
             comments: notes.map((note) => ({
               id: String(note.id),
@@ -1310,7 +1309,9 @@ export function createGitLabResourceService({ origin, client, download, resolveP
         options.includeTimeline ? readReviewerStates(client, target.project.id, number, raw, identity) : Promise.resolve(undefined),
         readChain(reply, isString(target.raw?.default_branch) ? target.raw.default_branch : null).catch(() => undefined),
       ]);
-      const notes = options.includeTimeline ? notesOfDiscussions(noteSource, threadPermissions) : noteSource;
+      const diffRefs = obj(raw?.diff_refs);
+      const contextHeadSha = isString(diffRefs?.head_sha) ? diffRefs.head_sha : (isString(raw?.sha) ? raw.sha : undefined);
+      const notes = options.includeTimeline ? notesOfDiscussions(noteSource, threadPermissions, contextHeadSha) : noteSource;
       if (canonicalReads && !Array.isArray(notes)) throw new Error('GitLab returned an invalid merge request note list');
       if (canonicalReads && !Array.isArray(diffs)) throw new Error('GitLab returned an invalid merge request diff list');
       const mappedNotes = asArray(notes).flatMap((value) => {
@@ -1345,7 +1346,7 @@ export function createGitLabResourceService({ origin, client, download, resolveP
         ? requireMergeRequest(reply, target.project)
         : requireMapped(mapGitLabMergeRequest(raw, identity, target.project), 'GitLab returned an invalid merge request');
       if (headProject) changeRequest.headProject = headProject;
-      const context = {
+      const context = gitlabBranchFlags({
         identity,
         project: target.project,
         changeRequest,
@@ -1354,7 +1355,7 @@ export function createGitLabResourceService({ origin, client, download, resolveP
         files,
         diff: files.map((file) => file.patch).filter(Boolean).join('\n'),
         ci,
-      };
+      }, target.raw);
       const withStack = chain === undefined ? context : { ...context, stack: chain };
       if (!options.includeTimeline) return withStack;
       const withRefs = options.includeReferences
@@ -1368,10 +1369,7 @@ export function createGitLabResourceService({ origin, client, download, resolveP
           return mapped ? [mapped] : [];
         }).reverse(),
         commitsComplete: !commitPage?.hasMore,
-        reviewers: asArray(record(raw).reviewers).flatMap((user) => {
-          const mapped = mapGitLabUser(obj(user), identity);
-          return mapped ? [mapped] : [];
-        }),
+        reviewers: asArray(record(raw).reviewers).flatMap((user) => mapGitLabUser(obj(user), identity) ?? []),
         verdicts: asArray(notes).flatMap((note) => {
           const mapped = mapGitLabVerdictNote(obj(note), identity, record(raw).web_url);
           return mapped ? [mapped] : [];
@@ -1406,7 +1404,8 @@ export function createGitLabResourceService({ origin, client, download, resolveP
       const issue = canonicalReads
         ? requireIssue(raw, target.project)
         : requireMapped(mapGitLabIssue(obj(raw), identity, target.project), 'GitLab returned an invalid issue');
-      return includeReferences ? withIssueReferences(client, target.project, issue, number, String(obj(raw)?.web_url ?? '')) : issue;
+      const flagged = gitlabItemFlags(issue, target.raw);
+      return includeReferences ? withIssueReferences(client, target.project, flagged, number, String(obj(raw)?.web_url ?? '')) : flagged;
     },
 
     async changeRequestPatch(directory: string, number: number, options: ReadOptions = {}) {

@@ -1112,6 +1112,17 @@ describe('OpenChamber control service', () => {
       expect(client.session.list).toHaveBeenCalledTimes(1);
     });
 
+    it('marks the leads and lists only them, in every project', async () => {
+      const { service, client } = createService();
+      const lead = { openchamber: { lead: { at: 1 } } };
+      client.session.list.mockResolvedValue({ data: [session('lead', { metadata: lead }), session('plain'), session('copy', { parentID: 'lead', metadata: lead })] });
+      const everything = await service.execute('session.list', {}, '/repo');
+      expect(everything.sessions.map(({ id, lead: marked }) => [id, marked])).toEqual([['lead', true], ['plain', undefined]]);
+      const leads = await service.execute('session.list', { leads: true }, '/repo');
+      expect(leads.sessions.map(({ id }) => id)).toEqual(['lead']);
+      expect(client.session.list.mock.calls.at(-1)[0]).not.toHaveProperty('directory');
+    });
+
     it('lists the sessions the caller created with ownWork, with their status, and archives only those', async () => {
       const archive = vi.fn(async () => ({ archived: [], failedIds: [] }));
       const { service, client } = createService();
@@ -1218,6 +1229,20 @@ describe('OpenChamber control service', () => {
       await expect(service.execute('session.track', { sessionId: 'in-wt' })).rejects.toMatchObject({ statusCode: 409 });
       await expect(service.execute('session.markDone', { sessionId: 'pinned' })).resolves.toMatchObject({ inWork: false });
       expect(updateSessionMetadata).toHaveBeenCalledTimes(1);
+    });
+
+    it('tracks and lists a pinned session in work once the user allows it', async () => {
+      const updateSessionMetadata = vi.fn(async () => ({ changed: true }));
+      const { service, client } = createService({
+        ...withSettings({ sessionWorkIncludesPinned: true }), updateSessionMetadata, isWorktreePinned: async () => true,
+      });
+      const pinned = { metadata: { openchamber: { pinned: { at: 1 }, work: { state: 'open' } } } };
+      client.session.get.mockImplementation(async ({ sessionID }) => session(sessionID, pinned));
+      client.session.list.mockResolvedValue({ data: [session('a', pinned)], cursor: {} });
+
+      await expect(service.execute('session.track', { sessionId: 'a' })).resolves.toMatchObject({ inWork: true });
+      const { sessions } = await service.execute('session.list', { inWork: true });
+      expect(sessions.map(({ id }) => id)).toEqual(['a']);
     });
 
     it('reports an unknown session and a server that cannot write', async () => {

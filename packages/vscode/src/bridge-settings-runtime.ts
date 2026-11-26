@@ -4,11 +4,13 @@ import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { BUILT_IN_SKILL_LOCATION, type DiscoveredSkill, type SkillScope, type SkillSource } from './opencodeConfig';
+import { checkOpenCodeDirectoryTrust, openCodeTrust, type OpenCodeTrustGuard } from './opencodeTrust';
 import type { BridgeContext } from './bridge';
 import { filterPersistableSettingsChanges, withoutSecretSettings } from './settings-registry-gate';
 import { createProjectSetupStore } from './bridge-project-setup-runtime';
 import { execGit } from './bridge-git-process-runtime';
 import { createMagicPromptService, repositoryOfGitResult, workspaceProjectsOf } from './magic-prompts';
+import { createWorktreeRegistry } from '../../web/server/lib/git/worktree-registry.js';
 import { resolveWorkspaceFolders } from './workspaceResolver';
 import { dropUnorderedSessionCostChanges } from './settings-session-cost';
 import {
@@ -30,6 +32,12 @@ const OPENCHAMBER_SHARED_SETTINGS_PATH = path.join(os.homedir(), '.config', 'ope
 const OPENCHAMBER_PREFERENCES_PATH = preferencesFilePathFor(OPENCHAMBER_SHARED_SETTINGS_PATH);
 const OPENCHAMBER_MAGIC_PROMPTS_PATH = path.join(os.homedir(), '.config', 'openchamber', 'magic-prompts.json');
 
+const worktreeRegistry = createWorktreeRegistry(async (directory, args, failure) => {
+  const result = await execGit(args, directory, { env: { LC_ALL: 'C', LANGUAGE: '' } });
+  if (result.exitCode !== 0) throw Object.assign(new Error(failure), { stderr: result.stderr });
+  return result;
+});
+
 export const projectSetupStore = createProjectSetupStore();
 
 export const magicPrompts = createMagicPromptService({
@@ -37,8 +45,11 @@ export const magicPrompts = createMagicPromptService({
   sharedFiles: projectSetupStore,
   listProjects: () => workspaceProjectsOf(resolveWorkspaceFolders(vscode.workspace.workspaceFolders ?? [])),
   repositoryOf: async (directory) => {
-    const result = await execGit(['worktree', 'list', '--porcelain'], directory, { env: { LC_ALL: 'C', LANGUAGE: '' } });
-    return repositoryOfGitResult(result);
+    const porcelain = await worktreeRegistry.readPorcelain(directory).catch((error: Error & { stderr?: string }) => {
+      if (error.stderr === undefined) throw error;
+      return { stdout: '', stderr: error.stderr, exitCode: 1 };
+    });
+    return repositoryOfGitResult(typeof porcelain === 'string' ? { stdout: porcelain, stderr: '', exitCode: 0 } : porcelain);
   },
 });
 
@@ -122,7 +133,13 @@ const inferSkillScopeAndSourceFromLocation = (location: string, workingDirectory
 export const fetchOpenCodeSkillsFromApi = async (
   ctx: BridgeContext | undefined,
   workingDirectory?: string,
+  trust: OpenCodeTrustGuard = openCodeTrust,
 ): Promise<DiscoveredSkill[] | null> => {
+  const refusal = await checkOpenCodeDirectoryTrust(workingDirectory, { path: '/api/skill', trust });
+  if (refusal) {
+    return null;
+  }
+
   const apiUrl = ctx?.manager?.getApiUrl();
   if (!apiUrl) {
     return null;
@@ -189,19 +206,23 @@ export const fetchOpenCodeSkillsFromApi = async (
 };
 
 const readSettingsJsonFromDisk = (): Record<string, unknown> => {
+  let parsed: unknown;
   try {
-    const raw = fs.readFileSync(OPENCHAMBER_SHARED_SETTINGS_PATH, 'utf8');
     // SAFETY: JSON.parse returns untyped data; the check below keeps only a plain object.
-    const parsed = JSON.parse(raw) as unknown;
-    if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-      // SAFETY: a non-array object parsed from JSON is a string-keyed dictionary.
-      return parsed as Record<string, unknown>;
-    }
-    return {};
-  } catch {
-    return {};
+    parsed = JSON.parse(fs.readFileSync(OPENCHAMBER_SHARED_SETTINGS_PATH, 'utf8')) as unknown;
+  } catch (error) {
+    // SAFETY: fs errors carry a `code` string; anything else is a read failure.
+    if ((error as NodeJS.ErrnoException | null)?.code === 'ENOENT') return {};
+    throw error;
   }
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('settings.json does not hold a JSON object');
+  }
+  // SAFETY: a non-array object parsed from JSON is a string-keyed dictionary.
+  return parsed as Record<string, unknown>;
 };
+
+let settingsUnreadableLogged = false;
 
 type PreferencesReadResult =
   | { status: 'ok'; fields: PreferenceFields }
@@ -317,10 +338,12 @@ const stripDerived = (source: Record<string, unknown>): Record<string, unknown> 
 
 let eagerMigrationAttempted = false;
 
-const readPersistedSettings = (ctx?: BridgeContext): Record<string, unknown> => {
-  const fromGlobalState = stripDerived(
-    ctx?.context?.globalState.get<Record<string, unknown>>(SETTINGS_KEY) || {},
-  );
+const globalStateSettingsOf = (ctx?: BridgeContext) => stripDerived(
+  ctx?.context?.globalState.get<Record<string, unknown>>(SETTINGS_KEY) || {},
+);
+
+const readPersistedSettingsFromDisk = (ctx?: BridgeContext) => {
+  const fromGlobalState = globalStateSettingsOf(ctx);
   const fromDisk = stripDerived(readSharedSettingsFromDisk());
 
   if (!eagerMigrationAttempted) {
@@ -339,6 +362,20 @@ const readPersistedSettings = (ctx?: BridgeContext): Record<string, unknown> => 
   }
 
   return { ...fromGlobalState, ...fromDisk };
+};
+
+const readPersistedSettings = (ctx?: BridgeContext) => {
+  try {
+    const settings = readPersistedSettingsFromDisk(ctx);
+    settingsUnreadableLogged = false;
+    return settings;
+  } catch (error) {
+    if (!settingsUnreadableLogged) {
+      settingsUnreadableLogged = true;
+      console.warn(`[OpenChamber] ${OPENCHAMBER_SHARED_SETTINGS_PATH} could not be read (${error instanceof Error ? error.message : String(error)}); settings are not saved until it reads again.`);
+    }
+    return globalStateSettingsOf(ctx);
+  }
 };
 
 export const readSettings = (ctx?: BridgeContext): Record<string, unknown> => {
@@ -361,6 +398,7 @@ export const readSettings = (ctx?: BridgeContext): Record<string, unknown> => {
 };
 
 export const persistSettings = async (changes: Record<string, unknown>, ctx?: BridgeContext): Promise<Record<string, unknown>> => {
+  eagerMigrationAttempted = true;
   const current = readSettings(ctx);
   const restChanges = filterPersistableSettingsChanges(stripDerived({ ...(changes || {}) }));
 
@@ -390,6 +428,10 @@ export const persistSettings = async (changes: Record<string, unknown>, ctx?: Br
     delete restChanges.sessionWorkEnabled;
   }
 
+  if ('sessionWorkIncludesPinned' in restChanges && typeof restChanges.sessionWorkIncludesPinned !== 'boolean') {
+    delete restChanges.sessionWorkIncludesPinned;
+  }
+
   if ('sessionGoalEnabled' in restChanges && typeof restChanges.sessionGoalEnabled !== 'boolean') {
     delete restChanges.sessionGoalEnabled;
   }
@@ -409,7 +451,7 @@ export const persistSettings = async (changes: Record<string, unknown>, ctx?: Br
     restChanges.opencodeBinary = restChanges.opencodeBinary.trim();
   }
 
-  const persistedCurrent = readPersistedSettings(ctx);
+  const persistedCurrent = readPersistedSettingsFromDisk(ctx);
   dropUnorderedSessionCostChanges(persistedCurrent, restChanges);
   const persistable: Record<string, unknown> = { ...persistedCurrent, ...restChanges };
   for (const key of keysToClear) {

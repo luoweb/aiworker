@@ -693,6 +693,21 @@ first: the citation is inserted into the editor's document, which still holds
 the text from before the commit, and that document overwrites `composerText` on
 the next edit, so text set first is lost.
 
+### Why the Dictate quick action waits for its draft and starts through the mic event
+
+The app icon's Dictate action (a native shortcut request, never a link) opens
+a new-session draft and leaves `input-store.pendingDraftDictation`, addressed
+by that draft's id. `usePendingDraftDictation` starts recording from the
+unpinned composer only once it renders that draft: the request is set in the
+same turn the draft opens, so the composer can still be showing the session
+the user left, and recording there would make that session the dictation's
+origin. A request is taken once, and only by the composer showing its draft; a
+draft the user leaves before it renders never records. It sends the mic
+button's `openchamber:dictation-toggle` event marked `startOnly`, so it goes
+through the same capture owner, permission prompt and settings checks as a tap
+on the mic instead of a second way into `useDictation`, and it never confirms
+or sends a recording that is already running.
+
 ### Why the draft text lives outside React state
 
 As `ChatInput` state, every keystroke rendered the whole composer: about
@@ -1606,6 +1621,28 @@ command can leave the queue untouched and delivery can take only part of it.
   just opened must render in the same commit
   (`useShownSessionSelection`, see `sync/DOCUMENTATION.md`, "Session switch
   commit"): a deferred draft recorded the session still on screen (#6927).
+  The transcript stays in the visible composer when its draft identity matches
+  the origin, or when the composer still shows the new-session draft (same
+  draft id, same runtime) where recording started. A new-session draft's
+  identity includes its directory, so its identity alone makes a project or
+  Chat/Project switch of the same draft look like another composer (#7529).
+  Existing sessions and BTW match by identity only. Identity also counts for
+  drafts on its own because two Chat drafts share one slot. While the dictation
+  is pending, `useComposerDraft` reports the move that carries the draft's text
+  and the origin follows it, so opening another session after a move keeps the
+  transcript with the moved draft.
+  **Insert** adds the text to that composer. **Insert and send** captures the
+  identity on screen at confirmation: a draft moved before confirming sends to
+  the new project, and a draft moved between confirmation and the transcript
+  keeps the text unsent, because the user never confirmed sending it there. A
+  draft moved away and back in that time counts as moved. Opening another
+  session and returning does not, since the draft itself stayed put. The check
+  compares the origin record: each carried move replaces it, so it is read
+  before the transcript clears the origin.
+  The hook closes over the rendered identity: `useDictation` and
+  `ComposerDictation` keep their handlers in refs written after commit, so a
+  render that suspends or is deferred cannot change the target. VS Code has no
+  dictation (see `components/dictation/DOCUMENTATION.md`).
   The dictation shortcut starts in the focused composer's form, falling back
   to the main chat when no form has focus. Mobile mic triggers explicitly
   address their own form. One mounted dictation engine owns capture and

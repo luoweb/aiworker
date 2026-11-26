@@ -67,6 +67,8 @@ import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
+import { chatExchangeI18n } from './chat-exchange.i18n';
+import { integrateConflictI18n } from './integrate-conflict.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { subagentsI18n } from './subagents.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
@@ -269,6 +271,8 @@ export const dict: Record<I18nKey, string> = {
   ...markdownOutlineI18n['zh-CN'],
   ...markdownGithubI18n['zh-CN'],
   ...autocompleteScopeI18n['zh-CN'],
+  ...chatExchangeI18n['zh-CN'],
+  ...integrateConflictI18n['zh-CN'],
   ...workflowsI18n['zh-CN'],
   ...subagentsI18n['zh-CN'],
   ...sessionReferencesI18n['zh-CN'],
@@ -428,10 +432,6 @@ export const dict: Record<I18nKey, string> = {
   'mobile.menu.update': '更新',
   'mobile.menu.settings': '设置',
   'mobile.sessions.newChatCta': '在 {project} 中新建会话',
-  'mobile.sessions.dateGroup.today': '今天',
-  'mobile.sessions.dateGroup.yesterday': '昨天',
-  'mobile.sessions.dateGroup.thisWeek': '本周早些时候',
-  'mobile.sessions.dateGroup.older': '更早',
   'mobile.sessions.section.worktrees': '工作树',
   'mobile.sessions.section.otherProjects': '切换项目',
   'mobile.sessions.section.projects': '项目',
@@ -737,6 +737,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.empty.noMatches.description': '请尝试其他标题或分支。',
   'sessions.sidebar.activity.chatsTitle': '聊天',
   'sessions.sidebar.activity.chatsEmpty': '暂无聊天。',
+  'sessions.sidebar.timeline.noSessionsYet': '暂无会话',
   'chat.chatInput.chooseProject': '选择项目',
   'sessions.sidebar.header.projectDisplay.label': '显示项目',
   'sessions.sidebar.header.projectDisplay.all': '所有项目',
@@ -885,6 +886,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.session.status.movingToWorktree': '正在将会话移至新工作树',
   'sessions.sidebar.session.status.permissionRequired': '需要权限',
   'sessions.sidebar.session.status.questionPending': '待回答问题',
+  'sessions.sidebar.session.status.permissionRequiredOpen': '需要权限。打开发出请求的会话',
+  'sessions.sidebar.session.status.questionPendingOpen': '待回答问题。打开发出请求的会话',
   'sessions.sidebar.session.status.activeFor': '已活动 {duration}',
   'sessions.sidebar.session.status.lastTurnDuration': '上一轮耗时 {duration}',
   'sessions.sidebar.session.subsessions.collapse': '折叠子会话',
@@ -1608,6 +1611,7 @@ export const dict: Record<I18nKey, string> = {
   'walkthrough.blocked.emptyDiff.description': '该范围内暂无改动。',
   'walkthrough.blocked.contextTooSmall.title': '当前模型无法容纳这份差异',
   'walkthrough.blocked.contextTooSmall.description': '{model} 大约可容纳 {available} 千字符，而这份差异约需 {required} 千字符。我们不会截断内容，请改选上下文更大的模型。',
+  'walkthrough.blocked.contextTooSmall.descriptionRefused': '这份差异过长，被 {model} 拒绝。请选择上下文更大的模型，或缩小评审范围。',
   'walkthrough.blocked.structuredOutput.title': '该模型不支持结构化输出',
   'walkthrough.blocked.structuredOutput.description': '{model} 不支持导读所需的结构化响应。',
   'walkthrough.blocked.chooseModel': '选择小模型',
@@ -1684,6 +1688,7 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.annotate.intro': '这是来自应用内浏览器的标注选区。',
   'contextPanel.browser.annotate.attached': '标注已附加到聊天',
   'contextPanel.browser.annotate.noSession': '附加标注前请先打开聊天会话',
+  'contextPanel.browser.annotate.readOnly': '此聊天为只读，无法附加标注',
   'contextPanel.browser.annotate.noPage': '标注前请先加载页面',
   'contextPanel.browser.annotate.failed': '无法标注此页面',
   'contextPanel.browser.annotate.tool.element': '元素',
@@ -2396,6 +2401,9 @@ export const dict: Record<I18nKey, string> = {
   'session.githubPrPicker.empty.noPullRequestsFound': '未找到 Pull Request',
   'session.githubPrPicker.loading.pullRequests': '正在加载 Pull Request...',
   'session.githubPrPicker.actions.loadMore': '加载更多',
+  'session.githubPrPicker.filter.group.repository': '仓库',
+  'session.githubPrPicker.filter.group.author': '作者',
+  'session.githubPrPicker.filter.clearAll': '清除筛选',
   'session.newWorktree.title': '新建工作树',
   'session.newWorktree.mode.newBranch': '新分支',
   'session.newWorktree.mode.existingBranch': '现有分支',
@@ -2670,6 +2678,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.textSelection.title.saveInsightToNotes': '将选中文本保存到笔记',
   'chat.messageBody.actions.revertAria': '回退到这条消息',
   'chat.messageBody.actions.revert': '从此处回退',
+  'chat.messageBody.status.waitingForAgent': '正在等待代理',
   'chat.messageBody.actions.forkAria': '从这条消息分叉',
   'chat.messageBody.actions.fork': '从此处分叉',
   'chat.messageBody.actions.copyMessageAria': '复制消息文本',

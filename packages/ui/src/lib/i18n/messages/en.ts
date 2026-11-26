@@ -66,6 +66,8 @@ import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
+import { chatExchangeI18n } from './chat-exchange.i18n';
+import { integrateConflictI18n } from './integrate-conflict.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { subagentsI18n } from './subagents.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
@@ -268,6 +270,8 @@ export const dict = {
   ...markdownOutlineI18n['en'],
   ...markdownGithubI18n['en'],
   ...autocompleteScopeI18n['en'],
+  ...chatExchangeI18n['en'],
+  ...integrateConflictI18n['en'],
   ...workflowsI18n['en'],
   ...subagentsI18n['en'],
   ...sessionReferencesI18n['en'],
@@ -427,10 +431,6 @@ export const dict = {
   'mobile.menu.update': 'Update',
   'mobile.menu.settings': 'Settings',
   'mobile.sessions.newChatCta': 'New chat in {project}',
-  'mobile.sessions.dateGroup.today': 'Today',
-  'mobile.sessions.dateGroup.yesterday': 'Yesterday',
-  'mobile.sessions.dateGroup.thisWeek': 'Earlier this week',
-  'mobile.sessions.dateGroup.older': 'Older',
   'mobile.sessions.section.worktrees': 'Worktrees',
   'mobile.sessions.section.otherProjects': 'Switch project',
   'mobile.sessions.section.projects': 'Projects',
@@ -736,6 +736,7 @@ export const dict = {
   'sessions.sidebar.empty.noMatches.description': 'Try a different title or branch.',
   'sessions.sidebar.activity.chatsTitle': 'Chats',
   'sessions.sidebar.activity.chatsEmpty': 'No chats yet.',
+  'sessions.sidebar.timeline.noSessionsYet': 'No sessions yet',
   'chat.chatInput.chooseProject': 'Choose project',
   'sessions.sidebar.header.projectDisplay.label': 'Show projects',
   'sessions.sidebar.header.projectDisplay.all': 'All projects',
@@ -884,6 +885,8 @@ export const dict = {
   'sessions.sidebar.session.status.movingToWorktree': 'Moving session to a new worktree',
   'sessions.sidebar.session.status.permissionRequired': 'Permission required',
   'sessions.sidebar.session.status.questionPending': 'Pending question',
+  'sessions.sidebar.session.status.permissionRequiredOpen': 'Permission required. Opens the session that asks',
+  'sessions.sidebar.session.status.questionPendingOpen': 'Pending question. Opens the session that asks',
   'sessions.sidebar.session.status.activeFor': 'Active for {duration}',
   'sessions.sidebar.session.status.lastTurnDuration': 'Last turn took {duration}',
   'sessions.sidebar.session.subsessions.collapse': 'Collapse subsessions',
@@ -1607,6 +1610,7 @@ export const dict = {
   'walkthrough.blocked.emptyDiff.description': 'There are no changes in this scope yet.',
   'walkthrough.blocked.contextTooSmall.title': 'This diff is too large for the current model',
   'walkthrough.blocked.contextTooSmall.description': '{model} fits about {available}K characters and this diff needs about {required}K. Nothing gets truncated — pick a model with a larger context instead.',
+  'walkthrough.blocked.contextTooSmall.descriptionRefused': '{model} refused this diff because it is too long. Pick a model with a larger context, or review a narrower scope.',
   'walkthrough.blocked.structuredOutput.title': 'This model cannot produce structured output',
   'walkthrough.blocked.structuredOutput.description': '{model} does not support the structured responses a walkthrough needs.',
   'walkthrough.blocked.chooseModel': 'Choose the small model',
@@ -1683,6 +1687,7 @@ export const dict = {
   'contextPanel.browser.annotate.intro': 'This is an annotated selection from the in-app browser.',
   'contextPanel.browser.annotate.attached': 'Annotation attached to chat',
   'contextPanel.browser.annotate.noSession': 'Open a chat session before attaching an annotation',
+  'contextPanel.browser.annotate.readOnly': 'This chat is read-only, so annotations cannot be attached to it',
   'contextPanel.browser.annotate.noPage': 'Load a page before annotating',
   'contextPanel.browser.annotate.failed': 'Could not annotate this page',
   'contextPanel.browser.annotate.tool.element': 'Element',
@@ -2430,6 +2435,9 @@ export const dict = {
   'session.githubPrPicker.empty.noPullRequestsFound': 'No pull requests found',
   'session.githubPrPicker.loading.pullRequests': 'Loading pull requests...',
   'session.githubPrPicker.actions.loadMore': 'Load more',
+  'session.githubPrPicker.filter.group.repository': 'Repository',
+  'session.githubPrPicker.filter.group.author': 'Author',
+  'session.githubPrPicker.filter.clearAll': 'Clear filters',
   'session.newWorktree.title': 'New worktree',
   'session.newWorktree.mode.newBranch': 'New branch',
   'session.newWorktree.mode.existingBranch': 'Existing branch',
@@ -2704,6 +2712,7 @@ export const dict = {
   'chat.textSelection.title.saveInsightToNotes': 'Save selected text to notes',
   'chat.messageBody.actions.revertAria': 'Revert to this message',
   'chat.messageBody.actions.revert': 'Revert from here',
+  'chat.messageBody.status.waitingForAgent': 'Waiting for the agent',
   'chat.messageBody.actions.forkAria': 'Fork from this message',
   'chat.messageBody.actions.fork': 'Fork from here',
   'chat.messageBody.actions.copyMessageAria': 'Copy message text',

@@ -7,6 +7,7 @@ import {
   mapChangeRequest,
   mapCI,
   mapComment,
+  mapCommitStatus,
   mapFile,
   mapIssue,
   mapProject,
@@ -37,6 +38,7 @@ import {
   searchGitHubReferencesAcross,
 } from './reference-search.js';
 import { createContextCache } from './context-cache.js';
+import { readAssignablePeople } from './people.js';
 import { fetchPullStack } from './pull-stack.js';
 import { referencesField } from './references.js';
 import { parseReferenceLink } from './reference-links.js';
@@ -55,6 +57,7 @@ type Pull = Rest['pulls']['get']['response']['data'];
 type ListedPull = Rest['pulls']['list']['response']['data'][number];
 type Issue = Rest['issues']['get']['response']['data'];
 type CheckRun = Rest['checks']['listForRef']['response']['data']['check_runs'][number];
+type CommitStatus = Rest['repos']['getCombinedStatusForRef']['response']['data']['statuses'][number];
 type Job = Rest['actions']['listJobsForWorkflowRun']['response']['data']['jobs'][number];
 type Annotation = Rest['checks']['listAnnotations']['response']['data'][number];
 type Identity = Pick<ReturnType<typeof mapProject>, 'provider' | 'instance'>;
@@ -211,25 +214,18 @@ export function createGitHubResources({
   };
 
   const readChecks = async (octokit: Octokit, repo: DiscoveryRepository, sha: string, { runs: keepRuns = false } = {}) => {
-    const { checks: { dedupeCheckRuns, summarizeCheckRuns, summarizeCombinedStatuses } } = await load();
-    let summary: ReturnType<GitHubResourceModules['checks']['summarizeCheckRuns']> | ReturnType<GitHubResourceModules['checks']['summarizeCombinedStatuses']> | null = null;
-    let checkRuns: CheckRun[] = [];
-    try {
-      const response = await octokit.rest.checks.listForRef({ owner: repo.owner, repo: repo.repo, ref: sha, per_page: 100 });
-      checkRuns = dedupeCheckRuns(requireGitHubCheckRuns(response?.data?.check_runs));
-      if (checkRuns.length > 0) summary = summarizeCheckRuns(checkRuns);
-    } catch {
-      checkRuns = [];
-    }
-    if (!summary) {
-      try {
-        const combined = await octokit.rest.repos.getCombinedStatusForRef({ owner: repo.owner, repo: repo.repo, ref: sha });
-        summary = summarizeCombinedStatuses(requireGitHubStatuses(combined?.data?.statuses));
-      } catch {
-        summary = null;
-      }
-    }
-    return { summary, checkRuns: keepRuns && summary && checkRuns.length > 0 ? checkRuns : [] };
+    const { checks: { dedupeCheckRuns, summarizeCheckRead } } = await load();
+    const ref = { owner: repo.owner, repo: repo.repo, ref: sha };
+    const [checkRuns, statuses]: [CheckRun[] | null, CommitStatus[] | null] = await Promise.all([
+      octokit.rest.checks.listForRef({ ...ref, per_page: 100 })
+        .then((response: Rest['checks']['listForRef']['response']): CheckRun[] => dedupeCheckRuns(requireGitHubCheckRuns(response?.data?.check_runs)))
+        .catch(() => null),
+      octokit.rest.repos.getCombinedStatusForRef({ ...ref, per_page: 100 })
+        .then((combined: Rest['repos']['getCombinedStatusForRef']['response']) => requireGitHubStatuses(combined?.data?.statuses))
+        .catch(() => null),
+    ]);
+    const summary = summarizeCheckRead(checkRuns, statuses);
+    return { summary, checkRuns: keepRuns ? checkRuns ?? [] : [], statuses: keepRuns ? statuses ?? [] : [] };
   };
 
   const readCheckDetails = async (octokit: Octokit, repo: DiscoveryRepository, checkRuns: CheckRun[]) => {
@@ -501,10 +497,13 @@ export function createGitHubResources({
       let ci: CI | null = null;
       const sha = prData.head?.sha;
       if (sha) {
-        const { summary, checkRuns } = await readChecks(octokit, repo, sha, { runs: true });
-        if (summary && checkRuns.length > 0) {
+        const { summary, checkRuns, statuses } = await readChecks(octokit, repo, sha, { runs: true });
+        if (summary && checkRuns.length + statuses.length > 0) {
           const details = includeCIDetails ? await readCheckDetails(octokit, repo, checkRuns) : () => ({});
-          ci = mapCI(summary, checkRuns.map((run) => mapCheckRun(run, details(run), identity)));
+          ci = mapCI(summary, [
+            ...checkRuns.map((run) => mapCheckRun(run, details(run), identity)),
+            ...statuses.map((status) => mapCommitStatus(status, identity)),
+          ]);
         } else {
           ci = mapCI(summary);
         }
@@ -684,17 +683,11 @@ export function createGitHubResources({
       });
     },
 
-    listReviewerCandidates: async ({ session, directory, project, remote }: ResourceInput<'listReviewerCandidates'>) => {
+    listReviewerCandidates: async ({ session, directory, project, remote, role }: ResourceInput<'listReviewerCandidates'>) => {
       const { octokit } = accountOf(session);
       const repo = await resolveRepoForRequest(octokit, directory, { owner: project.owner, repo: project.name }, remote);
       if (!repo) throw notInProject();
-      const response = await octokit.rest.issues.listAssignees({ owner: repo.owner, repo: repo.repo, per_page: 100 });
-      return requireProviderArray<Rest['issues']['listAssignees']['response']['data'][number]>(response?.data, 'GitHub returned an invalid user list').flatMap((user) => {
-        if (!isProviderString(user?.login) || !user.login) return [];
-        return [isProviderString(user.avatar_url) && user.avatar_url
-          ? { id: user.login, login: user.login, avatarUrl: user.avatar_url }
-          : { id: user.login, login: user.login }];
-      });
+      return readAssignablePeople(octokit, repo, role === 'assignee');
     },
 
     references: ({ session, context, directory, remote, kind, state, people, query, labels = [], cursor }: ResourceInput<'references'> & { labels?: string[] }) => pickerRead(async () => {

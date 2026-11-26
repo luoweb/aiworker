@@ -106,6 +106,18 @@ export function buildExtensionDescriptor({ guestId, contribution, guest }: {
   if (capabilities.revisions) changeBased.revisions = true;
   if (capabilities.draftConversion) changeBased.draftConversion = true;
   const submitRequirements = presentation.features.submitRequirements ? { submitRequirements: true } : {};
+  const reviewThreads = Object.freeze({
+    start: false,
+    reply: capabilities.reviewThreads?.reply === true,
+    resolve: capabilities.reviewThreads?.resolve === true,
+  });
+  const reviewDraftCapabilities: Pick<ProviderCapabilities, 'reviewDrafts'> = {};
+  const reviewDraftFeatures: Pick<ProviderDescriptor['presentation']['features'], 'reviewDrafts' | 'reviewDraftFileComments'> = {};
+  if (capabilities.reviewDrafts) {
+    reviewDraftCapabilities.reviewDrafts = Object.freeze({ fileComments: capabilities.reviewDrafts.fileComments === true });
+    reviewDraftFeatures.reviewDrafts = true;
+    reviewDraftFeatures.reviewDraftFileComments = capabilities.reviewDrafts.fileComments === true;
+  }
 
   return Object.freeze({
     id,
@@ -133,7 +145,7 @@ export function buildExtensionDescriptor({ guestId, contribution, guest }: {
       state: capabilities.state,
       labels: capabilities.labels,
       reviewers: capabilities.reviewers,
-      reviewThreads: Object.freeze({ start: false, reply: false, resolve: false }),
+      reviewThreads,
       uploads: false,
       stacks: false,
       changeRequestPatch: capabilities.changeRequestPatch,
@@ -141,6 +153,7 @@ export function buildExtensionDescriptor({ guestId, contribution, guest }: {
       referencePicker: false,
       multipleAccounts: true,
       ...changeBased,
+      ...reviewDraftCapabilities,
     }),
     authMethods: Object.freeze({ device: false, pat: Boolean(token), cli: login ?? false }),
     transport: Object.freeze({
@@ -195,10 +208,15 @@ export function buildExtensionDescriptor({ guestId, contribution, guest }: {
         authorCanReview: presentation.features.authorCanReview,
         projectUploads: false,
         issueCloseReason: presentation.features.issueCloseReason,
+        issueAssignees: presentation.features.issueAssignees === true,
         issueEdit: presentation.features.issueEdit === true,
         changeRequestEdit: presentation.features.changeRequestEdit === true,
+        baseChange: presentation.features.baseChange === true,
+        updateBranch: presentation.features.updateBranch === true,
+        rebase: presentation.features.rebase === true,
         advancedSearch: false,
         commentEdit: capabilities.commentEdit === true,
+        ...reviewDraftFeatures,
         ...submitRequirements,
         changeRequestTemplates: freezeList(presentation.changeRequestTemplates),
       }),

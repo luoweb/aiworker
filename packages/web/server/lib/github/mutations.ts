@@ -2,6 +2,8 @@ import { digestMutationInput } from '../source-control/mutation-executor.js';
 import { changeRequestNetworkTarget } from '../source-control/repository-network.js';
 import { reviewCommentPosition } from '../source-control/review-position.js';
 import { cancelWaitingMerge, enableMergeWhenReady, readWaitingMerge } from './merge-when-ready.js';
+import { baseReconciled, CHANGE_REQUEST_WRITE_ROUTES, normalizeChangeRequestWrite, performChangeRequestWrite, reconcileUpdateBranch } from './mutations-change-request.js';
+import { CONVERSATION_COMMENT_KINDS, DISCUSSION_CLOSE_REASONS, DISCUSSION_KINDS, ISSUE_KINDS, operationOf, recordKind, REVIEW_DRAFT_OPERATIONS, REVIEW_EVENTS } from './record-kinds.js';
 import {
   invalidProviderPayload,
   isPlainObject,
@@ -12,30 +14,22 @@ import {
   requireProviderArray,
 } from './mappers.js';
 import { readPendingReview } from './review-draft.js';
+import { normalizeAssignees, normalizeStateOperation, performAssignees, performIssueState, reconcileAssignees, reconcileIssueState } from './mutations-items.js';
+import { readReviewThread, replyToReviewThread, setReviewThreadResolved } from './review-thread-actions.js';
 import { isSourceControlInteger } from '../source-control/input-guards.js';
 import type { SourceControlJson, SourceControlJsonObject, SourceControlMutationTarget } from '@openchamber/sdk';
 import type { AccountIdentity, ProviderDescriptor, ProviderMutationContext, ProviderSession } from '../source-control/provider-contract.js';
 import type { MutationCompletion, MutationRecord, MutationResult } from '../source-control/mutation-storage.js';
 import type { GitHubResourceOptions } from './resources.js';
-import type { GitHubEnvelope, Octokit, RestEndpointMethodTypes } from './contracts.js';
+import type { GitHubEnvelope, ItemState, MutationPull, Octokit, RestEndpointMethodTypes } from './contracts.js';
+import { fieldAt, gqlPath, requireField } from './contracts.js';
 import type { PullInput } from './mappers.js';
 
 type MutationTarget = SourceControlMutationTarget;
 type Project = Pick<MutationTarget['project'], 'owner' | 'name'>;
 type MergeMethod = 'merge' | 'squash' | 'rebase';
-type ItemState = 'open' | 'closed';
 type Credential = { accountId: string; credentialRevision: number };
 type Rest = RestEndpointMethodTypes;
-interface MutationPull {
-  number: number;
-  state: ItemState;
-  merged?: unknown;
-  merged_at?: unknown;
-  draft?: unknown;
-  node_id?: unknown;
-  head: { ref: string; sha: string; repo?: { owner: { login: string }; name: string } | null };
-  base: { ref: string; repo: { owner: { login: string }; name: string; default_branch?: unknown } };
-}
 type ReviewPosition = ReturnType<typeof reviewCommentPosition>;
 type Discussion = { id: string; closed: boolean; labels: { id: string; name: string }[]; title: string | undefined; body: string | undefined };
 interface GitHubMutationOptions {
@@ -49,9 +43,9 @@ interface GitHubMutationOptions {
 export interface GitHubMutationInput {
   title?: string | undefined; body?: string | undefined; draft?: boolean | undefined; remote?: string | undefined;
   headRemote?: string | undefined; head?: string | undefined; base?: string | undefined; method?: MergeMethod; cancel?: boolean;
-  labels?: string[]; reviewers?: string[]; replyTo?: string | undefined; state?: ItemState; reason?: SourceControlJson | undefined;
+  labels?: string[]; reviewers?: string[]; assignees?: string[]; replyTo?: string | undefined; state?: ItemState; reason?: SourceControlJson | undefined;
   commentId?: number | string; answer?: boolean; threadId?: string; resolved?: boolean; verdict?: SourceControlJson | undefined;
-  path?: string; side?: ReviewPosition['side']; line?: number; startLine?: number;
+  path?: string; side?: ReviewPosition['side']; line?: number; startLine?: number; expectedHeadSha?: string;
 }
 export interface GitHubMutationTarget {
   sourceProject?: Project | null;
@@ -87,15 +81,6 @@ const statusOf = (cause: unknown) => {
   return failureFields(error?.response)?.status ?? error?.status;
 };
 const isArray = (value: unknown): value is unknown[] => Array.isArray(value);
-const hasGraphQLField = <Key extends string>(value: unknown, _key: Key): value is { [Name in Key]?: unknown } =>
-  value != null;
-const fieldAt = <Key extends string>(value: GitHubEnvelope['data'], key: Key) =>
-  hasGraphQLField(value, key) ? value[key] : undefined;
-const gqlPath = (value: GitHubEnvelope['data'], ...keys: string[]) => keys.reduce<GitHubEnvelope['data']>(fieldAt, value);
-const requireField = <Value>(value: Value, name: string): NonNullable<Value> => {
-  if (value == null) throw new TypeError(`GitHub mutation field ${name} is missing`);
-  return value;
-};
 const isMergeMethod = (value: unknown): value is MergeMethod => value === 'merge' || value === 'squash' || value === 'rebase';
 const isJsonBoolean = (value: SourceControlJson | undefined): value is boolean =>
   Object.prototype.toString.call(value) === '[object Boolean]';
@@ -112,28 +97,13 @@ const isNameList = (value: unknown): value is string[] => isArray(value)
 const isDiscussionLabelList = (values: unknown): values is Discussion['labels'] => isArray(values)
   && !values.some((label) => !isProviderString(fieldAt(label, 'id')) || !isProviderString(fieldAt(label, 'name')));
 
-const ISSUE_KINDS = new Set([
-  'issue-comment', 'issue-comment-update', 'issue-comment-delete', 'issue-state', 'issue-labels', 'issue-update',
-  'change-request-comment-update', 'change-request-comment-delete',
-]);
-const DISCUSSION_KINDS = new Set([
-  'discussion-comment', 'discussion-comment-update', 'discussion-comment-delete',
-  'discussion-state', 'discussion-answer', 'discussion-labels', 'discussion-update',
-]);
-const CONVERSATION_COMMENT_KINDS = new Set([
-  'change-request-comment-update', 'change-request-comment-delete', 'issue-comment-update', 'issue-comment-delete',
-]);
-const ownKind = (operation: string) => ISSUE_KINDS.has(operation) || DISCUSSION_KINDS.has(operation);
-const recordKind = (operation: string) => (ownKind(operation) ? operation : `change-request-${operation}`);
-const operationOf = (kind: string) => (ownKind(kind) ? kind : kind.replace(/^change-request-/, ''));
-const DISCUSSION_CLOSE_REASONS = Object.freeze({ resolved: 'RESOLVED', outdated: 'OUTDATED', duplicate: 'DUPLICATE' });
-
 const ROUTE_OPERATIONS = Object.freeze({
   '/pr/create': 'create',
   '/pr/update': 'update',
   '/pr/merge': 'merge',
   '/pr/ready': 'ready',
   '/pr/draft': 'draft',
+  ...CHANGE_REQUEST_WRITE_ROUTES,
   '/pr/comment': 'comment',
   '/pr/review': 'review',
   '/pr/review/comment': 'review-comment',
@@ -153,6 +123,7 @@ const ROUTE_OPERATIONS = Object.freeze({
   '/pr/labels': 'labels',
   '/issues/labels': 'issue-labels',
   '/pr/reviewers': 'reviewers',
+  '/issues/assignees': 'issue-assignees',
   '/discussions/comment': 'discussion-comment',
   '/discussions/comment/update': 'discussion-comment-update',
   '/discussions/comment/delete': 'discussion-comment-delete',
@@ -160,13 +131,6 @@ const ROUTE_OPERATIONS = Object.freeze({
   '/discussions/answer': 'discussion-answer',
   '/discussions/labels': 'discussion-labels',
   '/discussions/update': 'discussion-update',
-});
-
-const REVIEW_DRAFT_OPERATIONS = new Set(['review-comment', 'review-comment-update', 'review-comment-delete', 'review-discard']);
-const REVIEW_EVENTS = Object.freeze({
-  approve: { event: 'APPROVE', state: 'APPROVED' },
-  'request-changes': { event: 'REQUEST_CHANGES', state: 'CHANGES_REQUESTED' },
-  comment: { event: 'COMMENT', state: 'COMMENTED' },
 });
 
 const mutationError = (message: string, code = 'INVALID_SOURCE_CONTROL_MUTATION_CONTEXT', status = 400) => Object.assign(new Error(message), { code, status });
@@ -287,6 +251,8 @@ function normalizeOperation(operation: string, body: SourceControlJsonObject, co
       : { input: { method }, digest: (target) => digestOf({ target, method }) };
   }
   if (operation === 'ready' || operation === 'draft') return { input: {}, digest: (target) => digestOf({ target }) };
+  const changeWrite = normalizeChangeRequestWrite(operation, body, context, digestOf, mutationError, requiredText, isProviderString);
+  if (changeWrite) return changeWrite;
   if (operation === 'labels' || operation === 'issue-labels' || operation === 'discussion-labels') {
     const labels = nameList(body.labels, 'labels', limits.labelsMax);
     return { input: { labels }, digest: (target) => digestOf({ target, labels }) };
@@ -336,11 +302,8 @@ function normalizeOperation(operation: string, body: SourceControlJsonObject, co
     const reviewers = nameList(body.reviewers, 'reviewers', limits.reviewersMax);
     return { input: { reviewers }, digest: (target) => digestOf({ target, reviewers }) };
   }
-  if (operation === 'state' || operation === 'issue-state') {
-    if (body.state !== 'open' && body.state !== 'closed') throw mutationError('state is invalid');
-    const { state } = body;
-    return { input: { state }, digest: (target) => digestOf({ target, state }) };
-  }
+  if (operation === 'issue-assignees') return normalizeAssignees(body, limits, digestOf, nameList);
+  if (operation === 'state' || operation === 'issue-state') return normalizeStateOperation(operation, body, digestOf, mutationError);
   if (operation === 'comment' || operation === 'issue-comment') {
     const text = commentText(body.body, true, limits.commentMaxLength);
     return { input: { body: text }, digest: (target) => digestOf({ target, body: text }) };
@@ -580,47 +543,6 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
     }
   };
 
-  const REVIEW_THREAD_QUERY = `query($id: ID!) {
-  node(id: $id) {
-    __typename
-    ... on PullRequestReviewThread { isResolved pullRequest { number repository { name owner { login } } } }
-  }
-}`;
-  const readReviewThread = async (octokit: Octokit, threadId: string, project: Project, number: number) => {
-    let data: unknown;
-    try {
-      data = await octokit.graphql(REVIEW_THREAD_QUERY, { id: threadId });
-    } catch (error) {
-      const fields = failureFields(error);
-      if (!isArray(fields?.errors)) throw error;
-      data = fields?.data;
-    }
-    const node = fieldAt(data, 'node');
-    const pull = fieldAt(node, 'pullRequest');
-    const repository = fieldAt(pull, 'repository');
-    const login = gqlPath(repository, 'owner', 'login');
-    const name = fieldAt(repository, 'name');
-    if (fieldAt(node, '__typename') !== 'PullRequestReviewThread' || fieldAt(requireField(pull, 'pullRequest'), 'number') !== number
-      || !isProviderString(login) || !isProviderString(name)
-      || login.toLowerCase() !== project.owner.toLowerCase()
-      || name.toLowerCase() !== project.name.toLowerCase()) {
-      throw mutationError('Review thread is not on this pull request', 'SOURCE_CONTROL_MUTATION_TARGET_INVALID', 409);
-    }
-    return { isResolved: fieldAt(node, 'isResolved') };
-  };
-  const replyToReviewThread = async (octokit: Octokit, threadId: string, body: string) => {
-    let data: unknown;
-    try {
-      data = await octokit.graphql(
-        'mutation($threadId: ID!, $body: String!) { addPullRequestReviewThreadReply(input: { pullRequestReviewThreadId: $threadId, body: $body }) { comment { id } } }',
-        { threadId, body },
-      );
-    } catch (error) {
-      throw graphqlRejection(error);
-    }
-    if (!isProviderString(gqlPath(data, 'addPullRequestReviewThreadReply', 'comment', 'id'))) throw invalidProviderPayload('GitHub returned an invalid reply');
-    return {};
-  };
   const PENDING_COMMENT_QUERY = `query($id: ID!) {
   node(id: $id) {
     __typename
@@ -706,17 +628,6 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
       { id: pendingReviewId, event, body: body ?? null },
     );
     return gqlPath(data, 'submitPullRequestReview', 'pullRequestReview', 'state');
-  };
-  const setReviewThreadResolved = async (octokit: Octokit, threadId: string, resolved: boolean) => {
-    const field = resolved ? 'resolveReviewThread' : 'unresolveReviewThread';
-    let data: unknown;
-    try {
-      data = await octokit.graphql(`mutation($threadId: ID!) { ${field}(input: { threadId: $threadId }) { thread { isResolved } } }`, { threadId });
-    } catch (error) {
-      throw graphqlRejection(error);
-    }
-    if (gqlPath(data, field, 'thread', 'isResolved') !== resolved) throw invalidProviderPayload('GitHub returned an invalid thread state');
-    return {};
   };
   const DISCUSSION_QUERY = `query($owner: String!, $name: String!, $number: Int!) {
   repository(owner: $owner, name: $name) {
@@ -933,6 +844,7 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
   const reconcileExisting = async (octokit: ReturnType<GitHubMutationOptions['octokitOf']>, operation: string, target: MutationTarget, input: GitHubMutationInput): Promise<MutationCompletion> => {
     if (['comment', 'review', 'issue-comment', 'thread-reply', 'discussion-comment'].includes(operation)) return unknownOutcome();
     if (REVIEW_DRAFT_OPERATIONS.has(operation)) return unknownOutcome();
+    if (operation === 'update-branch' || operation === 'rebase') return reconcileUpdateBranch(octokit, target, { requireMutationPullRequest, unknownOutcome });
     const project = target.project;
     if (operation === 'discussion-update') {
       const discussion = await readDiscussion(octokit, project, target.number);
@@ -981,7 +893,7 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
       return sameNames(names, requireField(input.labels, 'labels')) ? { state: 'succeeded', result: {} } : unknownOutcome();
     }
     if (operation === 'thread-resolve') {
-      const thread = await readReviewThread(octokit, requireField(input.threadId, 'threadId'), project, requireField(target.number, 'number'));
+      const thread = await readReviewThread(octokit, requireField(input.threadId, 'threadId'), project, requireField(target.number, 'number'), mutationError);
       return thread.isResolved === input.resolved ? { state: 'succeeded', result: {} } : unknownOutcome();
     }
     if (operation === 'labels' || operation === 'issue-labels') {
@@ -992,12 +904,8 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
     if (operation === 'reviewers') {
       return sameNames(await requestedReviewers(octokit, project, requireField(target.number, 'number')), requireField(input.reviewers, 'reviewers')) ? { state: 'succeeded', result: {} } : unknownOutcome();
     }
-    if (operation === 'issue-state') {
-      const current = await octokit.rest.issues.get({ owner: project.owner, repo: project.name, issue_number: target.number });
-      const state = current?.data?.state;
-      if (state !== 'open' && state !== 'closed') return unknownOutcome();
-      return state === input.state ? { state: 'succeeded', result: { state } } : definiteFailure('SOURCE_CONTROL_MUTATION_NOT_APPLIED');
-    }
+    if (operation === 'issue-assignees') return reconcileAssignees(octokit, target, input, { invalidProviderPayload, sameNames, unknownOutcome });
+    if (operation === 'issue-state') return reconcileIssueState(octokit, target, input, { unknownOutcome, definiteFailure });
     const current = await octokit.rest.pulls.get({ owner: project.owner, repo: project.name, pull_number: requireField(target.number, 'number') });
     const pr = requireMutationPullRequest(current?.data, 'GitHub returned an invalid pull request', octokit);
     if (operation === 'merge') {
@@ -1016,6 +924,8 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
     } else if (operation === 'draft') {
       if (pr.draft === true) return { state: 'succeeded', result: { draft: true } };
       if (pr.draft === false && pr.state === 'open') return definiteFailure('SOURCE_CONTROL_MUTATION_NOT_APPLIED');
+    } else if (operation === 'base') {
+      return baseReconciled(pr, input) ?? unknownOutcome();
     }
     return unknownOutcome();
   };
@@ -1100,7 +1010,7 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
     }
     const target = { ...baseTarget(context, expectedProject), number: pr.number, head: pr.head.ref, base: pr.base.ref, headSha: pr.head.sha };
     if (operation === 'thread-reply' || operation === 'thread-resolve') {
-      await readReviewThread(octokit, requireField(input.threadId, 'threadId'), expectedProject, target.number);
+      await readReviewThread(octokit, requireField(input.threadId, 'threadId'), expectedProject, target.number, mutationError);
     }
     if (operation === 'review-comment-update' || operation === 'review-comment-delete') {
       await requirePendingComment(octokit, graphqlId(input.commentId), expectedProject, target.number);
@@ -1124,6 +1034,7 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
       if (!already && !nodeId) throw invalidProviderPayload('GitHub returned an invalid pull request node id');
       return { providerTarget: { already, nodeId: nodeId ?? null }, target };
     }
+    if (operation === 'rebase') return { providerTarget: { pullRequestId: requireField(optionalText(pr.node_id, 'pull request node id', true), 'pull request node id') }, target };
     return { providerTarget: {}, target };
   };
 
@@ -1178,6 +1089,13 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
           catch (error) { throw graphqlRejection(error); }
         }
         return mergePullRequest(octokit, project, target, requireField(input.method, 'method'));
+      case 'base':
+      case 'update-branch':
+      case 'rebase':
+        return performChangeRequestWrite(operation, octokit, project, target, input, {
+          requireMutationPullRequest, sameProject, pullTargetProject, targetMatches, invalidProviderPayload, rejected, isProviderString,
+          graphqlWrite: (targetOctokit, query, variables) => graphqlWrite(targetOctokit, query, variables).then(() => undefined),
+        }, providerTarget);
       case 'labels':
       case 'issue-labels':
         return setLabels(octokit, project, number(), labels());
@@ -1185,8 +1103,10 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
         return setReviewers(octokit, project, number(), requireField(input.reviewers, 'reviewers'));
       case 'state':
         return setState(() => octokit.rest.pulls.update({ owner: project.owner, repo: project.name, pull_number: number(), state: state() }), state());
+      case 'issue-assignees':
+        return performAssignees(octokit, project, target, input, { rejected, sameNames, invalidProviderPayload });
       case 'issue-state':
-        return setState(() => octokit.rest.issues.update({ owner: project.owner, repo: project.name, issue_number: number(), state: state() }), state());
+        return performIssueState(octokit, project, target, input, { setState, invalidProviderPayload });
       case 'issue-update': {
         const updateInput: Rest['issues']['update']['parameters'] = { owner: project.owner, repo: project.name, issue_number: number(), title: title() };
         if (input.body !== undefined) updateInput.body = input.body;
@@ -1231,9 +1151,9 @@ export function createGitHubMutations({ descriptor, octokitOf, resolveRepo, reso
         await graphqlWrite(octokit, 'mutation($id: ID!) { deleteDiscussionComment(input: { id: $id }) { clientMutationId } }', { id: input.commentId });
         return {};
       case 'thread-reply':
-        return replyToReviewThread(octokit, threadId(), body());
+        return replyToReviewThread(octokit, threadId(), body(), graphqlRejection);
       case 'thread-resolve':
-        return setReviewThreadResolved(octokit, threadId(), requireField(input.resolved, 'resolved'));
+        return setReviewThreadResolved(octokit, threadId(), requireField(input.resolved, 'resolved'), graphqlRejection);
       case 'discussion-comment':
         return commentOnDiscussion(octokit, discussion().id, input.body, input.replyTo);
       case 'discussion-state':

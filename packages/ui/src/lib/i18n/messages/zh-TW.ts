@@ -67,6 +67,8 @@ import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
+import { chatExchangeI18n } from './chat-exchange.i18n';
+import { integrateConflictI18n } from './integrate-conflict.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { subagentsI18n } from './subagents.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
@@ -269,6 +271,8 @@ export const dict: Record<I18nKey, string> = {
   ...markdownOutlineI18n['zh-TW'],
   ...markdownGithubI18n['zh-TW'],
   ...autocompleteScopeI18n['zh-TW'],
+  ...chatExchangeI18n['zh-TW'],
+  ...integrateConflictI18n['zh-TW'],
   ...workflowsI18n['zh-TW'],
   ...subagentsI18n['zh-TW'],
   ...sessionReferencesI18n['zh-TW'],
@@ -428,10 +432,6 @@ export const dict: Record<I18nKey, string> = {
   'mobile.menu.update': '更新',
   'mobile.menu.settings': '設定',
   'mobile.sessions.newChatCta': '在 {project} 中新增聊天',
-  'mobile.sessions.dateGroup.today': '今天',
-  'mobile.sessions.dateGroup.yesterday': '昨天',
-  'mobile.sessions.dateGroup.thisWeek': '本週稍早',
-  'mobile.sessions.dateGroup.older': '更早',
   'mobile.sessions.section.worktrees': '工作樹',
   'mobile.sessions.section.otherProjects': '切換專案',
   'mobile.sessions.section.projects': '專案',
@@ -762,6 +762,7 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.empty.noMatches.description': '請嘗試其他標題或分支。',
   'sessions.sidebar.activity.chatsTitle': '聊天',
   'sessions.sidebar.activity.chatsEmpty': '尚無聊天。',
+  'sessions.sidebar.timeline.noSessionsYet': '暫無會話',
   'chat.chatInput.chooseProject': '選擇專案',
   'sessions.sidebar.header.projectDisplay.label': '顯示專案',
   'sessions.sidebar.header.projectDisplay.all': '所有專案',
@@ -905,6 +906,8 @@ export const dict: Record<I18nKey, string> = {
   'sessions.sidebar.session.status.movingToWorktree': '正在將會話移至新工作樹',
   'sessions.sidebar.session.status.permissionRequired': '需要權限',
   'sessions.sidebar.session.status.questionPending': '待回答問題',
+  'sessions.sidebar.session.status.permissionRequiredOpen': '需要權限。開啟發出請求的工作階段',
+  'sessions.sidebar.session.status.questionPendingOpen': '待回答問題。開啟發出請求的工作階段',
   'sessions.sidebar.session.status.activeFor': '已活動 {duration}',
   'sessions.sidebar.session.status.lastTurnDuration': '上一輪耗時 {duration}',
   'sessions.sidebar.session.subsessions.collapse': '摺疊子會話',
@@ -1627,6 +1630,7 @@ export const dict: Record<I18nKey, string> = {
   'walkthrough.blocked.emptyDiff.description': '此範圍目前沒有變更。',
   'walkthrough.blocked.contextTooSmall.title': '目前模型無法容納這份差異',
   'walkthrough.blocked.contextTooSmall.description': '{model} 大約可容納 {available} 千字元，而這份差異約需 {required} 千字元。我們不會截斷內容，請改選上下文更大的模型。',
+  'walkthrough.blocked.contextTooSmall.descriptionRefused': '這份差異過長，遭到 {model} 拒絕。請選擇上下文更大的模型，或縮小審閱範圍。',
   'walkthrough.blocked.structuredOutput.title': '此模型不支援結構化輸出',
   'walkthrough.blocked.structuredOutput.description': '{model} 不支援導讀所需的結構化回應。',
   'walkthrough.blocked.chooseModel': '選擇小模型',
@@ -1703,6 +1707,7 @@ export const dict: Record<I18nKey, string> = {
   'contextPanel.browser.annotate.intro': '這是來自應用程式內建瀏覽器的標註選取範圍。',
   'contextPanel.browser.annotate.attached': '標註已附加至聊天',
   'contextPanel.browser.annotate.noSession': '附加標註前請先開啟聊天工作階段',
+  'contextPanel.browser.annotate.readOnly': '此聊天為唯讀，無法附加標註',
   'contextPanel.browser.annotate.noPage': '標註前請先載入頁面',
   'contextPanel.browser.annotate.failed': '無法標註此頁面',
   'contextPanel.browser.annotate.tool.element': '元素',
@@ -2407,6 +2412,9 @@ export const dict: Record<I18nKey, string> = {
   'session.githubPrPicker.empty.noPullRequestsFound': '找不到 Pull Request',
   'session.githubPrPicker.loading.pullRequests': '正在載入 Pull Request...',
   'session.githubPrPicker.actions.loadMore': '載入更多',
+  'session.githubPrPicker.filter.group.repository': '儲存庫',
+  'session.githubPrPicker.filter.group.author': '作者',
+  'session.githubPrPicker.filter.clearAll': '清除篩選',
   'session.newWorktree.title': '新增 Worktree',
   'session.newWorktree.mode.newBranch': '新分支',
   'session.newWorktree.mode.existingBranch': '現有分支',
@@ -2681,6 +2689,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.textSelection.title.saveInsightToNotes': '將選取文字儲存到筆記',
   'chat.messageBody.actions.revertAria': '收回到這條訊息',
   'chat.messageBody.actions.revert': '從此處收回',
+  'chat.messageBody.status.waitingForAgent': '正在等待代理',
   'chat.messageBody.actions.forkAria': '從這條訊息分支',
   'chat.messageBody.actions.fork': '從此處分支',
   'chat.messageBody.actions.copyMessageAria': '複製訊息文字',

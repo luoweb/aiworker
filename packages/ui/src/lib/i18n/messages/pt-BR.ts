@@ -67,6 +67,8 @@ import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
 import { autocompleteScopeI18n } from './autocomplete-scope.i18n';
+import { chatExchangeI18n } from './chat-exchange.i18n';
+import { integrateConflictI18n } from './integrate-conflict.i18n';
 import { workflowsI18n } from './workflows.i18n';
 import { subagentsI18n } from './subagents.i18n';
 import { sessionReferencesI18n } from './session-references.i18n';
@@ -279,6 +281,8 @@ export const dict: Record<I18nKey, string> = {
   ...markdownOutlineI18n['pt-BR'],
   ...markdownGithubI18n['pt-BR'],
   ...autocompleteScopeI18n['pt-BR'],
+  ...chatExchangeI18n['pt-BR'],
+  ...integrateConflictI18n['pt-BR'],
   ...workflowsI18n['pt-BR'],
   ...subagentsI18n['pt-BR'],
   ...sessionReferencesI18n['pt-BR'],
@@ -438,10 +442,6 @@ export const dict: Record<I18nKey, string> = {
   "mobile.menu.update": "Atualizar",
   "mobile.menu.settings": "Configurações",
   "mobile.sessions.newChatCta": "Novo chat em {project}",
-  "mobile.sessions.dateGroup.today": "Hoje",
-  "mobile.sessions.dateGroup.yesterday": "Ontem",
-  "mobile.sessions.dateGroup.thisWeek": "Início desta semana",
-  "mobile.sessions.dateGroup.older": "Mais antigos",
   "mobile.sessions.section.worktrees": "Worktrees",
   "mobile.sessions.section.otherProjects": "Trocar de projeto",
   "mobile.sessions.section.projects": "Projetos",
@@ -746,6 +746,7 @@ export const dict: Record<I18nKey, string> = {
   "sessions.sidebar.empty.noMatches.description": "Tente com outro título ou branch.",
   "sessions.sidebar.activity.chatsTitle": "Conversas",
   "sessions.sidebar.activity.chatsEmpty": "Ainda não há conversas.",
+  "sessions.sidebar.timeline.noSessionsYet": "Ainda sem sessões",
   "chat.chatInput.chooseProject": "Escolher projeto",
   "sessions.sidebar.header.projectDisplay.label": "Exibir projetos",
   "sessions.sidebar.header.projectDisplay.all": "Todos os projetos",
@@ -889,6 +890,8 @@ export const dict: Record<I18nKey, string> = {
   "sessions.sidebar.session.status.movingToWorktree": "Movendo a sessão para um novo worktree",
   "sessions.sidebar.session.status.permissionRequired": "Permissão obrigatória",
   "sessions.sidebar.session.status.questionPending": "Pergunta pendente",
+  "sessions.sidebar.session.status.permissionRequiredOpen": "Permissão obrigatória. Abre a sessão que está pedindo",
+  "sessions.sidebar.session.status.questionPendingOpen": "Pergunta pendente. Abre a sessão que está pedindo",
   "sessions.sidebar.session.status.activeFor": "Ativa há {duration}",
   "sessions.sidebar.session.status.lastTurnDuration": "O último turno levou {duration}",
   "sessions.sidebar.session.subsessions.collapse": "Recolher subsessões",
@@ -1598,6 +1601,7 @@ export const dict: Record<I18nKey, string> = {
   "walkthrough.blocked.emptyDiff.description": "Ainda não há mudanças neste escopo.",
   "walkthrough.blocked.contextTooSmall.title": "Este diff é grande demais para o modelo atual",
   "walkthrough.blocked.contextTooSmall.description": "{model} comporta cerca de {available} mil caracteres e este diff precisa de cerca de {required} mil. Nada é cortado — escolha um modelo com contexto maior.",
+  "walkthrough.blocked.contextTooSmall.descriptionRefused": "{model} recusou este diff porque ele é longo demais. Escolha um modelo com contexto maior ou revise um escopo menor.",
   "walkthrough.blocked.structuredOutput.title": "Este modelo não produz saída estruturada",
   "walkthrough.blocked.structuredOutput.description": "{model} não suporta as respostas estruturadas que um percurso exige.",
   "walkthrough.blocked.chooseModel": "Escolha o modelo pequeno",
@@ -1674,6 +1678,7 @@ export const dict: Record<I18nKey, string> = {
   "contextPanel.browser.annotate.intro": "Esta é uma seleção anotada do navegador integrado.",
   "contextPanel.browser.annotate.attached": "Anotação anexada ao chat",
   "contextPanel.browser.annotate.noSession": "Abra uma sessão de chat antes de anexar uma anotação",
+  "contextPanel.browser.annotate.readOnly": "Este chat é somente leitura, então não é possível anexar anotações a ele",
   "contextPanel.browser.annotate.noPage": "Carregue uma página antes de anotar",
   "contextPanel.browser.annotate.failed": "Não foi possível anotar esta página",
   "contextPanel.browser.annotate.tool.element": "Elemento",
@@ -2398,6 +2403,9 @@ export const dict: Record<I18nKey, string> = {
   "session.githubPrPicker.empty.noPullRequestsFound": "Nenhuma PR encontrada",
   "session.githubPrPicker.loading.pullRequests": "Carregando PR...",
   "session.githubPrPicker.actions.loadMore": "Carregar mais",
+  "session.githubPrPicker.filter.group.repository": "Repositório",
+  "session.githubPrPicker.filter.group.author": "Autor",
+  "session.githubPrPicker.filter.clearAll": "Limpar filtros",
   "session.newWorktree.title": "Novo worktree",
   "session.newWorktree.mode.newBranch": "Nova branch",
   "session.newWorktree.mode.existingBranch": "Branch existente",
@@ -2672,6 +2680,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.textSelection.title.saveInsightToNotes": "Salvar texto selecionado em notas",
   "chat.messageBody.actions.revertAria": "Voltar para esta mensagem",
   "chat.messageBody.actions.revert": "Voltar daqui",
+  "chat.messageBody.status.waitingForAgent": "Aguardando o agente",
   "chat.messageBody.actions.forkAria": "Bifurcar a partir desta mensagem",
   "chat.messageBody.actions.fork": "Bifurcar daqui",
   "chat.messageBody.actions.copyMessageAria": "Copiar texto da mensagem",
