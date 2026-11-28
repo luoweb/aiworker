@@ -62,6 +62,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -129,13 +130,12 @@ export const dict = {
   'commitComparison.loadError': 'טעינת הקומיטים נכשלה',
   'commitComparison.noCommits': 'לא נמצאו קומיטים',
   'commitComparison.emptyDiff': 'אין שינויים בקומיט הזה',
-  'chat.liveActivity.title': 'פעילות',
-  'chat.liveActivity.moreRows': '+{count} נוספים',
   'chat.liveActivity.changedFile': 'שונה קובץ {count}',
   'chat.liveActivity.changedFiles': 'שונו {count} קבצים',
-  'chat.liveActivity.explored': 'סקר את בסיס הקוד',
+  'chat.liveActivity.working': 'עובד…',
   'chat.liveActivity.ranCommand': 'הורצה פקודה {count}',
   'chat.liveActivity.ranCommands': 'הורצו {count} פקודות',
+  'chat.liveActivity.explored': 'סקר את בסיס הקוד',
   'chat.liveActivity.researched': 'חיפש באינטרנט',
   'chat.liveActivity.usedSubagent': 'נעשה שימוש בסוכן משנה {count}',
   'chat.liveActivity.usedSubagents': 'נעשה שימוש ב-{count} סוכני משנה',
@@ -2470,6 +2470,7 @@ export const dict = {
   'chat.revert.toast.undo': 'הוחזר אל {preview}',
   'chat.revert.toast.redo': 'בוצע שוב',
   'chat.revert.toast.restored': 'כל ההודעות שוחזרו',
+  'chat.revert.toast.filesUnchanged': 'השיחה הוחזרה. הקבצים לא שונו.',
   'chat.toast.opencodeRestartInterrupted.title': 'הצ\'אט נקטע',
   'chat.toast.opencodeRestartInterrupted.description': 'OpenCode הופעל מחדש בזמן שתגובה עדיין רצה. אפשר לשלוח הודעה כדי להמשיך.',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': 'OpenCode הופעל מחדש בזמן שתגובה עדיין רצה. השיחה תמשיך אוטומטית; שלחו הודעה אם לא.',
@@ -2703,6 +2704,7 @@ export const dict = {
   'chat.chatInput.toast.sendAttachmentsFailed': 'לא ניתן היה לשלוח את הקבצים המצורפים. אפשר לנסות עם פחות קבצים או תמונות קטנות יותר.',
   'chat.chatInput.toast.messageSendFailed': 'שליחת ההודעה נכשלה. הקבצים המצורפים שוחזרו.',
   'chat.chatInput.toast.agentUnavailable': 'הסוכן "{agent}" אינו זמין בתיקייה של הפעלה זו. יש לבחור סוכן אחר ולשלוח שוב.',
+  'chat.chatInput.toast.skillLoadFailed': 'המיומנות "{skill}" לא נטענה משרת ה-MCP שלה. יש לוודא בהגדרות שהשרת מחובר ולשלוח שוב.',
   'chat.chatInput.toast.noModelSelected': 'יש לבחור ספק ומודל לפני השליחה.',
   'chat.chatInput.toast.clipboardAttachFailed': 'לא ניתן היה לצרף תמונה מהלוח',
   'chat.chatInput.toast.clipboardTextAttachFailed': 'לא ניתן היה לצרף את הטקסט שהודבק כקובץ',
@@ -4035,6 +4037,7 @@ export const dict = {
   ...pluginsGridI18n.he,
   ...integrationsCatalogI18n['he'],
   ...diffFindI18n['he'],
+  ...diffReviewedI18n['he'],
   ...contextWindowI18n['he'],
   ...markdownOutlineI18n['he'],
   ...markdownGithubI18n['he'],

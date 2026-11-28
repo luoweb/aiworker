@@ -514,7 +514,8 @@ location is already running). The sessions of a directory announced with
 stream had a gap) and every entry when the control stream reconnects are read
 again only while their Tasks are on screen (`showSessionTodos`): a Work Status
 panel or the mobile Status pane is visible with Tasks enabled in its section
-layout. `useLoadSessionTodos` holds that demand and releases it, cancelling a
+layout, or the Panel sections dialog is open (so a hidden Tasks section can still
+be discovered and re-enabled). `useLoadSessionTodos` holds that demand and releases it, cancelling a
 pending retry, when the panel closes or Tasks is hidden. Such a re-read that
 arrives during a read queues its follow-up only while the Tasks are still
 shown when that read ends; a revert queues it regardless. The others are marked
@@ -746,6 +747,36 @@ composer (guest prompts, form replies) take either as the next message's model.
 A target whose pinned model the catalog does not list still counts as pinned:
 it gets the defaults, never the previous agent's manual model.
 
+With Settings → Chat → Composer → *Keep the model and thinking level when
+switching agents* on (`keepModelOnAgentSwitch`, a profile preference, off by
+default), a switch the person makes (`setAgent(name, { pick: true })`: the
+agent menu on desktop and mobile, the composer's cycle key, the global cycle
+shortcut) keeps the model and the level on screen for any target that does not
+pin a model the catalog lists. A model saved for the target in this session
+does not apply; the kept pair becomes the target's own session model and level
+instead, so the composer's per-agent restores and a reopened session show the
+same pair, and it is held as the session's unsent model pick, so the next send
+switches to it even when the agent pick settles (switching back to the agent
+the session record already names). A target with a listed pin gets its pin
+before any model remembered for it in this session, and the pin is recorded as
+its session model so the per-agent restore does not bring the remembered one
+back. The level stays inherited when the target would inherit the same
+one, and travels as a choice when it would not (a level the previous agent
+pinned for its own model). Restores, defaults and following a switch made elsewhere pass
+no `pick` and are unaffected, so opening a session still shows that session's
+own model. Columns with their own selection (BTW, a pinned column) never move
+the model with the agent; the setting carries their level to the picked agent.
+Carrying a level writes nothing to the model's remembered level
+(`lastUsedEfforts`): nobody chose it. Subagents run on their own configuration
+on the server and are untouched.
+
+### Why the setting acts on picks and not on every `setAgent`
+
+`setAgent` also restores a session's agent when it opens, follows the record,
+and applies defaults. Keeping the model there would show the previous session's
+model on a session that ran on another one. Only a person's switch is a request
+to change what the agent may do while keeping who answers.
+
 ### Why a pinned agent's model wins over an unsent pick
 
 An agent that pins a model is a choice of model too: people keep one agent per
@@ -760,6 +791,21 @@ switches the session to the unsent model pick at once
 (`sync/session-actions.ts` `applyModelPickToRetry`, driven by
 `hooks/useRetryModelPick.ts`), because OpenCode reloads the session's model
 before every attempt.
+
+### Why only a pick moves an open session to another model
+
+The unsent model pick (`useSelectionStore.pickSessionModel`, held per runtime
+and session for the page's life) and an unsent agent pick, which brings its model, are what
+a send from the composer, a queued message, `/compact` and a form reply switch
+the session to. Choosing an effort makes a model pick too, because the effort is
+part of the model sent. The model the composer merely keeps, such as one saved
+in this browser before another client switched the session, never outranks the
+session record: `ModelControls` shows the record's model unless an unsent pick
+holds another, and a switch made elsewhere after the pick replaces it. Comparing
+the composer's model with the server's, as sends did before, could not tell a
+pick from a kept selection, so a stale tab switched the session back (#7456).
+Writing the model at pick time was rejected for the same reason agent picks wait
+for the send: every switch is a record in the transcript.
 
 ### Why a pick reaches a retrying turn and waits during plain generation
 
@@ -1434,7 +1480,7 @@ After meaningful Git/PR store changes, verify manually:
 
 - Settings retains switched-off skills absent from OpenCode's inventory, including built-ins absent from disk scans, so the user can turn them back on. An exact-denied id retains a known row or a noneditable id-only row until its rule disappears.
 - A skill switch cannot lift a wildcard deny or remove a deny without an editable file. Its recheck ultimately uses OpenCode's statements even if another rule overrides the accepted switch write. Skill policy ids derive from the containing folder or loose filename and can differ from display names.
-- Skill discovery uses server-reported environment flags because the browser cannot read them and the upstream list omits project skills the agent can use. External-skill disable excludes `.claude` and `.agents`; Claude-specific disable excludes only `.claude`. Name collisions prefer `.agents`, including symlinked copies. Unknown flags preserve the list, and Windows paths normalize before root matching.
+- Skill discovery uses server-reported environment flags because the browser cannot read them and the upstream list omits project skills the agent can use. The one flag OpenCode still reads, `OPENCODE_DISABLE_CLAUDE_CODE` or `OPENCODE_DISABLE_CLAUDE_CODE_SKILLS`, excludes `.claude`; `.agents` is always loaded, since OpenCode 2 dropped `OPENCODE_DISABLE_EXTERNAL_SKILLS`. Name collisions prefer `.agents`, including symlinked copies. Unknown flags preserve the list, and Windows paths normalize before root matching.
 - A disk-only skill response is incomplete. It preserves previously known built-ins and config-discovered skills, while absence of a managed-root skill is authoritative.
 - The server's skill-catalog list is authoritative even when empty because machine policy can hide every built-in catalog. Freshness alone governs empty-list reuse.
 - MCP forms rebuild config objects, so an emptied field removes its key. Entries require `type`; startup timeout applies only to spawned local servers. Code Mode Default and legacy negotiation remove their keys so OpenCode's per-server defaults apply.
@@ -1483,7 +1529,7 @@ After meaningful Git/PR store changes, verify manually:
 - Deep-link trust is device-local security state and never roams through server settings.
 - Favicons cache per origin so same-site navigation and additional tabs avoid placeholder flicker. Data URLs stay in memory because persisting them costs more storage than the saved request warrants; insertion-order eviction is sufficient for a cheap refetch. Requests use the reporting view's session so isolated-space icons traverse that space's proxy. Failure retains the placeholder silently. Browser history includes runtime and directory because equal paths on different hosts expose different servers.
 - Context-panel tab budgets apply per surface because each surface has its own strip. The tab being opened or viewed survives even if protection leaves 1 extra tab. Each zone closes and selects independently; closing its last tab does not jump to an unrelated surface.
-- File preview replacement removes the old editor entry too, and closing files keeps panel tabs and editor state aligned. Closing the last real file retains the empty editor/tree placeholder; closing that placeholder closes the surface. A move rebuilds path-derived ids and replaces stale destination tabs. The tree and editor can each hide, but at least 1 remains, and selecting a file shows its editor.
+- File preview replacement removes the old editor entry too, and closing files keeps panel tabs and editor state aligned. Closing the last real file retains the empty editor/tree placeholder; closing that placeholder closes the surface. Closing files never changes tree visibility, because a tree the user hid stays hidden until they show it; only opening the empty file surface from the rail reveals a hidden tree. A move rebuilds path-derived ids and replaces stale destination tabs. The tree and editor can each hide, but at least 1 remains, and selecting a file shows its editor.
 - Terminals, pinned chats, tracker items and PR comparisons can target other directories without changing app navigation. Cross-project Changes and walkthrough targets persist as the panel's own directory because their requested PR selection is memory-only. The rail returns to the panel's project when opening those surfaces.
 - Agent browser tabs always allocate in the background, even when another tab has the same URL, preserving the user's panel visibility and selection. User-requested new tabs also preserve existing tabs; labels follow navigation. Tracker item tabs retain the branch tab beside them, including after the last item closes.
 - Context-panel persistence drops modes the runtime cannot render, including browser tabs in VS Code. A saved-plan tab requires its owner; an unowned legacy saved-plan descriptor cannot revive as an openable plan. Zone sizes migrate from the last-used directory, and preview-to-browser migration rebuilds mode-derived ids and resolves URL collisions.

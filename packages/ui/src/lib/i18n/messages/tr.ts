@@ -62,6 +62,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -130,13 +131,12 @@ export const dict = {
   'commitComparison.loadError': 'Commitler yüklenemedi',
   'commitComparison.noCommits': 'Commit bulunamadı',
   'commitComparison.emptyDiff': 'Bu committe değişiklik yok',
-  'chat.liveActivity.title': 'Etkinlik',
-  'chat.liveActivity.moreRows': '+{count} daha',
   'chat.liveActivity.changedFile': '{count} dosya değiştirildi',
   'chat.liveActivity.changedFiles': '{count} dosya değiştirildi',
-  'chat.liveActivity.explored': 'Kod tabanı incelendi',
+  'chat.liveActivity.working': 'Çalışıyor…',
   'chat.liveActivity.ranCommand': '{count} komut çalıştırıldı',
   'chat.liveActivity.ranCommands': '{count} komut çalıştırıldı',
+  'chat.liveActivity.explored': 'Kod tabanı incelendi',
   'chat.liveActivity.researched': 'Web araştırması yapıldı',
   'chat.liveActivity.usedSubagent': '{count} alt agent kullanıldı',
   'chat.liveActivity.usedSubagents': '{count} alt agent kullanıldı',
@@ -205,6 +205,7 @@ export const dict = {
   ...pluginsGridI18n.tr,
   ...integrationsCatalogI18n['tr'],
   ...diffFindI18n['tr'],
+  ...diffReviewedI18n['tr'],
   ...contextWindowI18n['tr'],
   ...markdownOutlineI18n['tr'],
   ...markdownGithubI18n['tr'],
@@ -2437,6 +2438,7 @@ export const dict = {
   'chat.revert.toast.undo': 'Geri alındı: {preview}',
   'chat.revert.toast.redo': 'Yinelendi',
   'chat.revert.toast.restored': 'Tüm mesajlar geri yüklendi',
+  'chat.revert.toast.filesUnchanged': 'Sohbet geri alındı. Dosyalar değiştirilmedi.',
   'chat.toast.opencodeRestartInterrupted.title': 'Sohbet kesildi',
   'chat.toast.opencodeRestartInterrupted.description': 'Yanıt hâlâ çalışırken OpenCode yeniden başlatıldı. Devam etmek için bir mesaj gönder.',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': 'Yanıt hâlâ çalışırken OpenCode yeniden başlatıldı. Sohbet otomatik olarak devam edecek; devam etmezse bir mesaj gönder.',
@@ -2642,6 +2644,7 @@ export const dict = {
   'chat.chatInput.toast.sendAttachmentsFailed': 'Ekler gönderilemedi. Daha az dosya veya daha küçük görseller deneyin.',
   'chat.chatInput.toast.messageSendFailed': 'Mesaj gönderilemedi. Ekler geri yüklendi.',
   'chat.chatInput.toast.agentUnavailable': '"{agent}" agent\'ı bu session\'ın klasöründe yok. Başka bir agent seçip yeniden gönder.',
+  'chat.chatInput.toast.skillLoadFailed': '"{skill}" skill\'i MCP sunucusundan yüklenemedi. Ayarlar\'da sunucunun bağlı olduğunu kontrol edip yeniden gönder.',
   'chat.chatInput.toast.clipboardAttachFailed': 'Panodan görsel eklenemedi',
   'chat.chatInput.toast.clipboardTextAttachFailed': 'Yapıştırılan metin dosya olarak eklenemedi',
   'chat.chatInput.largeTextPaste.title': 'Büyük metin algılandı',

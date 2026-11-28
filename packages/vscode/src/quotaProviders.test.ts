@@ -116,53 +116,24 @@ const stubFetchFailing = (json: () => Promise<unknown>, init: MockResponseInit):
   globalThis.fetch = (async () => ({ json, ...init }) as unknown as Response) as typeof fetch;
 };
 
-describe('Google plugin credentials', () => {
+describe('Google sign-ins', () => {
   afterEach(() => configureOpenCodeCredentials({ list: async () => baseCredentialList() }));
 
-  test('still discovers a direct Google OAuth login', async () => {
-    configureOpenCodeCredentials({ list: async () => [{
-      id: 'cred_google', integrationID: 'google', label: 'direct', active: true,
-      value: { type: 'oauth', methodID: 'oauth', access: 'test-token', refresh: 'test-refresh', expires: Date.now() + 3_600_000 },
-    }] });
-    assert.equal((await listConfiguredQuotaProviders()).includes('google'), true);
-  });
-
-  test('still discovers a Gemini CLI Google login', async () => {
+  test('never list or request quota from Google, whatever the sign-in', async () => {
     configureOpenCodeCredentials({ list: async () => [{
       id: 'cred_google', integrationID: 'google', label: 'gemini', active: true,
       value: { type: 'oauth', methodID: 'gemini-cli', access: 'test-token', refresh: 'test-refresh', expires: Date.now() + 3_600_000 },
     }] });
-    assert.equal((await listConfiguredQuotaProviders()).includes('google'), true);
+    let requests = 0;
+    stubFetchReturning(async () => { requests++; throw new Error('Unexpected request'); });
+    const configured = await listConfiguredQuotaProviders();
+    assert.equal(configured.includes('google'), false);
+    assert.equal(configured.includes('antigravity'), false);
+    for (const providerId of ['google', 'antigravity']) {
+      assert.equal((await fetchQuotaForProvider(providerId)).configured, false);
+    }
+    assert.equal(requests, 0);
   });
-
-  test('keeps a legacy Google login without a method ID', async () => {
-    // Credentials saved before OpenCode recorded login methods carry no method ID.
-    const legacy: CredentialEntry = {
-      id: 'cred_google', integrationID: 'google', label: 'legacy', active: true,
-      value: { type: 'oauth', methodID: 'oauth', access: 'test-token', refresh: 'test-refresh', expires: Date.now() + 3_600_000 },
-    };
-    Reflect.deleteProperty(legacy.value, 'methodID');
-    configureOpenCodeCredentials({ list: async () => [legacy] });
-    const requests: string[] = [];
-    stubFetchReturning(async (url) => { requests.push(url); return Response.json({ buckets: [] }); });
-    assert.equal((await listConfiguredQuotaProviders()).includes('google'), true);
-    assert.equal((await fetchQuotaForProvider('google')).configured, true);
-    assert.equal(requests.some((url) => url.includes('googleapis.com')), true);
-  });
-
-  for (const expires of [1, Date.now() + 3_600_000]) {
-    test(`does not discover or request plugin credentials with expiry ${expires}`, async () => {
-      configureOpenCodeCredentials({ list: async () => [{
-        id: 'cred_google', integrationID: 'google', label: 'plugin', active: true,
-        value: { type: 'oauth', methodID: 'antigravity', access: 'placeholder', refresh: 'placeholder', expires },
-      }] });
-      let requests = 0;
-      stubFetchReturning(async () => { requests++; throw new Error('Unexpected request'); });
-      assert.equal((await listConfiguredQuotaProviders()).includes('google'), false);
-      assert.equal((await fetchQuotaForProvider('google')).configured, false);
-      assert.equal(requests, 0);
-    });
-  }
 });
 
 test('dispatches Charm Hyper through the generic quota API', async () => {
@@ -225,11 +196,12 @@ describe('OpenCode Go quota provider (VS Code parity)', () => {
       assert.equal(result.accountLabel, 'outlook');
     });
 
-    test('reports an absent subscription on a 403', async () => {
+    // A Zen-only key has no Go to report, so the card stays away (#6663).
+    test('reports Go as not configured on a 403', async () => {
       stubFetchReturning(async () => mockResponse({}, { ok: false, status: 403 }));
       const result = await fetchQuotaForProvider('opencode-go');
-      assert.equal(result.configured, true);
-      assert.equal(result.error, 'No active OpenCode Go subscription on the selected Console account');
+      assert.equal(result.configured, false);
+      assert.equal(result.error, 'Not configured');
     });
 
     test('names an expired key and the sign-in that replaces it', async () => {
@@ -455,8 +427,7 @@ describe('OpenCode Go quota provider — Console OAuth (VS Code parity)', () => 
   test('distinguishes an absent subscription from a temporary failure', async () => {
     globalThis.fetch = (async () => mockResponse({ product: 'free', access: { meters: {} } })) as typeof fetch;
     const absent = await fetchQuotaForProvider('opencode-go');
-    assert.equal(absent.configured, true);
-    assert.match(absent.error ?? '', /subscription/i);
+    assert.equal(absent.configured, false);
 
     globalThis.fetch = (async () => mockResponse({}, { ok: false, status: 502 })) as typeof fetch;
     const failed = await fetchQuotaForProvider('opencode-go');
@@ -467,8 +438,7 @@ describe('OpenCode Go quota provider — Console OAuth (VS Code parity)', () => 
   test('matches web errors for a missing product and normalizes epoch-second resets', async () => {
     stubFetchReturning(async () => mockResponse({ access: { meters: {} } }));
     const absent = await fetchQuotaForProvider('opencode-go');
-    assert.equal(absent.configured, true);
-    assert.match(absent.error ?? '', /subscription/i);
+    assert.equal(absent.configured, false);
 
     stubFetchReturning(async () => mockResponse({
       product: 'go',
@@ -492,8 +462,8 @@ describe('OpenCode Go quota provider — Console OAuth (VS Code parity)', () => 
       access: null,
     }));
     const ended = await fetchQuotaForProvider('opencode-go');
-    assert.equal(ended.configured, true);
-    assert.equal(ended.error, 'No active OpenCode Go subscription on the selected Console account');
+    assert.equal(ended.configured, false);
+    assert.equal(ended.error, 'Not configured');
 
     stubFetchReturning(async () => mockResponse({ product: 'go', access: { meters: {} } }));
     const emptyMeters = await fetchQuotaForProvider('opencode-go');

@@ -293,6 +293,8 @@ Providers accept PNG, JPEG, GIF and WebP image parts. A raw HEIC image part make
 
 `resolveSendSelection` reads the session through the runtime-aware SDK before comparing the requested model and agent, on every send it resolves. A directory sync record can miss a switch and already match the picker while the server still runs another model or agent, and the composer then shows the cached model while the turn runs on the server's (#6035, #6501). The server read makes that send recover and skips switch records when the server already matches. The model must also match the current sync record after the read, so a switch event received during it remains visible; a directory store without the record falls through to every store, so an unchanged model held elsewhere adds no switch record. A runtime instance change discards the response, including a switch away and back.
 
+A send from the composer, `/compact` and a form reply carry the model the composer shows, and that is not always a choice: a restored selection, or one this tab kept while another client switched the session, differs from the server's model without anyone picking it (#7456). These sends ask for a switch only when the model is the session's unsent pick (`isSessionModelChosen`), comes with an unsent agent pick, or is Auto; otherwise `keepSessionModel` makes `resolveSendSelection` switch only a session that has no model, and the message runs on the session's own model. The composer decides at Send and hands `sendMessage` the answer, so a pick made while attachments are still being prepared stays for the next message. A queued message records the same answer at queue time (`sendConfig.keepSessionModel`, and `keepSessionAgent` for an agent that was no unsent pick), so delivery does not undo a model or agent switch made after it was queued (#7550), and a recovered form answer always keeps the session's model, because the turn that asked the question may have run on a model the session has since left. A send that keeps the session's model leaves the followed-model baseline alone, so the composer still sees a later switch as new. Plans, todos, `/btw`, multi-run, reviews and extensions name their model as part of the gesture and keep switching to it.
+
 The read is a check, never a gate for a model-only selection. When it fails for a send without an agent, such as `/compact` or a form reply with only a model pick, the action still goes out with the picked model stated explicitly: at worst OpenCode records one switch to the model it already runs. With an agent the agent cannot be compared, so a failed read is a definite pre-send failure and rolls the send back without prompt-confirmation reads, as before.
 
 ## Catalog changes apply live
@@ -424,7 +426,16 @@ server announces both ends of that wait (`openchamber.session-assist`,
 or dropped by a new turn; the end re-checks the waiting directory at once. A
 wait whose end this client never hears stops holding the directory after five
 minutes. With the recap and the suggestion off nothing waits. A directory
-without a store is left to OpenCode's own sweep. The directory the user is in
+without a store is left to OpenCode's own sweep. When the window finds nothing,
+it asks OpenCode before releasing (`lib/opencode/location-work.ts`): a session
+in a turn or a running background job there (a subagent counts for its parent
+and its child) holds the directory the same way, re-checked at its delay, and
+the window's own checks run once more on the answer. The reads are global
+routes (`session.active`, `experimental.job.list`, `session.get`), sent without
+a directory outside isolated spaces, so they start no location and skip the
+folder trust check. A job list OpenCode does not have (before 2.3) counts as no
+jobs, and a session deleted meanwhile is skipped; any other failed read
+releases nothing. The directory the user is in
 is never released, and the server's reads without a directory of their own go
 to that same directory (`noteCurrentDirectory` in the server lifecycle), so a
 left project is not started again by them. Another client still showing the directory gets
@@ -432,6 +443,20 @@ left project is not started again by them. Another client still showing the dire
 failed release is ignored: OpenCode's own sweep still applies. The rule is the
 same on every surface; VS Code includes managed Chats in windows without a
 workspace folder.
+
+### Why the release asks OpenCode and not only the window
+
+A release disposes the location for every client, and OpenCode cancels what
+still runs there: a waiting question or permission ends as "Interaction
+cancelled because the location shut down". The window's stores hold only what
+it has seen, so work another client started, or work whose events this window
+missed, looked idle. OpenCode's own sweep keeps a location for exactly the
+active executions and running background jobs, and the release now reads the
+same two lists before it evicts. Leaving the release to OpenCode's hour-long
+sweep alone was rejected: every chat, worktree and project opened would keep
+its MCP servers for that hour. The window's checks stay first, because they
+also hold for OpenChamber's own waits OpenCode does not know about, and they
+skip the server reads while the window already sees work.
 
 ## Committing a revert
 
@@ -476,6 +501,25 @@ request can reach the server and still reject when its response is lost, so the
 next input re-reads the session before it can use the marker, whether or not the
 runtime changed. A failed read keeps that reconciliation pending. Stale revert completions do not restore composer drafts.
 
+OpenCode restores the files a reverted turn changed only from the snapshot that
+turn recorded when it started, and a turn records none in a folder outside Git or
+before Git was initialized there. `revertToMessage` returns OpenCode's staged
+revert. `revert-outcome.ts` warns that the files stayed as they were when that
+answer lists no restored file and a reverted turn has no snapshot; a revert that
+restored files, or whose turns all have snapshots and edited nothing, stays silent
+about files.
+
+### Why the reverted turns are read again from OpenCode
+
+The loaded messages come from pages the OpenChamber server strips of snapshots
+(`message-shells.ts`), so the store cannot tell a turn without a snapshot from a
+shelled one. The check reads OpenCode's own pages, newest first, down to the cut,
+and only when the staged revert lists no restored file. The staged revert's own
+`snapshot` decides alone only when the cut is no longer listed or that read
+fails: a revert without one cannot have restored anything. It does not decide
+otherwise, because a snapshot that failed at revert time still restores every
+turn that has one.
+
 ### Why input waits for a revert to finish
 
 The optimistic marker appears before descendant reverts and the server's stage
@@ -502,6 +546,14 @@ A failed read of the parent and a failed fork (an empty parent: OpenCode refuses
 ### Why the next turn boundary and not the next record
 
 The records between an answer and that boundary belong to the answer's turn. One of them is the `idle` record that OpenCode writes when a turn ends. The store gets that record only from a transcript read, never from a live event. A cut at the next record would leave it out of a fork made after a reload and keep it in a fork made from the live transcript.
+
+## Stop before the model answers takes the prompt back
+
+The composer's Stop and Esc go through `stopCurrentOperation` (`prompt-take-back.ts`). When the latest prompt has no answer yet (no answer text and no tool call after it; reasoning does not count, and no shell, compaction, synthetic or skill record ran since, `unanswered-prompt.ts`), the stop interrupts, waits up to 5 seconds for the live status to go idle (no take-back when it does not), rereads the tail, checks that the same prompt is still the unanswered one, then stages and at once commits a revert at that prompt's transcript cut with `files: false` and puts its text, files and context chips back into the composer. Every other stop (a subagent, a goal, an operator, the read-only banner, a revert's own abort) keeps `abortCurrentOperation`. The take-back is skipped for a subagent session, a session with a staged revert, a non-empty follow-up queue, a prompt still waiting in OpenCode's inbox, or a composer that already holds text, files or comments, so it never overwrites what the user is typing.
+
+### Why the Reverted bar stays hidden for a take-back
+
+The prompt is already back in the composer, so a bar offering to restore it would undo the take-back. Staging emits `session.revert.staged` before the commit clears it, so the bar would flash; `revert-bar-visibility.ts` hides it for that one session and cut. The cut's message is deleted by the commit, so the entry never matches again; a failed commit shows the bar again and clears the staged revert.
 
 ## An interruption whose reason is `shutdown`
 
@@ -1625,7 +1677,7 @@ Examples of global-store updates performed in `session-actions.ts`:
 
 ### Blocking-request (form/permission) reply routing
 
-A form reply resumes the turn, so `replyToForm` first puts the session on its composer's selection through `applySendSelection`, the guarded entry the sends use (#6053). The form's record is read from the reply's directory store first, then from every initialized store and the global cache, so a record held elsewhere is still classified (#6555). A root session open in the main chat uses the app-wide composer, and an open review session does too: the codebase treats review sessions as independent conversations even when an older record still carries `parentID` (`chatPromptReadOnly`). Any other session uses only what is held for it: its own unsent model and agent picks and its saved effort still apply, so a pinned chat or a `/btw` fork keeps its own selection, and a child session keeps what a workflow bound it to whichever chat shows it, because the app-wide config can still hold the previous chat's selection when the child was just opened. Only a record marking a non-review child diverts from the composer; an extension's prompt to an open session (`captureGuestPromptSelection` in `lib/guests/start-session.ts`) classifies the same way. When no store holds the record, the reply reads it from the server first (`session.get`) and classifies it exactly like a store record, so a subagent whose record has not loaded yet still keeps its own agent and model, and that record's server-confirmed `directory` addresses the answer. A failed read, or a runtime change during it, sends nothing, switches nothing, and leaves the form pending for a retry (#6555). A location-scoped form has no session to switch. A failed switch or an unavailable agent leaves the answer unsent and the form pending. Auto reaches the session as the sentinel, and the server routes the reply itself (`packages/web/server/lib/routing/DOCUMENTATION.md`). The reply captures the runtime instance before its first wait and rechecks it after the switches, so a switch away, even with a return, stops the answer; a late result from an old runtime touches no local form.
+A form reply resumes the turn, so `replyToForm` first puts the session on its composer's selection through `applySendSelection`, the guarded entry the sends use (#6053). The form's record is read from the reply's directory store first, then from every initialized store and the global cache, so a record held elsewhere is still classified (#6555). A root session open in the main chat uses the app-wide composer, and an open review session does too: the codebase treats review sessions as independent conversations even when an older record still carries `parentID` (`chatPromptReadOnly`). The composer's model goes with the reply only when it is the session's unsent pick, comes with an unsent agent pick, or is Auto, as for a send (#7456). Any other session uses only what is held for it: its own unsent model and agent picks and its saved effort still apply, so a pinned chat or a `/btw` fork keeps its own selection, and a child session keeps what a workflow bound it to whichever chat shows it, because the app-wide config can still hold the previous chat's selection when the child was just opened. Only a record marking a non-review child diverts from the composer; an extension's prompt to an open session (`captureGuestPromptSelection` in `lib/guests/start-session.ts`) classifies the same way. When no store holds the record, the reply reads it from the server first (`session.get`) and classifies it exactly like a store record, so a subagent whose record has not loaded yet still keeps its own agent and model, and that record's server-confirmed `directory` addresses the answer. A failed read, or a runtime change during it, sends nothing, switches nothing, and leaves the form pending for a retry (#6555). A location-scoped form has no session to switch. A failed switch or an unavailable agent leaves the answer unsent and the form pending. Auto reaches the session as the sentinel, and the server routes the reply itself (`packages/web/server/lib/routing/DOCUMENTATION.md`). The reply captures the runtime instance before its first wait and rechecks it after the switches, so a switch away, even with a return, stops the answer; a late result from an old runtime touches no local form.
 
 `replyToForm`, `cancelForm`, `respondToPermission`, and `dismissPermission` route the reply through `resolveBlockingRequestTarget`. The directory chosen decides which OpenCode instance resolves the pending request, so it must be the **session record's own server-confirmed directory** (ownership), never the containing child-store key (containment): a project store legitimately holds its worktree sessions, and a reply addressed to the parent instance makes the server answer `FormNotFoundError` while the form stays pending in the worktree instance — the session is then stuck on the running form tool with no recovery. The containment guess from `resolveDirectoryForBlockingRequest` only finds the record. When no store and no global cache holds it, the record is read from the server before anything is sent, and a failed read, or a runtime change during it, sends nothing and keeps the request pending for a retry: a guessed parent's not-found must never dismiss a valid worktree request (#6555). A location-scoped form has no record and keeps its directory; a permission reply with an explicit directory from the raising event uses it as is. When a form reply/cancel comes back not-found, the stale request is removed locally and a `settled-running-tool` tail materialization is enqueued so the trailing tool part converges to the server's actual state instead of leaving the UI on "asking question" forever. A permission reply/reject that comes back not-found only removes the request locally.
 

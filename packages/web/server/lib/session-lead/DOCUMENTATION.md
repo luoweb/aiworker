@@ -98,7 +98,18 @@ entries (`../session-knowledge/`), the control service routes the actions
   follows the model of the last turn, the threshold the one selected when it ends. A turn that starts
   cancels the timer; a session the user keeps warm, one that is running again
   and one that is no lead any more are left alone. Overflow compaction during
-  a turn stays with the model.
+  a turn stays with the model. A sleep compaction is a quiet turn
+  (`../event-stream/quiet-compaction.ts`): the lead shows no activity, no
+  notification goes out, and a lead that was read stays read.
+- The timer lives in memory, so on every connect of the global event hub
+  (`resumeSleep`) every unarchived lead gets its timer set again, counted from
+  the later of the idle this runtime saw and the end of its last answer in the
+  context (with or without tokens), or from now when neither is known or the
+  context cannot be read. A timer is replaced only once its replacement is
+  ready, so a failed read keeps the one a lead has. A turn
+  that ran while the stream was down therefore moves the deadline, and a lead
+  asleep past its cache gets a timer of zero. It goes through the same timer
+  and the same checks as a lead that just went idle.
 - The compaction hook in our OpenCode plugin asks
   `POST /api/openchamber/agent-tool/lead-compaction` on every compaction. Only a
   compaction this runtime started within the last 2 minutes, for a lead that
@@ -144,15 +155,43 @@ A lead wakes from a compaction with 70,000 to 90,000 tokens when its rules,
 tools and kept messages are large. A lower share would compact a 128k model
 again after every turn; OpenCode's own automatic compaction starts at 85%.
 
-### Why the lead rules say what is the lead's own work
+### Why the lead rules draw the line by kind of work and not by size
 
-"Full autonomy" and how to brief a child, without a default, read as permission
-to do everything in place: weaker models delegated nothing. The rule covers a
-single bug too, because a lead lives for weeks and each task done in place fills
-the context it steers from. The rule about refusals covers an action that was
-refused and not every limit of the lead's agent: agents are set up with
-different permissions on purpose, and a lead that treats its own missing tools
-as a ban cannot hand work to the agents that have them.
+A lead decides; finding out how the project works and changing it is work at
+any size. Rules that let a lead do "small" work itself failed both ways: a
+model judged a whole task small and rewrote seven files, and a lead asked
+mid-direction to reread the code kept half of the investigation for itself
+next to a subagent doing the other half. A size is judged before the work
+starts, always toward "this looks small". The user can still say "do it
+yourself". Refusals are a rule in the text and never a ceiling on what a
+child's agent may do: users give their subagents permissions on purpose.
+
+### Why the user agrees the models and the lead does not pick them alone
+
+A lead left to pick "a strong one" and "a cheaper one" chose differently from
+one child to the next, a cheap model where the user wanted their strong one,
+and the user saw the mix only in the sidebar. Which model spends whose money
+is the user's call, so the lead settles it once per direction. It brings a
+proposal built from the user's favorites, recent models and limits, so the
+user answers "yes" or changes one line, and it keeps the agreement in the
+brief, so it survives compaction.
+
+### Why the rules are ordered by what woke the lead
+
+A lead's turns start from four things: a new goal, the user's question or
+request, a child's answer, and a compaction. Rules written as one list of
+equal paragraphs left models to work out which applied; sections per wake
+say what to do in each, and limits and schemas stay in the tool
+descriptions, which enforce them.
+
+### Why a lead gets no general dispatch, wake and workflow guidance
+
+Those texts tell an ordinary session to do small work itself, to repeat what
+waits on the user in every reply after a wake, and never to start a workflow
+unasked. A lead's rules say the opposite on all three: work goes out, the
+digest holds what waits, and a lead starts a workflow its direction needs.
+Both in one context, models followed whichever they read last, so a lead
+gets its own rules only (`buildGuidance` in `../session-knowledge/`).
 
 ### Why changes go to child sessions and not to subagents
 

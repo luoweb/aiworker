@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -131,13 +132,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': '커밋을 불러오지 못했습니다',
   'commitComparison.noCommits': '커밋을 찾을 수 없습니다',
   'commitComparison.emptyDiff': '이 커밋에는 변경 사항이 없습니다',
-  'chat.liveActivity.title': '활동',
-  'chat.liveActivity.moreRows': '{count}개 더 보기',
   'chat.liveActivity.changedFile': '파일 {count}개 변경',
   'chat.liveActivity.changedFiles': '파일 {count}개 변경',
-  'chat.liveActivity.explored': '코드베이스 탐색',
+  'chat.liveActivity.working': '작업 중…',
   'chat.liveActivity.ranCommand': '명령 {count}개 실행',
   'chat.liveActivity.ranCommands': '명령 {count}개 실행',
+  'chat.liveActivity.explored': '코드베이스 탐색',
   'chat.liveActivity.researched': '웹 조사',
   'chat.liveActivity.usedSubagent': '하위 에이전트 {count}개 사용',
   'chat.liveActivity.usedSubagents': '하위 에이전트 {count}개 사용',
@@ -267,6 +267,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.ko,
   ...integrationsCatalogI18n['ko'],
   ...diffFindI18n['ko'],
+  ...diffReviewedI18n['ko'],
   ...contextWindowI18n['ko'],
   ...markdownOutlineI18n['ko'],
   ...markdownGithubI18n['ko'],
@@ -2580,6 +2581,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.revert.toast.undo': '{preview}(으)로 되돌림',
   'chat.revert.toast.redo': '다시 실행',
   'chat.revert.toast.restored': '모든 메시지 복원됨',
+  'chat.revert.toast.filesUnchanged': '채팅을 되돌렸습니다. 파일은 변경되지 않았습니다.',
   'chat.toast.opencodeRestartInterrupted.title': '채팅이 중단되었습니다',
   'chat.toast.opencodeRestartInterrupted.description': '응답이 진행 중인 동안 OpenCode가 다시 시작되었습니다. 계속하려면 메시지를 보내세요.',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': '응답이 진행 중인 동안 OpenCode가 다시 시작되었습니다. 채팅은 자동으로 이어집니다. 이어지지 않으면 메시지를 보내세요.',
@@ -2813,6 +2815,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.sendAttachmentsFailed': '첨부 파일 전송 실패. 파일 수나 이미지 크기를 줄여 보세요.',
   'chat.chatInput.toast.messageSendFailed': '메시지 전송에 실패했습니다. 첨부 파일을 복원했습니다.',
   'chat.chatInput.toast.agentUnavailable': '에이전트 "{agent}"은(는) 이 세션의 폴더에서 사용할 수 없습니다. 다른 에이전트를 선택한 뒤 다시 보내세요.',
+  'chat.chatInput.toast.skillLoadFailed': '스킬 "{skill}"을(를) MCP 서버에서 불러오지 못했습니다. 설정에서 서버가 연결되어 있는지 확인한 뒤 다시 보내세요.',
   'chat.chatInput.toast.noModelSelected': '전송하기 전에 제공업체와 모델을 선택하세요.',
   'chat.chatInput.toast.clipboardAttachFailed': '클립보드 이미지 첨부 실패',
   'chat.chatInput.toast.clipboardTextAttachFailed': '붙여넣은 텍스트를 파일로 첨부하지 못했습니다',

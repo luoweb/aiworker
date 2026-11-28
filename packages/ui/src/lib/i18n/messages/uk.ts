@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -131,13 +132,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': 'Не вдалося завантажити коміти',
   'commitComparison.noCommits': 'Комітів не знайдено',
   'commitComparison.emptyDiff': 'У цьому коміті немає змін',
-  'chat.liveActivity.title': 'Дії',
-  'chat.liveActivity.moreRows': 'Ще {count}',
   'chat.liveActivity.changedFile': 'Змінено {count} файл',
   'chat.liveActivity.changedFiles': 'Змінено файлів: {count}',
-  'chat.liveActivity.explored': 'Досліджено кодову базу',
+  'chat.liveActivity.working': 'Працює…',
   'chat.liveActivity.ranCommand': 'Виконано {count} команду',
   'chat.liveActivity.ranCommands': 'Виконано команд: {count}',
+  'chat.liveActivity.explored': 'Досліджено кодову базу',
   'chat.liveActivity.researched': 'Проведено пошук в інтернеті',
   'chat.liveActivity.usedSubagent': 'Залучено {count} сабагента',
   'chat.liveActivity.usedSubagents': 'Залучено сабагентів: {count}',
@@ -277,6 +277,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.uk,
   ...integrationsCatalogI18n['uk'],
   ...diffFindI18n['uk'],
+  ...diffReviewedI18n['uk'],
   ...contextWindowI18n['uk'],
   ...markdownOutlineI18n['uk'],
   ...markdownGithubI18n['uk'],
@@ -2548,6 +2549,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.revert.toast.undo": "Відкочено до {preview}",
   "chat.revert.toast.redo": "Повторено",
   "chat.revert.toast.restored": "Всі повідомлення відновлено",
+  "chat.revert.toast.filesUnchanged": "Чат відкочено. Файли не змінено.",
   "chat.toast.opencodeRestartInterrupted.title": "Чат перервано",
   "chat.toast.opencodeRestartInterrupted.description": "OpenCode перезапустився, поки відповідь ще формувалася. Надішліть повідомлення, щоб продовжити.",
   "chat.toast.opencodeRestartInterrupted.autoResumeDescription": "OpenCode перезапустився, поки відповідь ще формувалася. Чат буде відновлено автоматично; надішліть повідомлення, якщо ні.",
@@ -2769,6 +2771,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.chatInput.toast.sendAttachmentsFailed": "Не вдалося надіслати вкладення. Спробуйте зменшити кількість файлів або зображень.",
   "chat.chatInput.toast.messageSendFailed": "Не вдалося надіслати повідомлення. Вкладення відновлено.",
   "chat.chatInput.toast.agentUnavailable": "Агента \"{agent}\" немає в теці цієї сесії. Виберіть іншого агента й надішліть ще раз.",
+  "chat.chatInput.toast.skillLoadFailed": "Навичка \"{skill}\" не завантажилась зі свого MCP-сервера. Перевірте в Налаштуваннях, що сервер підключено, і надішліть ще раз.",
   "chat.chatInput.toast.noModelSelected": "Виберіть постачальника та модель перед надсиланням.",
   "chat.chatInput.toast.clipboardAttachFailed": "Не вдалося вкласти зображення з буфера обміну",
   "chat.chatInput.toast.clipboardTextAttachFailed": "Не вдалося долучити вставлений текст як файл",

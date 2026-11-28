@@ -392,10 +392,13 @@ through `getRuntimeUrlResolver().authenticatedAsset('/api/fs/raw', …)` with
 the scoped URL token; the server streams byte ranges so playback can seek.
 Images keep the object-URL/data-URL path.
 
-On Capacitor with active proxy headers and on any runtime in relay mode,
-`useRawAssetUrl` reads PDF, audio, video and fonts through `runtimeFetch` into
-an object URL: the browser cannot attach those headers to a URL it loads, and
-such a URL never enters the relay tunnel. Reads retain at
+On Capacitor with active proxy headers, in the Android app connected to a
+plain-http server, and on any runtime in relay mode, `useRawAssetUrl` reads
+PDF, audio, video and fonts through `runtimeFetch` into an object URL: the
+browser cannot attach those headers to a URL it loads, the Android WebView
+blocks an `http:` media address from its `https://localhost` page as mixed
+content, and such a URL never enters the relay tunnel. The same test
+(`runtimeAssetsNeedFetch`) sends chat images through `runtimeFetch`. Reads retain at
 most the existing 10 MiB file-open limit and have a 30-second deadline. A
 file, revision or runtime change aborts the old read and revokes its URL;
 unmount does the same. Failed reads show the existing error without falling
@@ -421,6 +424,16 @@ only authenticates to OpenChamber. Reading through the shared HTTP transport
 keeps proxy credentials out of URLs and preserves redirect refusal. The
 existing file-open limit bounds retained bytes, at the cost of waiting for
 the file to finish downloading before playback starts.
+
+### Why the Android app fetches media only from a plain-http server
+
+`android.allowMixedContent` lets `fetch` and WebSockets reach a LAN server
+over `http:`, but the WebView still blocks an image or audio/video address
+there from the `https://localhost` page. The test asks exactly that: an
+`https:` page and an `http:` runtime base. Fetching on every Capacitor runtime
+would also buffer media for the iOS app (`capacitor://` page) and for `https`
+servers, where the WebView loads the address itself and playback streams
+byte ranges past the 10 MiB file-open limit.
 
 ### Why the URL is held and not rebuilt with every new token
 
@@ -794,11 +807,11 @@ which asks for a new grant and reloads the frame, so a page changed on disk
 shows up in an open preview. A save from the editor sets the content directly;
 the preview gets it when the user switches back from the code.
 
-On a relay connection the panel says the preview is unavailable and offers the
-code, asks for no grant, and the toolbar has no "Annotate page". The browser loads the page and its files itself,
-and a URL it loads never enters the tunnel. Reading the page through the tunnel
-into `srcDoc` was rejected: its neighbouring files would be lost, and a relative
-URL in a `srcDoc` frame resolves against the app's own address.
+On a relay connection, or in Capacitor with custom runtime headers (`runtimeAssetsNeedFetch()`), the browser cannot reach `/api/fs/preview/<grant>/<path>` directly with an iframe `src`. Instead `useHtmlPreviewUrl` still mints the grant and fetches the HTML and its relative styles, scripts, and media through `runtimeFetch` with `inline=1` using the shared `inlineRelayHtmlDocument` helper, inlining them as `data:` URLs for `<iframe srcDoc>`. The server enforces the grant's canonical `readRoot` for `inline=1` requests so files outside `readRoot` (such as `~/.config/openchamber` secrets) are refused with 403 and never inlined into script-readable `data:` URLs. Because the server still serves the root HTML through `/api/fs/preview/<grant>/<path>`, it injects `preview-bridge.js` and in-memory storage as usual.
+
+### Why inline `srcDoc` over relay with `<base href>` and a fragment-scroll handler
+
+Previously relay connections showed an "unavailable over the relay" placeholder because passing raw HTML into `srcDoc` lost neighbouring files and let relative URLs resolve against the app's own address. Inlining local subresources through the preview grant fixes neighbouring assets, and prepending `<base href="https://preview.invalid/...">` isolates every unresolved relative URL, form action, and dynamic script URL from the host app's address. Because `<base href>` makes clicks on `<a href="#section">` attempt to navigate away from `about:srcdoc`, the preview injects a small click handler that scrolls to the target element inside the frame. Missing subresources degrade in place instead of failing the whole page, unlike strict extension packages, and preview load errors stay inside the preview pane so the loaded source code remains accessible. Runtime `fetch('./...')` from page scripts still cannot cross the relay tunnel from an opaque `srcDoc` frame.
 
 The preview toolbar has the browser panel's "Annotate page" toggle
 (`useHtmlPreviewAnnotation`, a thin use of `components/browser/useFrameAnnotation.ts`,

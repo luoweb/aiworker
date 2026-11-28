@@ -27,6 +27,8 @@ export interface ProviderCapabilities {
   labels: boolean;
   reviewers: boolean;
   reviewThreads: { start: boolean; reply: boolean; resolve: boolean };
+  reviewDismiss?: 'others' | 'own';
+  reviewUndismiss?: boolean;
   reviewDrafts?: { fileComments: boolean };
   uploads: boolean;
   stacks: boolean;
@@ -58,7 +60,7 @@ export interface ProviderDescriptor {
   authMethods: { device: boolean; pat: boolean; cli: false | { tool: string; kind?: never; hint?: never } | { kind: 'service'; hint: string; tool?: never } };
   transport: {
     httpsUsername: { kind: 'fixed'; value: string } | { kind: 'login' };
-    managedHttpsInstances: 'default-only' | 'any';
+    managedHttpsInstances: 'any' | ((instance: string) => boolean);
     appendDotGitToHttpsClone: boolean;
   };
   urls: { thread: { hosts: readonly string[] | 'any'; pattern: RegExp } };
@@ -151,6 +153,8 @@ export interface PublicProviderDescriptor {
   };
   capabilities: {
     reviewThreads: { start: boolean; reply: boolean; resolve: boolean };
+    reviewDismiss?: 'others' | 'own';
+    reviewUndismiss?: boolean;
   };
   extension?: { guestId: string; name: string; version: string };
 }
@@ -355,10 +359,19 @@ export interface ChangeRequestRevision {
   ref: string;
 }
 
+export interface ChangeRequestReviewSummary {
+  id: string;
+  state: 'approved' | 'changes_requested' | 'commented' | 'pending' | 'dismissed';
+  author: { login: string; avatarUrl?: string | undefined } | null;
+  submittedAt: string | null;
+}
+
 export interface ChangeRequestContextExtensions {
   voteLabels?: ChangeRequestVoteLabel[];
   submitRequirements?: ChangeRequestSubmitRequirement[];
   revisions?: ChangeRequestRevision[];
+  reviews?: ChangeRequestReviewSummary[];
+  canDismissReviews?: boolean;
 }
 
 export interface ChangeRequestThreadSummary {

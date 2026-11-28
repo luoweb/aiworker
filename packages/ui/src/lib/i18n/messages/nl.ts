@@ -62,6 +62,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -130,13 +131,12 @@ export const dict = {
   'commitComparison.loadError': 'Kan commits niet laden',
   'commitComparison.noCommits': 'Geen commits gevonden',
   'commitComparison.emptyDiff': 'Geen wijzigingen in deze commit',
-  'chat.liveActivity.title': 'Activiteit',
-  'chat.liveActivity.moreRows': '+{count} meer',
   'chat.liveActivity.changedFile': '{count} bestand gewijzigd',
   'chat.liveActivity.changedFiles': '{count} bestanden gewijzigd',
-  'chat.liveActivity.explored': 'Codebase verkend',
+  'chat.liveActivity.working': 'Bezig…',
   'chat.liveActivity.ranCommand': '{count} opdracht uitgevoerd',
   'chat.liveActivity.ranCommands': '{count} opdrachten uitgevoerd',
+  'chat.liveActivity.explored': 'Codebase verkend',
   'chat.liveActivity.researched': 'Web doorzocht',
   'chat.liveActivity.usedSubagent': '{count} subagent gebruikt',
   'chat.liveActivity.usedSubagents': '{count} subagents gebruikt',
@@ -266,6 +266,7 @@ export const dict = {
   ...pluginsGridI18n.nl,
   ...integrationsCatalogI18n['nl'],
   ...diffFindI18n['nl'],
+  ...diffReviewedI18n['nl'],
   ...contextWindowI18n['nl'],
   ...markdownOutlineI18n['nl'],
   ...markdownGithubI18n['nl'],
@@ -2580,6 +2581,7 @@ export const dict = {
   'chat.revert.toast.undo': 'Teruggedraaid naar {preview}',
   'chat.revert.toast.redo': 'Opnieuw uitgevoerd',
   'chat.revert.toast.restored': 'Alle berichten hersteld',
+  'chat.revert.toast.filesUnchanged': 'Chat teruggedraaid. Bestanden zijn niet gewijzigd.',
   'chat.toast.opencodeRestartInterrupted.title': 'Chat onderbroken',
   'chat.toast.opencodeRestartInterrupted.description': 'OpenCode is herstart terwijl er nog een antwoord liep. Stuur een bericht om verder te gaan.',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': 'OpenCode is herstart terwijl er nog een antwoord liep. De chat gaat automatisch verder; stuur een bericht als dat niet gebeurt.',
@@ -2813,6 +2815,7 @@ export const dict = {
   'chat.chatInput.toast.sendAttachmentsFailed': 'Kan de bijlagen niet verzenden. Gebruik minder bestanden of kleinere afbeeldingen.',
   'chat.chatInput.toast.messageSendFailed': 'Bericht kon niet worden verzonden. Bijlagen hersteld.',
   'chat.chatInput.toast.agentUnavailable': 'Agent "{agent}" is niet beschikbaar in de map van deze sessie. Kies een andere agent en verstuur opnieuw.',
+  'chat.chatInput.toast.skillLoadFailed': 'Skill "{skill}" kon niet worden geladen van zijn MCP-server. Controleer in Instellingen of de server verbonden is en verstuur opnieuw.',
   'chat.chatInput.toast.noModelSelected': 'Kies een provider en model voor het verzenden.',
   'chat.chatInput.toast.clipboardAttachFailed': 'Kan de afbeelding uit het klembord niet toevoegen',
   'chat.chatInput.toast.clipboardTextAttachFailed': 'Kan de geplakte tekst niet als bestand toevoegen',

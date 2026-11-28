@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -131,13 +132,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': '無法載入提交',
   'commitComparison.noCommits': '找不到提交',
   'commitComparison.emptyDiff': '此提交沒有變更',
-  'chat.liveActivity.title': '活動',
-  'chat.liveActivity.moreRows': '還有 {count} 項',
   'chat.liveActivity.changedFile': '變更了 {count} 個檔案',
   'chat.liveActivity.changedFiles': '變更了 {count} 個檔案',
-  'chat.liveActivity.explored': '探索了程式碼庫',
+  'chat.liveActivity.working': '工作中…',
   'chat.liveActivity.ranCommand': '執行了 {count} 條命令',
   'chat.liveActivity.ranCommands': '執行了 {count} 條命令',
+  'chat.liveActivity.explored': '探索了程式碼庫',
   'chat.liveActivity.researched': '進行了網路研究',
   'chat.liveActivity.usedSubagent': '使用了 {count} 個子代理',
   'chat.liveActivity.usedSubagents': '使用了 {count} 個子代理',
@@ -267,6 +267,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n['zh-TW'],
   ...integrationsCatalogI18n['zh-TW'],
   ...diffFindI18n['zh-TW'],
+  ...diffReviewedI18n['zh-TW'],
   ...contextWindowI18n['zh-TW'],
   ...markdownOutlineI18n['zh-TW'],
   ...markdownGithubI18n['zh-TW'],
@@ -2557,6 +2558,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.revert.toast.undo': '已收回至 {preview}',
   'chat.revert.toast.redo': '已重做',
   'chat.revert.toast.restored': '已恢復全部訊息',
+  'chat.revert.toast.filesUnchanged': '已收回對話。檔案未變更。',
   'chat.toast.opencodeRestartInterrupted.title': '聊天已中斷',
   'chat.toast.opencodeRestartInterrupted.description': 'OpenCode 在回覆仍在產生時重新啟動。傳送訊息以繼續。',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': 'OpenCode 在回覆仍在產生時重新啟動。聊天將自動恢復；如果未恢復，請傳送一條訊息。',
@@ -2790,6 +2792,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.sendAttachmentsFailed': '傳送附件失敗。請嘗試更少檔案或更小圖片。',
   'chat.chatInput.toast.messageSendFailed': '訊息傳送失敗，附件已恢復。',
   'chat.chatInput.toast.agentUnavailable': '此會話的資料夾中沒有 Agent "{agent}"。請選擇其他 Agent 後重新傳送。',
+  'chat.chatInput.toast.skillLoadFailed': '無法從 MCP 伺服器載入 skill "{skill}"。請在設定中確認伺服器已連線，然後重新傳送。',
   'chat.chatInput.toast.noModelSelected': '傳送前請先選擇提供者與模型。',
   'chat.chatInput.toast.clipboardAttachFailed': '從剪貼簿附加圖片失敗',
   'chat.chatInput.toast.clipboardTextAttachFailed': '無法將貼上的文字附加為檔案',

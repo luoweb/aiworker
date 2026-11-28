@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -130,13 +131,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': 'تعذّر تحميل الإيداعات',
   'commitComparison.noCommits': 'لم يُعثر على إيداعات',
   'commitComparison.emptyDiff': 'لا توجد تغييرات في هذا الإيداع',
-  'chat.liveActivity.title': 'النشاط',
-  'chat.liveActivity.moreRows': '+{count} أخرى',
   'chat.liveActivity.changedFile': 'تغيير {count} ملف',
   'chat.liveActivity.changedFiles': 'تغيير {count} ملفات',
-  'chat.liveActivity.explored': 'استكشاف قاعدة الشيفرة',
+  'chat.liveActivity.working': 'جارٍ العمل…',
   'chat.liveActivity.ranCommand': 'تشغيل {count} أمر',
   'chat.liveActivity.ranCommands': 'تشغيل {count} أوامر',
+  'chat.liveActivity.explored': 'استكشاف قاعدة الشيفرة',
   'chat.liveActivity.researched': 'البحث في الويب',
   'chat.liveActivity.usedSubagent': 'استخدام {count} وكيل فرعي',
   'chat.liveActivity.usedSubagents': 'استخدام {count} وكلاء فرعيين',
@@ -2471,6 +2471,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.revert.toast.undo': 'تم التراجع إلى {preview}',
   'chat.revert.toast.redo': 'تمت الإعادة',
   'chat.revert.toast.restored': 'تمت استعادة كل الرسائل',
+  'chat.revert.toast.filesUnchanged': 'تم التراجع في المحادثة. لم تتغير الملفات.',
   'chat.toast.opencodeRestartInterrupted.title': 'انقطعت المحادثة',
   'chat.toast.opencodeRestartInterrupted.description': 'أُعيد تشغيل OpenCode بينما كان الرد لا يزال قيد التنفيذ. أرسل رسالة للمتابعة.',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': 'أُعيد تشغيل OpenCode بينما كان الرد لا يزال قيد التنفيذ. ستستأنف المحادثة تلقائيًا؛ أرسل رسالة إذا لم تفعل.',
@@ -2704,6 +2705,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.sendAttachmentsFailed': 'تعذّر إرسال المرفقات. جرّب عددًا أقل من الملفات أو صورًا أصغر.',
   'chat.chatInput.toast.messageSendFailed': 'تعذّر إرسال الرسالة. تمت استعادة المرفقات.',
   'chat.chatInput.toast.agentUnavailable': 'الوكيل "{agent}" غير متاح في مجلد هذه الجلسة. اختر وكيلًا آخر وأعد الإرسال.',
+  'chat.chatInput.toast.skillLoadFailed': 'لم تُحمَّل المهارة "{skill}" من خادم MCP الخاص بها. تأكد من أن الخادم متصل في الإعدادات، ثم أعد الإرسال.',
   'chat.chatInput.toast.noModelSelected': 'اختر موفرًا ونموذجًا قبل الإرسال.',
   'chat.chatInput.toast.clipboardAttachFailed': 'تعذّر إرفاق الصورة من الحافظة',
   'chat.chatInput.toast.clipboardTextAttachFailed': 'تعذّر إرفاق النص الملصق كملف',
@@ -4036,6 +4038,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.ar,
   ...integrationsCatalogI18n['ar'],
   ...diffFindI18n['ar'],
+  ...diffReviewedI18n['ar'],
   ...contextWindowI18n['ar'],
   ...markdownOutlineI18n['ar'],
   ...markdownGithubI18n['ar'],

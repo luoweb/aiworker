@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -131,13 +132,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': 'Nie udało się wczytać commitów',
   'commitComparison.noCommits': 'Nie znaleziono commitów',
   'commitComparison.emptyDiff': 'Brak zmian w tym commicie',
-  'chat.liveActivity.title': 'Aktywność',
-  'chat.liveActivity.moreRows': '+{count} więcej',
   'chat.liveActivity.changedFile': 'Zmieniono {count} plik',
   'chat.liveActivity.changedFiles': 'Zmienione pliki: {count}',
-  'chat.liveActivity.explored': 'Przeanalizowano bazę kodu',
+  'chat.liveActivity.working': 'Pracuje…',
   'chat.liveActivity.ranCommand': 'Wykonano {count} polecenie',
   'chat.liveActivity.ranCommands': 'Wykonane polecenia: {count}',
+  'chat.liveActivity.explored': 'Przeanalizowano bazę kodu',
   'chat.liveActivity.researched': 'Przeszukano internet',
   'chat.liveActivity.usedSubagent': 'Użyto {count} subagenta',
   'chat.liveActivity.usedSubagents': 'Użyci subagenci: {count}',
@@ -267,6 +267,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.pl,
   ...integrationsCatalogI18n['pl'],
   ...diffFindI18n['pl'],
+  ...diffReviewedI18n['pl'],
   ...contextWindowI18n['pl'],
   ...markdownOutlineI18n['pl'],
   ...markdownGithubI18n['pl'],
@@ -1111,6 +1112,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.revert.toast.undo': 'Cofnięte do {preview}',
   'chat.revert.toast.redo': 'Ponowione',
   'chat.revert.toast.restored': 'Przywrócono wszystkie wiadomości',
+  'chat.revert.toast.filesUnchanged': 'Czat cofnięty. Pliki nie zostały zmienione.',
   'chat.toast.opencodeRestartInterrupted.title': 'Czat został przerwany',
   'chat.toast.opencodeRestartInterrupted.description': 'OpenCode uruchomił się ponownie podczas generowania odpowiedzi. Wyślij wiadomość, aby kontynuować.',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': 'OpenCode uruchomił się ponownie podczas generowania odpowiedzi. Czat zostanie wznowiony automatycznie; wyślij wiadomość, jeśli się nie wznowi.',
@@ -1588,6 +1590,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.forkSendFailed': 'Rozgałęziono, ale wiadomość nie została wysłana. Wróciła do pola wpisywania.',
   'chat.chatInput.toast.messageSendFailed': 'Nie udało się wysłać wiadomości. Załączniki zostały przywrócone.',
   'chat.chatInput.toast.agentUnavailable': 'Agent "{agent}" nie jest dostępny w folderze tej sesji. Wybierz innego agenta i wyślij ponownie.',
+  'chat.chatInput.toast.skillLoadFailed': 'Nie udało się wczytać umiejętności "{skill}" z jej serwera MCP. Sprawdź w Ustawieniach, czy serwer jest połączony, i wyślij ponownie.',
   'chat.chatInput.toast.noModelSelected': 'Wybierz dostawcę i model przed wysłaniem.',
   'chat.chatInput.toast.openSessionFirst': 'Najpierw otwórz sesję',
   'chat.chatInput.toast.dictationKeptForOriginalSession': 'Dyktowanie zapisano jako szkic w sesji, w której je rozpoczęto',

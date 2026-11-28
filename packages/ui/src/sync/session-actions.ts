@@ -24,7 +24,7 @@ import {
   useRecoverableQuestionsStore,
   type RecoveredQuestion,
 } from "./recoverable-questions"
-import { resolveCheckedSendSelection, resolveSendSelection } from "./session-selection"
+import { isSessionModelChosen, resolveCheckedSendSelection, resolveSendSelection } from "./session-selection"
 import { useInputStore } from "./input-store"
 import type { ChildStoreManager } from "./child-store"
 import { computeSubtreeIds } from "./scoped-blocking-requests"
@@ -186,7 +186,7 @@ function dirStoreForDirectory(directory: string) {
   return _childStores.ensureChild(directory)
 }
 
-function dirStoreForSession(sessionId: string): { store: DirectoryStoreApi; directory?: string } {
+export function dirStoreForSession(sessionId: string): { store: DirectoryStoreApi; directory?: string } {
   const directory = getSessionDirectory(sessionId)
   if (directory) {
     return { store: dirStoreForDirectory(directory), directory }
@@ -461,7 +461,7 @@ export async function compactSession(
     ? useSelectionStore.getState().captureSessionModelPickSettlement(sessionId, selection.providerID, selection.modelID)
     : undefined
   if (selection && !isAutoModel(selection.providerID, selection.modelID)) {
-    const { model } = await resolveSendSelection(sessionId, directory ?? undefined, selection)
+    const { model } = await resolveSendSelection(sessionId, directory ?? undefined, { ...selection, keepSessionModel: !isSessionModelChosen(sessionId, selection.providerID, selection.modelID) && !useSelectionStore.getState().getSessionAgentPick(sessionId) })
     if (!isCurrentRuntime()) throw new Error("Compaction was cancelled because the runtime changed.")
     if (model) {
       await opencodeClient.switchSessionModel(sessionId, model, directory)
@@ -588,15 +588,15 @@ function descendantRevertCutoff(state: { session: readonly Session[] }, target: 
   return child ? Math.min(child.time.created, target.time.created) : target.time.created
 }
 
-async function stageAndReadRevert(sessionId: string, messageId: string, directory: string | null | undefined, assertRuntime: () => void): Promise<Session> {
+async function stageAndReadRevert(sessionId: string, messageId: string, directory: string | null | undefined, assertRuntime: () => void): Promise<{ session: Session; staged: NonNullable<Session["revert"]> }> {
   const key = revertKey(sessionId)
   unreconciledReverts.add(key)
-  await opencodeClient.stageRevert(sessionId, messageId, { directory })
+  const staged = await opencodeClient.stageRevert(sessionId, messageId, { directory })
   assertRuntime()
-  const reverted = await opencodeClient.getSession(sessionId, directory)
+  const session = await opencodeClient.getSession(sessionId, directory)
   assertRuntime()
   unreconciledReverts.delete(key)
-  return reverted
+  return { session, staged }
 }
 
 async function cascadeRevertToDescendants(descendants: DescendantSession[], cutoff: number, assertRuntime: () => void): Promise<void> {
@@ -609,7 +609,7 @@ async function cascadeRevertToDescendants(descendants: DescendantSession[], cuto
       assertRuntime()
       const target = firstUserMessageAtOrAfter(messages, cutoff)
       if (!target) continue
-      const reverted = await stageAndReadRevert(session.id, target.id, directory, assertRuntime)
+      const { session: reverted } = await stageAndReadRevert(session.id, target.id, directory, assertRuntime)
       mirrorSessionIntoLiveStores(reverted, directory)
     } catch (error) {
       assertRuntime()
@@ -641,7 +641,7 @@ async function clearStagedRevertNow(sessionId: string): Promise<void> {
   }
 }
 
-type PendingRevert = { rootId: string; runtimeKey: string; affectsDescendants: boolean; promise: Promise<void> }
+type PendingRevert = { rootId: string; runtimeKey: string; affectsDescendants: boolean; promise: Promise<unknown> }
 const pendingReverts = new Map<string, PendingRevert>()
 const unreconciledReverts = new Set<string>()
 const revertReconciliations = new Map<string, { promise: Promise<void>; isCurrent: () => boolean }>()
@@ -780,7 +780,7 @@ function getSessionReplyDirectory(sessionId?: string): string | undefined {
   return directory ?? dir()
 }
 
-function restoreFilePartsToInput(fileParts: readonly FilePart[], target: ChatDraftIdentity | null): void {
+export function restoreFilePartsToInput(fileParts: readonly FilePart[], target: ChatDraftIdentity | null): void {
   useInputStore.getState().clearAttachedFiles(target)
   for (const filePart of fileParts) {
     if (!filePart.url) continue
@@ -792,7 +792,7 @@ function restoreFilePartsToInput(fileParts: readonly FilePart[], target: ChatDra
   }
 }
 
-function contextCarriersForMessage(messages: readonly Message[], messageID: string): ContextCarrierPart[] {
+export function contextCarriersForMessage(messages: readonly Message[], messageID: string): ContextCarrierPart[] {
   const index = messages.findIndex((message) => message.id === messageID)
   if (index < 0) return []
   const carriers: ContextCarrierPart[] = []
@@ -804,7 +804,7 @@ function contextCarriersForMessage(messages: readonly Message[], messageID: stri
   return carriers
 }
 
-function restoreContextPartsToInput(
+export function restoreContextPartsToInput(
   parts: readonly ContextCarrierPart[],
   target: InlineCommentDraftTarget,
 ): void {
@@ -2163,7 +2163,7 @@ function resolveFormSelection(record: Session | undefined, sessionId: string): F
     const config = useConfigStore.getState()
     return {
       agent: agentPick ?? config.currentAgentName ?? undefined,
-      model: config.currentProviderId && config.currentModelId
+      model: config.currentProviderId && config.currentModelId && (agentPick || isSessionModelChosen(sessionId, config.currentProviderId, config.currentModelId))
         ? {
             providerID: config.currentProviderId,
             modelID: config.currentModelId,
@@ -2334,7 +2334,7 @@ export async function sendRecoveredFormAnswer(question: RecoveredQuestion, text:
         userInitiated: true,
         queuedGoal: null,
         target: { runtimeKey, sessionId: question.sessionID, directory: question.directory },
-        metadata: deferred ? deferredAnswerMetadata(question.form.id) : undefined,
+        metadata: deferred ? deferredAnswerMetadata(question.form.id) : undefined, keepSessionModel: true,
       },
     )
     if (isCurrentRuntime()) noteLocalFormReplied(question.sessionID, question.form.id)
@@ -2484,7 +2484,7 @@ export async function deferQuestionsAfterSend(forms: readonly FormRequest[], sen
 }
 
 
-function runRevertOperation(sessionId: string, action: () => Promise<void>, includeDescendants = true): Promise<void> {
+export function runRevertOperation<T>(sessionId: string, action: () => Promise<T>, includeDescendants = true): Promise<T> {
   revertRevision += 1
   const descendants = includeDescendants ? getDescendantSessions(sessionId) : []
   const sessionIds = [sessionId, ...descendants.map(({ session }) => session.id)]
@@ -2496,7 +2496,7 @@ function runRevertOperation(sessionId: string, action: () => Promise<void>, incl
     const failed = results.find((result) => result.status === "rejected")
     if (failed?.status === "rejected") throw failed.reason
     if (!isCurrentRuntime()) throw new Error("Runtime changed while waiting for the revert.")
-    await action()
+    return action()
   })
   const tracked = operation.finally(() => {
     for (const key of keys) {
@@ -2508,16 +2508,16 @@ function runRevertOperation(sessionId: string, action: () => Promise<void>, incl
   return tracked
 }
 
-export function revertToMessage(sessionId: string, messageId: string, options?: { refresh?: boolean }): Promise<void> {
+export function revertToMessage(sessionId: string, messageId: string, options?: { refresh?: boolean }): Promise<NonNullable<Session["revert"]>> {
   return runRevertOperation(sessionId, async () => {
     const isCurrentRuntime = captureRuntimeInstance()
     if (options?.refresh) await refetchSessionMessages(sessionId)
     if (!isCurrentRuntime()) throw new Error("Runtime changed while waiting for the revert.")
-    await stageRevertToMessage(sessionId, messageId)
+    return stageRevertToMessage(sessionId, messageId)
   })
 }
 
-async function stageRevertToMessage(sessionId: string, messageId: string): Promise<void> {
+async function stageRevertToMessage(sessionId: string, messageId: string): Promise<NonNullable<Session["revert"]>> {
   const isCurrentRuntime = captureRuntimeInstance()
   const assertRuntime = () => {
     if (!isCurrentRuntime()) throw new Error("Runtime changed while staging the revert.")
@@ -2589,9 +2589,8 @@ async function stageRevertToMessage(sessionId: string, messageId: string): Promi
 
   try {
     await cascadeRevertToDescendants(getDescendantSessions(sessionId), descendantRevertCutoff(state, targetMessage), assertRuntime)
-    const revertedSession = await stageAndReadRevert(sessionId, revertMessageID, directory, assertRuntime)
-    const current = store.getState()
-    const updated = [...current.session]
+    const { session: revertedSession, staged } = await stageAndReadRevert(sessionId, revertMessageID, directory, assertRuntime)
+    const updated = [...store.getState().session]
     const idx = updated.findIndex((s) => s.id === sessionId)
     if (idx >= 0) {
       updated[idx] = revertedSession
@@ -2601,6 +2600,7 @@ async function stageRevertToMessage(sessionId: string, messageId: string): Promi
       sessionEvents.requestGitRefresh({ directory })
       fileTreeChanges.unknownChange(directory)
     }
+    return staged
   } catch (err) {
     if (!isCurrentRuntime()) throw err
     const current = store.getState()

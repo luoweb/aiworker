@@ -3,7 +3,7 @@ export const OPENCHAMBER_CONTROL_ACTION_DEFINITIONS = Object.freeze([
   { action: 'models.list', title: 'Show model preferences', description: 'Default, favorite and recent models; no parameters' },
   { action: 'models.search', title: 'Search models', description: 'The model catalog, favorites and recent models first; optional query, provider, all, limit, offset' },
   { action: 'session.list', title: 'List sessions', description: 'Newest top-level sessions here; each has inWork (in the sidebar\'s In work) and doneSuggested (its last turn looks finished), and lead: true on a lead. Filters inWork, busy (running now), leads, mine (sessions you created with ownWork, with their status), query (title words); inWork, busy, leads and mine span every project unless scoped and return all matches. Optional limit, all, children, withStatus (status as in session.status)' },
-  { action: 'session.archive', title: 'Archive a session', description: 'Archive sessionId, a session you created with ownWork, once you used its result. Restoring one is the user\'s' },
+  { action: 'session.archive', title: 'Archive a session', description: 'Archive sessionId, a session you created with ownWork. Restoring one is the user\'s' },
   { action: 'session.markDone', title: 'Mark a session done', description: 'Take sessionId (default: this session) out of In work, as the Done button does. Only on the user\'s word; a later message puts it back' },
   { action: 'session.track', title: 'Put a session in work', description: 'Put sessionId back in In work, as the Track button does, such as to undo a markDone' },
   { action: 'session.create', title: 'Create a session', description: 'In this directory by default; projectId from projects.list selects a project or openchamber:chats for a new Chat. Use the returned directory for later session actions. Prompt optional' },
@@ -30,6 +30,9 @@ export const OPENCHAMBER_CONTROL_ACTION_DEFINITIONS = Object.freeze([
   { action: 'schedule.delete', title: 'Delete a scheduled task', description: 'Delete taskId' },
   { action: 'schedule.toggle', title: 'Enable or disable a scheduled task', description: 'Requires taskId and disabled' },
   { action: 'file.open', title: 'Show a file to the user', description: 'Put path in front of the user\'s file panel, for a result worth seeing: a screenshot, report, CSV, recording, generated page' },
+  { action: 'folder.list', title: 'List sidebar folders', description: 'Sidebar folders in this project (or projectId/directory), with each folder\'s id, name, parentId and member count, and the folder holding the current worktree or session when filed' },
+  { action: 'folder.create', title: 'Create a sidebar folder', description: 'Create a sidebar folder in this project (or projectId/directory). Requires name; optional parentId nests it under an existing folder. Use when the user or workflow calls for it' },
+  { action: 'folder.move', title: 'Move to a sidebar folder', description: 'Place a worktree or session in a sidebar folder, or remove it from its folder when folder is null. Targets this session\'s worktree (or this session in the project root) by default; optional sessionId or directory targets another. folder accepts an existing id or name, or a new name to create it. Use when the user or workflow calls for it' },
 ]);
 
 const OPENCHAMBER_CONTROL_ACTIONS = Object.freeze(
@@ -156,7 +159,7 @@ export const OPENCHAMBER_TERMINAL_ACTIONS = Object.freeze(
 
 export const OPENCHAMBER_PROJECT_ACTIONS_ACTION_DEFINITIONS = Object.freeze([
   { action: 'actions.list', title: 'List project actions', description: "This project's actions for this computer: id, name, command, the folder it runs in, url when set, and its current or last run with who started it" },
-  { action: 'actions.run', title: 'Run a project action', description: 'Start the action name in its folder, as the actions menu does. When the action already runs, nothing starts a second copy and the answer says whose run it is' },
+  { action: 'actions.run', title: 'Run a project action', description: 'Start the action name in its folder, as the actions menu does, and wait until its app answers or the command finishes. When the action already runs, nothing starts a second copy and the answer says whose run it is' },
   { action: 'actions.logs', title: 'Read project action output', description: "The end of the current or last run of the action name as plain text; maxBytes caps it" },
   { action: 'actions.stop', title: 'Stop a project action', description: 'Stop the action name, only a run you started' },
 ]);
@@ -209,6 +212,9 @@ export const CONTROL_ONLY_PARAMETER_PROPERTIES = Object.freeze({
   suggestions: { type: 'array', items: { type: 'string' }, description: 'lead.digest: at most 3 lines, work worth doing outside what the user gave you, with why' },
   mine: { type: 'boolean', description: 'session.list: only the sessions you created with ownWork, each with its status' },
   leads: { type: 'boolean', description: 'session.list: only lead sessions' },
+  folder: { type: ['string', 'null'], description: 'Sidebar folder id or name (created if it does not exist yet), or null for no folder. On folder.move: the destination folder. On session.create or session.moveToWorktree: places the new worktree or session in that folder; omitting inherits the caller\'s folder when filed, null leaves it unfiled. Use when the user or workflow calls for it' },
+  parentId: { type: ['string', 'null'], description: 'folder.create: existing parent folder id to nest under' },
+  name: { type: 'string', description: 'folder.create: sidebar folder name' },
 });
 
 export const OPENCHAMBER_WORKFLOW_ANSWER_ACTION_DEFINITIONS = Object.freeze([

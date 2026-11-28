@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -131,13 +132,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': 'コミットを読み込めませんでした',
   'commitComparison.noCommits': 'コミットが見つかりません',
   'commitComparison.emptyDiff': 'このコミットに変更はありません',
-  'chat.liveActivity.title': 'アクティビティ',
-  'chat.liveActivity.moreRows': 'さらに {count} 件',
   'chat.liveActivity.changedFile': '{count} ファイルを変更',
   'chat.liveActivity.changedFiles': '{count} ファイルを変更',
-  'chat.liveActivity.explored': 'コードベースを調査',
+  'chat.liveActivity.working': '作業中…',
   'chat.liveActivity.ranCommand': '{count} コマンドを実行',
   'chat.liveActivity.ranCommands': '{count} コマンドを実行',
+  'chat.liveActivity.explored': 'コードベースを調査',
   'chat.liveActivity.researched': 'ウェブを調査',
   'chat.liveActivity.usedSubagent': '{count} サブエージェントを使用',
   'chat.liveActivity.usedSubagents': '{count} サブエージェントを使用',
@@ -267,6 +267,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.ja,
   ...integrationsCatalogI18n['ja'],
   ...diffFindI18n['ja'],
+  ...diffReviewedI18n['ja'],
   ...contextWindowI18n['ja'],
   ...markdownOutlineI18n['ja'],
   ...markdownGithubI18n['ja'],
@@ -2576,6 +2577,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.revert.toast.undo': '{preview}に元に戻しました',
   'chat.revert.toast.redo': 'やり直しました',
   'chat.revert.toast.restored': 'すべてのメッセージを復元しました',
+  'chat.revert.toast.filesUnchanged': 'チャットを元に戻しました。ファイルは変更されていません。',
   'chat.toast.opencodeRestartInterrupted.title': 'チャットが中断されました',
   'chat.toast.opencodeRestartInterrupted.description': '応答の生成中に OpenCode が再起動しました。続行するにはメッセージを送信してください。',
   'chat.toast.opencodeRestartInterrupted.autoResumeDescription': '応答の生成中に OpenCode が再起動しました。チャットは自動的に再開されます。再開しない場合はメッセージを送信してください。',
@@ -2809,6 +2811,7 @@ export const dict: Record<I18nKey, string> = {
   'chat.chatInput.toast.sendAttachmentsFailed': '添付ファイルの送信に失敗しました。ファイルを減らすかサイズを小さくしてください。',
   'chat.chatInput.toast.messageSendFailed': 'メッセージの送信に失敗しました。添付ファイルは復元されました。',
   'chat.chatInput.toast.agentUnavailable': 'エージェント "{agent}" はこのセッションのフォルダーでは使用できません。別のエージェントを選んで再送信してください。',
+  'chat.chatInput.toast.skillLoadFailed': 'Skill "{skill}" を MCP サーバーから読み込めませんでした。設定でサーバーが接続されていることを確認してから、再送信してください。',
   'chat.chatInput.toast.noModelSelected': '送信する前にプロバイダーとモデルを選択してください。',
   'chat.chatInput.toast.clipboardAttachFailed': 'クリップボードからの画像添付に失敗しました',
   'chat.chatInput.toast.clipboardTextAttachFailed': '貼り付けたテキストのファイル添付に失敗しました',

@@ -63,6 +63,7 @@ import { mcpGridI18n } from './mcp-grid.i18n';
 import { pluginsGridI18n } from './plugins-grid.i18n';
 import { integrationsCatalogI18n } from './integrations-catalog.i18n';
 import { diffFindI18n } from './diff-find.i18n';
+import { diffReviewedI18n } from './diff-reviewed.i18n';
 import { contextWindowI18n } from './context-window.i18n';
 import { markdownOutlineI18n } from './markdown-outline.i18n';
 import { markdownGithubI18n } from './markdown-github.i18n';
@@ -131,13 +132,12 @@ export const dict: Record<I18nKey, string> = {
   'commitComparison.loadError': 'No se pudieron cargar los commits',
   'commitComparison.noCommits': 'No se encontraron commits',
   'commitComparison.emptyDiff': 'No hay cambios en este commit',
-  'chat.liveActivity.title': 'Actividad',
-  'chat.liveActivity.moreRows': '+{count} más',
   'chat.liveActivity.changedFile': '{count} archivo modificado',
   'chat.liveActivity.changedFiles': '{count} archivos modificados',
-  'chat.liveActivity.explored': 'Código explorado',
+  'chat.liveActivity.working': 'Trabajando…',
   'chat.liveActivity.ranCommand': '{count} comando ejecutado',
   'chat.liveActivity.ranCommands': '{count} comandos ejecutados',
+  'chat.liveActivity.explored': 'Código explorado',
   'chat.liveActivity.researched': 'Investigación en la web realizada',
   'chat.liveActivity.usedSubagent': '{count} subagente utilizado',
   'chat.liveActivity.usedSubagents': '{count} subagentes utilizados',
@@ -277,6 +277,7 @@ export const dict: Record<I18nKey, string> = {
   ...pluginsGridI18n.es,
   ...integrationsCatalogI18n['es'],
   ...diffFindI18n['es'],
+  ...diffReviewedI18n['es'],
   ...contextWindowI18n['es'],
   ...markdownOutlineI18n['es'],
   ...markdownGithubI18n['es'],
@@ -2548,6 +2549,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.revert.toast.undo": "Revertido a {preview}",
   "chat.revert.toast.redo": "Rehecho",
   "chat.revert.toast.restored": "Todos los mensajes restaurados",
+  "chat.revert.toast.filesUnchanged": "Chat revertido. Los archivos no se modificaron.",
   "chat.toast.opencodeRestartInterrupted.title": "Conversación interrumpida",
   "chat.toast.opencodeRestartInterrupted.description": "OpenCode se reinició mientras aún se estaba generando una respuesta. Envía un mensaje para continuar.",
   "chat.toast.opencodeRestartInterrupted.autoResumeDescription": "OpenCode se reinició mientras aún se estaba generando una respuesta. La conversación se reanudará automáticamente; envía un mensaje si no lo hace.",
@@ -2769,6 +2771,7 @@ export const dict: Record<I18nKey, string> = {
   "chat.chatInput.toast.sendAttachmentsFailed": "No se pudieron enviar los adjuntos. Intenta con menos archivos o imágenes más pequeñas.",
   "chat.chatInput.toast.messageSendFailed": "El mensaje no se pudo enviar. Los adjuntos se restauraron.",
   "chat.chatInput.toast.agentUnavailable": "El agente \"{agent}\" no está disponible en la carpeta de esta sesión. Elige otro agente y vuelve a enviar.",
+  "chat.chatInput.toast.skillLoadFailed": "La habilidad \"{skill}\" no se cargó desde su servidor MCP. Comprueba en Ajustes que el servidor esté conectado y vuelve a enviar.",
   "chat.chatInput.toast.noModelSelected": "Selecciona un proveedor y un modelo antes de enviar.",
   "chat.chatInput.toast.clipboardAttachFailed": "No se pudo adjuntar la imagen desde el portapapeles",
   "chat.chatInput.toast.clipboardTextAttachFailed": "No se pudo adjuntar el texto pegado como archivo",

@@ -1,4 +1,5 @@
 import type { WorktreeMetadata } from '@/types/worktree';
+import type { NotificationPayload } from '@/lib/notifications/notificationShapes';
 import type { DesktopSettings } from '@/lib/settings/registry';
 import type { GitIdentityProfile, GitIdentitySummary } from './git-identity';
 import type { GitPathUnavailableReason } from './git-path-diff';
@@ -34,10 +35,7 @@ import type {
   DiscussionCommentInput,
   ChangeRequestReviewStateResult,
   ReviewChangeRequestInput,
-  ReviewCommentDeleteInput,
-  ReviewCommentInput,
-  ReviewCommentUpdateInput,
-  ReviewDiscardInput,
+  SourceControlReviewWrites,
   SetDiscussionAnswerInput,
   SetDiscussionStateInput,
   SetStateInput,
@@ -1066,7 +1064,7 @@ interface GitWorktreeAPI {
   create?(directory: string, payload: CreateGitWorktreePayload): Promise<GitWorktreeCreateResult>;
   remove?(directory: string, payload: RemoveGitWorktreePayload): Promise<{ success: boolean }>;
   teardown?(directory: string, payload: TeardownGitWorktreePayload): Promise<{ success: boolean }>;
-  setTitle?(directory: string, title: string, by?: 'user' | 'agent'): Promise<GitWorktreeTitleResult>;
+  setTitle?(directory: string, title: string, by?: 'user' | 'agent', session?: string): Promise<GitWorktreeTitleResult>;
   setPinned?(directory: string, pinned: boolean, list?: string | null): Promise<GitWorktreePinResult>;
   snapshot?(directory: string, payload: GitWorktreeSnapshotPayload): Promise<GitWorktreeSnapshotResult>;
   archive?(directory: string, payload: ArchiveGitWorktreePayload): Promise<GitWorktreeArchive>;
@@ -1354,18 +1352,7 @@ export interface PermissionsAPI {
   stopAccessingDirectory(path: string): Promise<StartAccessingResult>;
 }
 
-export interface NotificationPayload {
-  title?: string;
-  body?: string;
-
-  tag?: string;
-  kind?: string;
-  sessionId?: string;
-  directory?: string;
-  runtimeKey?: string;
-  requireHidden?: boolean;
-  showWhenFocused?: boolean;
-}
+export type { NotificationPayload };
 
 export interface NotificationsAPI {
   notifyAgentCompletion(payload?: NotificationPayload): Promise<boolean>;
@@ -1571,7 +1558,7 @@ export type RepositoryReferencesAcrossResult = {
   >;
 };
 
-export interface SourceControlAPI extends SourceControlBranchWrites {
+export interface SourceControlAPI extends SourceControlBranchWrites, SourceControlReviewWrites {
   providers(): Promise<SourceControlProviderDescriptor[]>;
   repositoryContext(directory: string): Promise<SourceControlRepositoryContext>;
   repositoryBinding(directory: string): Promise<SourceControlBindingRead>;
@@ -1608,10 +1595,6 @@ export interface SourceControlAPI extends SourceControlBranchWrites {
   changeRequestResolveThread(payload: ThreadResolveInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
   changeRequestReview(payload: ReviewChangeRequestInput): Promise<SourceControlMutationReceipt<SourceControlReviewMutationResult>>;
   changeRequestReviewState(context: SourceControlReadContext, ref: { owner: string; repo: string; number: number }): Promise<ChangeRequestReviewStateResult>;
-  changeRequestReviewComment(payload: ReviewCommentInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
-  changeRequestReviewCommentUpdate(payload: ReviewCommentUpdateInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
-  changeRequestReviewCommentDelete(payload: ReviewCommentDeleteInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
-  changeRequestReviewDiscard(payload: ReviewDiscardInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
   issueComment(payload: CommentInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
   issueCommentUpdate(payload: CommentUpdateInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;
   issueCommentDelete(payload: CommentDeleteInput): Promise<SourceControlMutationReceipt<SourceControlEmptyMutationResult>>;

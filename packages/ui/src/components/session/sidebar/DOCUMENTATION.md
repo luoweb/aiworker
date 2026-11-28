@@ -541,9 +541,14 @@ unchanged so ordinary session updates do not invalidate project sections.
   overview in the menu always reaches it. A fusion that starts while the
   overview is shown opens at once (`RunOverview`). The run's row is selected
   while its overview is open or, with no overview, while one of its members is
-  the current session. While an overview is open, session and worktree rows do
-  not show the session it covers as selected, and clicking a worktree or draft
-  row closes it (`closeMainSurfaces`), as a session row does.
+  the current session. While an overview or any other page covers the chat
+  (Archive, Stats, an extension page, everything `isChatCoveredByPage` lists),
+  session, worktree, run, draft and search result rows do not show the session
+  or draft under it as selected, so only the page's row is; closing the page
+  gives the selection back. On the phone and tablet only the run overview
+  counts: an extension page opens there as a sheet over the chat, whose
+  header still names the session, so the row stays selected. Clicking a worktree or draft row closes it
+  (`closeMainSurfaces`), as a session row does.
 - A row in rename keeps its height: the virtual list's 1px margins target
   `data-session-row-box`, which the session row and both rename containers
   carry (`data-session-row` stays on the normal row only, for Shift range
@@ -670,7 +675,9 @@ own name in the branch's place. A session moved into a new worktree takes its
 current session title along (the sidebar's Quick worktree move,
 `lib/worktrees/sessionWorktreeMove.ts`, and the agent's
 `session.moveToWorktree`, `carryToWorktree` in `work-naming.js`): the agent
-may replace that agent-owned seed. A session with explicit `workTitle.by: 'user'`
+may replace that agent-owned seed. Until someone does, the task follows that
+session: renaming it by hand or by the agent renames the task too
+(`web/server/lib/git/task-title-session.ts`), so the row never keeps a name the session dropped. A session with explicit `workTitle.by: 'user'`
 keeps user ownership in the worktree. No marker is required to seed the title.
 A move onto a branch that already exists keeps that branch's name.
 
